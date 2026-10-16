@@ -9,7 +9,8 @@ import {
   WEEK, blessedStep, isBlessed, isQuarry, isSeason, quarryOf, quarryOwed, seasonOf,
   weekLeft, weekOf,
 } from '../week.ts';
-import { lootFrom, takeKill } from '../combat.ts';
+import { lootFrom, quarryQi, takeKill } from '../combat.ts';
+import { verify } from '../verify.ts';
 import { harvestValue } from '../cave.ts';
 import { giftOf } from '../secret.ts';
 import { rate } from '../time.ts';
@@ -46,10 +47,45 @@ describe('期 the week', () => {
     }
   });
 
-  it('moves, and comes to every beast a realm can reach but its elites', () => {
+  it('names one beast for the whole week in a realm, whatever layer the cultivator stands on', () => {
+    // 定 The card says "all week". Drawn from the layer, the second realm's quarry changed
+    // animal two layers on in 327 weeks of 400, and two cultivators in one realm saw two.
+    for (let r = QUARRY_FROM_REALM; r <= 9; r++) {
+      for (let w = 0; w < 400; w++) {
+        const first = quarryOf(at(r, MONDAY + w * WEEK, 0))!.key;
+        for (let layer = 1; layer < 9; layer++) {
+          // Any instant of the week, not only its first second.
+          const when = MONDAY + w * WEEK + Math.floor((layer / 9) * (WEEK - 1));
+          expect(quarryOf(at(r, when, layer))!.key, `realm ${r} week ${w} layer ${layer}`).toBe(first);
+        }
+      }
+    }
+  });
+
+  it('still lets the server pay a client from before, whose quarry was a beast that walked out later', () => {
+    // 驗 An old client drew from the layer it stood on, so in a week like this one it paid the
+    // quarry on a beast the week no longer names. The server credits the richest quarry the
+    // realm could have paid (verify.ts), never a named beast, so that sync is never doubted.
+    const late = huntable(2, 8).filter((b) => b.realm === 2 && !isElite(b) && b.layer > 0);
+    expect(late.length).toBeGreaterThan(0);
+    for (const b of late) {
+      const before = { ...at(2, MONDAY, 8), quarryWeek: weekOf(MONDAY) - 1, killed: { [b.key]: 3 } };
+      expect(isQuarry(before, b)).toBe(false);
+      const after = {
+        ...before, at: before.at + 60, qi: before.qi + quarryQi(2, b),
+        killed: { [b.key]: 4 }, quarryWeek: weekOf(MONDAY),
+      };
+      const v = verify(before, after, 60);
+      expect(v.ok, v.why.join(',')).toBe(true);
+      expect(v.strike).toBe(false);
+      expect(v.suspect).toBe(false);
+    }
+  });
+
+  it('moves, and comes to every beast a realm can reach from its first layer but its elites', () => {
     const seen = new Set<string>();
     for (let w = 0; w < 400; w++) seen.add(quarryOf(at(9, MONDAY + w * WEEK))!.key);
-    expect(seen.size).toBe(huntable(9, 8).filter((b) => !isElite(b)).length);
+    expect(seen.size).toBe(huntable(9, 0).filter((b) => !isElite(b)).length);
     console.log(`\n  ${seen.size} of ${BEASTS.filter((b) => !b.warden).length} commons ` +
       'come round as the quarry at the ninth realm\n');
     const rows: string[] = [];

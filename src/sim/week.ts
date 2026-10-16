@@ -71,14 +71,22 @@ function hash(n: number): number {
  *
  * So it is drawn from 狩 what has walked out. A first-realm cultivator has none (there is
  * no quarry before QUARRY_FROM_REALM), a second-realm one has the first realm's three and
- * those of its own that have walked out, and a ninth-realm one has twenty-seven, which is the rotation getting richer as
- * the game does. The draw moves when the realm does, and that is on purpose: a new realm
- * is allowed to hand over a new quarry.
+ * the one of its own that is out at its first layer, and a ninth-realm one has eighteen,
+ * which is the rotation getting richer as the game does. The draw moves when the realm
+ * does, and that is on purpose: a new realm is allowed to hand over a new quarry.
+ *
+ * 定 It is drawn from what was out at the realm's first layer, never at the layer the
+ * cultivator stands on. Drawn from the layer, the pool grew as the realm's beasts walked
+ * out and the same week named another animal two layers on: the card that says "all week"
+ * changed its beast in the middle of it, and two cultivators in one realm saw different
+ * quarries. That happened in 327 of 400 weeks at the second realm. So it moves with the
+ * week and the realm and nothing else, and a beast that walks out later in a realm is the
+ * quarry in the realms after it.
  */
 export function quarryOf(s: State): Beast | null {
   if (s.realm < QUARRY_FROM_REALM) return null;
   // 精 Never an elite: the week's errand is one every hunter can run, and an elite is a wall.
-  const pool = huntable(s.realm, s.layer).filter((b) => !isElite(b));
+  const pool = huntable(s.realm, 0).filter((b) => !isElite(b));
   if (!pool.length) return null;
   return pool[hash(weekOf(s.at) * 2_654_435_761) % pool.length] ?? null;
 }

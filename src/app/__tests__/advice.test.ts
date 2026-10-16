@@ -6,7 +6,7 @@ import { odds, takeKill } from '../../sim/combat.ts';
 import { huntable, wardenOf } from '../../data/bestiary.ts';
 import { advance } from '../../sim/time.ts';
 import { REALMS } from '../../data/realms.ts';
-import { weekOf } from '../../sim/week.ts';
+import { WEEK, quarryOf, weekOf } from '../../sim/week.ts';
 
 /**
  * 示 The line that says what to do next, and the promise that it is always saying
@@ -143,14 +143,25 @@ describe('道 unspent points come before everything', () => {
    * because there is nearly always some beast with a mark left in it.
    */
   it('sends material to 煉器 refining once it buys real levels, and not before', () => {
-    const base = {
-      ...newState(T0), realm: 3, layer: 5, qi: 3e5,
+    const fixture = (at: number) => ({
+      ...newState(at), realm: 3, layer: 5, qi: 3e5,
       levels: { technique: 8, method: 12, pills: 13, cores: 4 },
       killed: { rat: 120, hound: 40, frog: 12, serpent: 30, mantis: 11, bat: 13, fox: 1, ape: 1 },
       worn: { weapon: { id: 'w', template: 'sword3', rarity: 'earth', rolls: [{ affix: 'power', value: 22 }] } },
       unlocked: ['root', 'opening', 'edge', 'chain', 'breathing', 'clearmind', 'sunder', 'gleaning', 'keeneye'],
       stance: 'swift', sequence: ['crane'], awakened: ['feast', 'wolf'],
-    } as unknown as State;
+    }) as unknown as State;
+    // 期 Which beast the week names is the calendar's business, not this test's: read the
+    // same cultivator, begun the same way, on the first week whose quarry it plainly wins and
+    // on the first it would lose.
+    const weeks = [...Array(52).keys()].map((w) => fixture(T0 + w * WEEK));
+    const winnable = (s: State) => odds(s, quarryOf(s)!);
+    const base = weeks.find((s) => winnable(s) >= 0.5)!;
+    const hard = weeks.find((s) => winnable(s) < 0.35)!;
+    expect(base, 'a week whose quarry this cultivator wins').toBeDefined();
+    expect(hard, 'a week whose quarry this cultivator loses').toBeDefined();
+    // A quarry it would lose is never the line: a fight the reader loses is worse than none.
+    expect(advice({ ...hard, materials: 40 })!.han).not.toBe('期');
 
     // 期 With the week's qi still owed, the hunt it sends them on is the week's own,
     // which is the same tab and a better beast. The generic line is what is left after.
