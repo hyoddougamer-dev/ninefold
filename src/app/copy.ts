@@ -31,6 +31,11 @@ import { RARITY_INFO } from '../data/gear.ts';
 
 /** 式 A balance constant as a formula prints it: 0.35, never 0.35000000000000009. */
 const trim = (x: number) => String(Math.round(x * 1000) / 1000);
+/** 1st, 2nd, 3rd, 4th, 11th, 12th, 13th, 21st, 81st. */
+const ordinal = (n: number) => {
+  const t = n % 100;
+  return `${n}${t >= 11 && t <= 13 ? 'th' : n % 10 === 1 ? 'st' : n % 10 === 2 ? 'nd' : n % 10 === 3 ? 'rd' : 'th'}`;
+};
 /** 劫 A share as a percentage to a tenth, so a share of 1.5% never reads as 2%. */
 const oneDecimal = (x: number) => `${Number((x * 100).toFixed(1))}%`;
 
@@ -176,12 +181,12 @@ export const RANKS = {
     closed: 'This account is off the boards after saves the server could not accept. Your game is not touched. If you think that is a mistake, tell us in 報-bugs on the Discord and we will look.',
   },
   /** 名 Under the name box, when what is typed is not a name the boards can show. */
-  nameRule: 'Letters, numbers and CJK only, and not a title, a 修士 name or the 先行 Forerunner mark.',
+  nameRule: 'Letters, numbers and CJK only, and not a title, a sect rank, a 修士 name or the 先行 Forerunner mark.',
   nameErrors: {
     taken: 'That name is taken.',
     length: 'Two to twenty letters.',
     characters: 'Letters, numbers and spaces only.',
-    reserved: 'The titles, the 修士 names and the 先行 Forerunner mark are not for taking.',
+    reserved: 'The titles, the sect ranks, the 修士 names and the 先行 Forerunner mark are not for taking.',
     offline: 'That could not be saved just now.',
   },
   /** 盾 Always under the boards, because a player who wonders whether they are fair should not have to ask. */
@@ -245,7 +250,7 @@ export const RANKS = {
     fewer: 'Show the first nine',
     you: 'you',
     /** Where you stand, said in words, for a screen reader and for a column scrolled off the screen. */
-    yours: (n: number, gate: string) => `You are carved ${n}${n % 10 === 1 && n !== 11 ? 'st' : n % 10 === 2 && n !== 12 ? 'nd' : n % 10 === 3 && n !== 13 ? 'rd' : 'th'} through the ${gate}.`,
+    yours: (n: number, gate: string) => `You are carved ${ordinal(n)} through the ${gate}.`,
     scroll: 'Scroll sideways for all nine gates.',
     footHead: 'Those who walked before',
     /** Every Forerunner, carved or not (forerunners() on the server), in the order of the names. */
@@ -258,6 +263,57 @@ export const RANKS = {
     offline: 'The Cliff cannot be reached right now. Your game goes on as it was.',
     date: (day: number, month: string, hm: string) => `${day} ${month}, ${hm}`,
     months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+  },
+  /**
+   * 位 The sect rank (docs/SEASON-RANKS.md, sections 3 and 7): nine ranks from Outer Disciple to
+   * Ancestor, read from the server's checked climb and marks, never falling. The noun is "sect
+   * rank", never "standing". The characters are in src/sim/rung.ts (RUNGS), in the same order.
+   */
+  sect: {
+    han: '位',
+    word: 'Sect rank',
+    names: ['Outer Disciple', 'Inner Disciple', 'Core Disciple', 'True Disciple', 'Guardian', 'Elder', 'Peak Lord',
+      'Supreme Elder', 'Ancestor'],
+    /** What reaches each rank, as the ladder lists it. The realm names are the realms' own. */
+    reach: ['Your first checked sync', 'Arrive in Foundation', 'Arrive in Nascent Soul', 'Arrive in Void Refining',
+      'Arrive in Great Vehicle', 'The summit and your first thunder mark', '5 thunder marks', '10 thunder marks',
+      '20 thunder marks'],
+    /** 註 What a seal answers when it is tapped. */
+    note: (reach: string) => `A sect rank. ${reach} reaches it. The server gives it after checking your climb, and it never falls.`,
+    /** The distance to the next rank, under the head's bar. */
+    toLayers: (n: number, next: string) => `${n} ${n === 1 ? 'layer' : 'layers'} to ${next}`,
+    toMarks: (n: number, next: string) => `${n} ${n === 1 ? 'mark' : 'marks'} to ${next}`,
+    toSummit: (layers: number, marks: number, next: string) =>
+      `${layers} ${layers === 1 ? 'layer' : 'layers'} to the summit, then ${marks === 1 ? 'a mark' : `${marks} marks`} to ${next}`,
+    /** Ancestor, the last rank until new content extends the climb: the count of marks instead. */
+    top: (marks: number) => `${marks} ${marks === 1 ? 'mark' : 'marks'} 雷`,
+    bar: (rung: number) => `Rank ${rung + 1} of 9`,
+    held: 'Your sect rank returns when the review is done.',
+    unrecorded: 'Your sect rank is recorded at your first checked sync.',
+    signedOut: 'Sign in and the sect will record your rank.',
+    ladderHan: '位階',
+    ladderName: "The Sect's Ladder",
+    /** The way in, under the head: tapping the head opens it. */
+    open: 'See the whole ladder',
+    ladderWhat: 'Nine ranks, from your first checked sync to the twentieth thunder mark. The server gives each one after checking your climb, and a rank never falls: not for being away, not for a rebirth, not when a season ends.',
+    holding: (n: number) => (n === 1 ? '1 holds it' : `${n} hold it`),
+    countsOff: 'How many hold each rank cannot be read right now.',
+    you: 'you',
+    back: 'Back to the boards',
+    /** 名 Under the head, for a cultivator still under a 修士 name from Inner Disciple up. */
+    nudge: 'An Inner Disciple is known by name. Choose yours.',
+    nudgeGo: 'Choose a name',
+    nudgeLater: 'Not now',
+    /** 升 The one card a rise brings, with the Cliff carving that came in the same sync. */
+    rise: (name: string, han: string) => `The sect raises you to ${name} ${han}`,
+    checked: ['', 'Your arrival in Foundation is checked.', 'Your arrival in Nascent Soul is checked.',
+      'Your arrival in Void Refining is checked.', 'Your arrival in Great Vehicle is checked.',
+      'Your first crossing of the tribulation is checked.', 'Your fifth thunder mark is checked.',
+      'Your tenth thunder mark is checked.', 'Your twentieth thunder mark is checked.'],
+    carved: (n: number, gate: string) => `Your name is carved ${ordinal(n)} through the ${gate} on 題名崖 the Cliff of Names.`,
+    carvedTitle: '題名崖 Your name is on the Cliff',
+    more: (n: number) => `And through ${n} more ${n === 1 ? 'gate' : 'gates'}.`,
+    unnamed: 'Choose your own name in 榜 Ranks, and the Cliff carves it.',
   },
   delete: 'Delete my ranked account',
   deleteSure: 'This removes your name, your place on the boards and the cloud copy from the server. The game on this device is not touched. If the anti-cheat struck this account, a fingerprint of the email keeps the strikes.',

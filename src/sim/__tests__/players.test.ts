@@ -14,6 +14,7 @@ import { floorQiPay, leastUntil, towerLeast } from '../tower.ts';
 import { pillsTaken } from '../furnace.ts';
 import { num } from '../format.ts';
 import { playAll } from '../../../tools/habits.ts';
+import { rungOf } from '../rung.ts';
 
 /**
  * 勤 Five cultivators, one game.
@@ -102,6 +103,32 @@ describe('勤 what being there buys you', () => {
     expect(hourly.arrival[8]).toBeLessThan(active.arrival[8]);
     // But not so much sooner that the game belongs to whoever has the most free time.
     expect(hourly.arrival[8]).toBeGreaterThan(casual.arrival[8] / 3);
+  });
+
+  /**
+   * 位 The sect rank each cultivator wears on days 1, 7, 30 and 90 (docs/SEASON-RANKS.md,
+   * section 8), from the layers it has opened by then. The four ranks past the summit come from
+   * the thunder marks, which tools/endgame.ts measures (RANKS-BUILD: six habits reach Supreme
+   * Elder inside 112 days, nobody Ancestor). Read by name, with a floor on how many were read.
+   */
+  it('prints the sect rank each cultivator wears on days 1, 7, 30 and 90', () => {
+    const DAYS = [1, 7, 30, 90];
+    const NAMES = ['Outer', 'Inner', 'Core', 'True', 'Guardian', 'Elder', 'Peak Lord', 'Supreme', 'Ancestor'];
+    const at = (r: (typeof runs)[number], day: number) => rungOf(r.layerDay.filter((d) => d <= day).length - 1);
+    expect(runs.length).toBeGreaterThanOrEqual(5);
+    console.log('\n  位 the sect rank on days 1, 7, 30 and 90 (from the climb):\n' + runs.map((r) =>
+      `    ${r.habit.name.padEnd(14)} ${DAYS.map((d) => NAMES[at(r, d)].padEnd(9)).join(' ')}`).join('\n') + '\n');
+    for (const r of runs) {
+      // Day 0 is the first checked sync: everybody is an Outer Disciple, and nobody falls.
+      const seq = [0, ...DAYS].map((d) => at(r, d));
+      for (let i = 1; i < seq.length; i++) expect(seq[i], r.habit.name).toBeGreaterThanOrEqual(seq[i - 1]);
+    }
+    // Every cultivator is a Core Disciple within the first month and a True Disciple by day 90.
+    for (const r of runs) {
+      expect(at(r, 30), r.habit.name).toBeGreaterThanOrEqual(2);
+      expect(at(r, 90), r.habit.name).toBeGreaterThanOrEqual(3);
+    }
+    expect(at(who('active'), 7)).toBeGreaterThanOrEqual(2);
   });
 
   it('never pays less for being away', () => {

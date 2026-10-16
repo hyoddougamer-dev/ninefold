@@ -160,6 +160,11 @@ export interface Row {
   readonly calling?: string | null;
   /** 先行 The account walked the closed test (is_forerunner() on the server). A mark, never a number. */
   readonly forerunner?: boolean;
+  /**
+   * 位 The account's sect rank, 0 Outer Disciple to 8 Ancestor (rung_of() on the server), or null:
+   * before the switch, and on a build of the server that does not send it. Read through rungFrom().
+   */
+  readonly rung?: number | null;
 }
 
 export async function board(kind: Board): Promise<readonly Row[]> {
@@ -196,6 +201,10 @@ export interface Mine {
   readonly title: string | null;
   /** 先行 The server's own answer: this account synced before the season began. */
   readonly forerunner?: boolean;
+  /** 位 My sect rank on the server's word: null before the switch, while held, or with no season row. */
+  readonly rung?: number | null;
+  /** 題名崖 Where the Cliff carved me, as cliff() ranks it: null before the switch. */
+  readonly carved?: readonly { readonly gate: number; readonly rank: number }[] | null;
 }
 
 export async function mine(): Promise<Mine | null> {
@@ -203,6 +212,23 @@ export async function mine(): Promise<Mine | null> {
   const { data, error } = await c.rpc('my_standing');
   if (error) return null;
   return (data ?? null) as Mine | null;
+}
+
+/**
+ * 位階 How many hold each sect rank (rungs() on the server): nine counts, never a name. Zeros
+ * before the switch; null when it cannot be read.
+ */
+export async function rungs(): Promise<readonly number[] | null> {
+  const c = await client();
+  const { data, error } = await c.rpc('rungs');
+  if (error || !Array.isArray(data)) return null;
+  const out = Array.from({ length: 9 }, () => 0);
+  for (const r of data as { rung?: unknown; players?: unknown }[]) {
+    const k = Number(r?.rung);
+    const n = Number(r?.players);
+    if (Number.isInteger(k) && k >= 0 && k < 9 && Number.isFinite(n) && n >= 0) out[k] = n;
+  }
+  return out;
 }
 
 /** 題名崖 One name carved on the Cliff of Names: its gate (1 to 9), its place there, and when the server saw it. */

@@ -84,6 +84,14 @@ describe('位 the sect rank', () => {
     for (const n of RANKS.sect.names) expect(n).toMatch(/^[A-Z][a-z]+( [A-Z][a-z]+)?$/);
     expect(RANKS.sect.names[4]).toBe('Guardian');
     expect(RANKS.sect.names[6]).toBe('Peak Lord');
+    // What reaches each realm rank names the realm it lands on, by the realm's own name.
+    expect(RANKS.sect.reach).toHaveLength(RUNGS.length);
+    expect(RANKS.sect.checked).toHaveLength(RUNGS.length);
+    for (let r = 1; r <= 4; r++) {
+      const realm = REALMS.find((x) => x.n === RUNGS[r].realm)!.name;
+      expect(RANKS.sect.reach[r], `rank ${r}`).toContain(realm);
+      expect(RANKS.sect.checked[r], `rank ${r}`).toContain(realm);
+    }
   });
 
   it('keeps the nine ranks out of the names, whole, on the phone and on the server alike', () => {
