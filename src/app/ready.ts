@@ -1,12 +1,12 @@
-import { odds } from '../sim/combat.ts';
-import { canBreakThrough, canCross, type State } from '../sim/state.ts';
+import { currentWarden, odds } from '../sim/combat.ts';
+import { canBreakThrough, canCross, canFightWarden, wardenStands, type State } from '../sim/state.ts';
 import { ripeCount } from '../sim/cave.ts';
 import { demonDue } from '../sim/seclusion.ts';
 import { canEnter as canEnterSecret, inside as insideSecret } from '../sim/secret.ts';
 import { meetingDue } from '../sim/meet.ts';
 import { cardDue } from '../sim/awaken.ts';
 import { spendablePoints } from '../sim/points.ts';
-import { blocked, held, needsOf, workshopOpen } from '../sim/crafts.ts';
+import { blocked, held, kitFor, needsOf, workshopOpen } from '../sim/crafts.ts';
 import { quarryOf, quarryOwed, weekLeft } from '../sim/week.ts';
 import { standingFloor, towerOpen } from '../sim/trials.ts';
 import { floorBeast, floorPower } from '../sim/tower.ts';
@@ -18,6 +18,7 @@ import { FORGED, ITEM_BY_KEY, RECIPE_BY_KEY } from '../data/crafts.ts';
 import { BEASTS } from '../data/bestiary.ts';
 import { duration } from '../sim/format.ts';
 import { READY } from './copy.ts';
+import { WARDEN_EVEN } from './guide.ts';
 
 /**
  * 待 What is waiting for the player, right now.
@@ -40,7 +41,7 @@ import { READY } from './copy.ts';
 export type Place = 'cultivate' | 'hunt' | 'trials' | 'gear' | 'crafts' | 'dao';
 
 export type WaitKey =
-  | 'card' | 'breakthrough' | 'cross' | 'demon' | 'road' | 'beds' | 'vault' | 'points'
+  | 'card' | 'breakthrough' | 'cross' | 'warden' | 'demon' | 'road' | 'beds' | 'vault' | 'points'
   | 'workshop' | 'quarry' | 'floor' | 'upgrades' | 'chestFull' | 'melt';
 
 export interface Waiting {
@@ -68,6 +69,13 @@ export interface Heavy {
   readonly floor: number;
   /** 期 The odds on the week's quarry, or 0 when there is none. */
   readonly quarry: number;
+  /**
+   * 妖 The odds on the realm's warden with what is carried, as its card quotes them, or 0 while
+   * no warden stands (and in the ninth realm, where 渡劫 the crossing has its own row). Read
+   * whether or not the gate is sealed: the seal opens with the clock, and the row comes up the
+   * moment it does without the fight being read again.
+   */
+  readonly warden: number;
 }
 
 /** 塔 The floor odds above which the next floor is a thing to do, not a gamble. The advice line's own. */
@@ -82,7 +90,14 @@ export function heavyOf(s: State): Heavy {
   const floor = towerOpen(s)
     ? odds(s, floorBeast(standingFloor(s)), floorPower(standingFloor(s))) : 0;
   const q = quarryOf(s);
-  return { ups, floor, quarry: q ? odds(s, q) : 0 };
+  return { ups, floor, quarry: q ? odds(s, q) : 0, warden: wardenOdds(s) };
+}
+
+/** 妖 The warden's odds, the card's own reading: with the kit it would carry in. See Heavy.warden. */
+export function wardenOdds(s: State): number {
+  if (s.realm >= 9 || s.wardenFell || !wardenStands(s)) return 0;
+  const w = currentWarden(s);
+  return odds(s, w, undefined, kitFor(s, w, 'warden').kit);
 }
 
 /** 業 What the workshop is waiting on, or null when it is working (or not open). */
@@ -110,6 +125,13 @@ export function ready(s: State, heavy: Heavy = heavyOf(s)): readonly Waiting[] {
   if (cardDue(s)) add('card', '悟道', 'cultivate', READY.card.short, READY.card.long);
   if (canBreakThrough(s)) add('breakthrough', '突破', 'cultivate', READY.breakthrough.short, READY.breakthrough.long);
   if (canCross(s)) add('cross', '渡劫', 'cultivate', READY.cross.short, READY.cross.long);
+  // 妖 A warden that can be beaten, standing at the top of the realm. Played (2026-10-16): a
+  // cultivator at layer 9 of 9 with the Stone Ape at 98% read "Melting pays qi" here, the
+  // card two screens further down, and sat seventeen hours on 4.4M qi with nowhere to put it.
+  if (canFightWarden(s) && s.realm < 9 && heavy.warden >= WARDEN_EVEN) {
+    const w = currentWarden(s);
+    add('warden', '妖', 'cultivate', READY.warden.short, READY.warden.long(w.han, w.name, Math.round(heavy.warden * 100)));
+  }
   if (demonDue(s)) add('demon', '心魔', 'cultivate', READY.demon.short, READY.demon.long);
   const m = meetingDue(s);
   if (m) add('road', '緣', 'cultivate', READY.road.short, READY.road.long(m.name));
@@ -118,16 +140,6 @@ export function ready(s: State, heavy: Heavy = heavyOf(s)): readonly Waiting[] {
   if (canEnterSecret(s) && !insideSecret(s)) add('vault', '秘境', 'hunt', READY.vault.short, READY.vault.long);
   const points = spendablePoints(s);
   if (points > 0) add('points', '道', 'dao', READY.points.short(points), READY.points.long(points));
-
-  const wait = workshopWait(s);
-  if (wait) {
-    const r = s.crafts.task ? RECIPE_BY_KEY[s.crafts.task] : undefined;
-    const long = wait === 'idle' ? READY.workshop.idle
-      : wait === 'chest' ? READY.workshop.chest
-      : wait === 'remains' && r?.remains ? READY.workshop.remains(BEASTS.find((b) => b.key === r.remains)?.name ?? r.remains)
-      : READY.workshop.needs(missingName(r ? needsOf(s, r).find(([k, n]) => held(s, k) < n)?.[0] ?? 'mat' : 'mat'));
-    add('workshop', '業', 'crafts', wait === 'idle' ? READY.workshop.shortIdle : READY.workshop.shortWaits, long);
-  }
 
   const q = quarryOf(s);
   // 一 Never in the first realm, where the guide's first chapter is walked: the week names
@@ -140,6 +152,18 @@ export function ready(s: State, heavy: Heavy = heavyOf(s)): readonly Waiting[] {
     add('floor', '塔', 'trials', READY.floor.short(f), READY.floor.long(f, Math.round(heavy.floor * 100)));
   }
   if (heavy.ups > 0) add('upgrades', '▲', 'gear', READY.upgrades.short(heavy.ups), READY.upgrades.long(heavy.ups));
+  // 序 Below what is new or runs out (the week's quarry, a floor, a better piece) and above the
+  // reminders that stand for days. A phone shows a chip and a half of the strip, and an idle
+  // workshop stood in front of the quarry, which is gone on Monday (audit, 2026-10-16).
+  const wait = workshopWait(s);
+  if (wait) {
+    const r = s.crafts.task ? RECIPE_BY_KEY[s.crafts.task] : undefined;
+    const long = wait === 'idle' ? READY.workshop.idle
+      : wait === 'chest' ? READY.workshop.chest
+      : wait === 'remains' && r?.remains ? READY.workshop.remains(BEASTS.find((b) => b.key === r.remains)?.name ?? r.remains)
+      : READY.workshop.needs(missingName(r ? needsOf(s, r).find(([k, n]) => held(s, k) < n)?.[0] ?? 'mat' : 'mat'));
+    add('workshop', '業', 'crafts', wait === 'idle' ? READY.workshop.shortIdle : READY.workshop.shortWaits, long);
+  }
   if (isOpen(s.realm, 'gear') && s.chest.length >= limitFor(s)) {
     add('chestFull', '藏', 'gear', READY.chestFull.short, READY.chestFull.long);
   }

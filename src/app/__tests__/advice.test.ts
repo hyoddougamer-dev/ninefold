@@ -1,12 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { advice } from '../advice.ts';
 import { LAYERS_PER_REALM, focusAt, levelCap } from '../../sim/balance.ts';
-import { breakThrough, buy, canBreakThrough, canFightWarden, canBuy, newState, type State, type Upgrade } from '../../sim/state.ts';
-import { odds, takeKill } from '../../sim/combat.ts';
+import { breakThrough, buy, canBreakThrough, canFightWarden, canBuy, newState, wardenStands, type State, type Upgrade } from '../../sim/state.ts';
+import { bottleneck, odds, takeKill, wallOf } from '../../sim/combat.ts';
 import { huntable, wardenOf } from '../../data/bestiary.ts';
 import { advance } from '../../sim/time.ts';
 import { REALMS } from '../../data/realms.ts';
 import { weekOf } from '../../sim/week.ts';
+import { skillOpen } from '../../sim/crafts.ts';
+import { isOpen } from '../../sim/unlocks.ts';
+import { spendablePoints } from '../../sim/points.ts';
+import { ADVICE, CULTIVATE } from '../copy.ts';
 
 /**
  * 示 The line that says what to do next, and the promise that it is always saying
@@ -186,5 +190,88 @@ describe('悟道 a card owed comes first of all', () => {
     expect(advice(s)!.han).toBe('悟道');
     // Take what is owed and the line moves on to the points.
     expect(advice({ ...s, awakened: ['feast', 'wolf'] })!.han).toBe('道');
+  });
+});
+
+/**
+ * 妖 A warden that can be beaten is named, under only a card owed.
+ *
+ * Played as an hourly visitor (audit, 2026-10-16): layer 9 of 9 in the second realm, the
+ * Stone Ape at 98%, and this line pointed at the points, then at ninety Blood Bats. The card
+ * was two screens down on a phone, and the cultivator sat there seventeen hours on 4.4M qi.
+ */
+describe('妖 a warden that can be beaten is the line', () => {
+  const atWarden = (over: Partial<State> = {}): State => ({
+    ...newState(T0), realm: 2, layer: 8, qi: 2e5, materials: 30, startedAt: T0 - 33 * 3600,
+    levels: { technique: 12, method: 12, pills: 12, cores: 12 },
+    killed: { rat: 100, hound: 100, frog: 60, serpent: 40, mantis: 40, bat: 14, fox: 1 },
+    worn: { weapon: { id: 'w', template: 'sword2', rarity: 'spirit', rolls: [{ affix: 'power', value: 22 }] } },
+    stance: 'swift', awakened: ['feast'], unlocked: ['qi1'], ...over,
+  } as unknown as State);
+
+  it('names it, at its odds, and says beating it opens the breakthrough', () => {
+    const s = atWarden();
+    expect(odds(s, wardenOf(2))).toBeGreaterThanOrEqual(0.9);
+    const tip = advice(s)!;
+    expect(tip.han).toBe('妖');
+    expect(tip.text).toMatch(/Stone Ape is \d+% to beat/);
+    expect(tip.text).toMatch(/breakthrough/);
+    expect(tip.text).not.toMatch(/—|–/);
+  });
+
+  it('takes the odds the card quotes when the screen hands them over', () => {
+    expect(advice(atWarden(), 0.77)!.text).toMatch(/77% to beat/);
+    // Below even it is not the line, whatever else is.
+    expect(advice(atWarden(), 0.3)!.han).not.toBe('妖');
+  });
+
+  it('comes under a card owed, and over unspent points', () => {
+    expect(advice(atWarden({ awakened: [] }))!.han).toBe('悟道');
+    const rich = atWarden({ metPoints: 6 } as Partial<State>);
+    expect(spendablePoints(rich)).toBeGreaterThan(0);
+    expect(advice(rich)!.han).toBe('妖');
+  });
+
+  it('says nothing about a warden that has fallen or is not out yet', () => {
+    expect(advice(atWarden({ wardenFell: true }))!.han).not.toBe('妖');
+    expect(advice(atWarden({ layer: 6 }))!.han).not.toBe('妖');
+  });
+});
+
+/**
+ * 破境 At a gate of the third realm the card named an elixir, a sigil and 爐 pills, and the
+ * realm has none of the three: Alchemy opens at the fifth, Sigil Writing at the sixth and the
+ * furnace at the ninth (audit, 2026-10-16). It names what is open, and nothing else.
+ */
+describe('破境 the bottleneck names only what is open', () => {
+  const gate = (realm: number): State => ({ ...newState(T0), realm, layer: 8, gateAt: T0 } as State);
+  const openAt = (s: State) => ({
+    elixir: skillOpen(s, 'alchemy'), sigil: skillOpen(s, 'sigil'), furnace: isOpen(s.realm, 'furnace'),
+  });
+
+  it('at a realm-3 gate: cores, gear and refining, and no elixir, sigil or pill', () => {
+    const s = gate(3);
+    expect(wardenStands(s)).toBe(true);
+    expect(bottleneck(s, wardenOf(3)) * wallOf(3)).toBeGreaterThan(1.01);
+    const line = CULTIVATE.breachNone(openAt(s));
+    expect(line).not.toMatch(/elixir|sigil|爐|pill/i);
+    expect(line).toMatch(/妖丹 Cores/);
+    expect(line).toMatch(/煉器 refining/);
+  });
+
+  it('names the elixir once Alchemy is open, and the sigil only with Sigil Writing', () => {
+    const five = CULTIVATE.breachNone(openAt(gate(5)));
+    expect(five).toMatch(/An elixir from 丹 Alchemy/);
+    expect(five).not.toMatch(/sigil|爐/i);
+    const six = CULTIVATE.breachNone(openAt(gate(6)));
+    expect(six).toMatch(/An elixir or a sigil/);
+    expect(six).not.toMatch(/爐/);
+  });
+
+  it('tells a pouch to carry only what it holds', () => {
+    expect(ADVICE.breach(1.5, ['elixir'])).toMatch(/Carry an elixir from 業 the workshop: it breaks up to 1\.5 days/);
+    expect(ADVICE.breach(1.5, ['elixir'])).not.toMatch(/sigil/);
+    expect(ADVICE.breach(2, ['elixir', 'sigil'])).toMatch(/an elixir and a sigil .*they break/);
+    expect(CULTIVATE.breachHeld(2, ['sigil'])).toMatch(/carry a sigil from/);
   });
 });
