@@ -31,7 +31,7 @@
 import {
   BLESSED_ROOM, FOCUS_MAX, INCENSE_BONUS, INCENSE_WORTH, LAYERS, MARK_DAYS, MEET_GAP, MELT_CAP,
   MELT_FILL, PAIR_BOUNTY, PAIR_DRAGON, PAIR_MELT, PAIR_SPRING, PAIR_TOWER_QI, PLATFORM_EDGE,
-  DRAGON_KIT_SHARE, KEY_SPRING, ROUND_CAP, SEAL_PAY_DEEP_MINUTES, SEAL_PAY_EASY_SHARE, SECLUSION, SPRING_FILL, SPRING_HOLD, TOWER_QI_SUMMIT, TRAIL_WOUND,
+  DRAGON_KIT_SHARE, KEY_SPRING, LAYERS_PER_REALM, ROUND_CAP, SEAL_PAY_DEEP_MINUTES, SEAL_PAY_EASY_SHARE, SECLUSION, SPRING_FILL, SPRING_HOLD, TOWER_QI_SUMMIT, TRAIL_WOUND,
   TRIBULATION_CHALLENGE,
 } from './balance.ts';
 import { WEEK } from './week.ts';
@@ -445,9 +445,25 @@ function hasBar(s: State): boolean {
 export function sealQi(before: State, after: State, dt: number): number {
   if (!hasBar(after)) return 0;
   const late = Math.max(0, sealSeconds(before, after) - Math.max(0, dt) * SLACK - SEAL_GRACE);
-  if (late <= 0) return 0;
   const gate = Math.min(LAYERS - 1, before.realm * 9 - 1);
-  return late * (SEAL_PAY_DEEP_MINUTES / 60) * rateOn(before, gate);
+  const crossed = late > 0 ? late * (SEAL_PAY_DEEP_MINUTES / 60) * rateOn(before, gate) : 0;
+  // 誤 And the deep share the later save claims at the gate it stands at, past what the earlier
+  // one had already claimed at that same gate. sealSeconds counts a gate's fills as paid once
+  // a save holds them, and validate() lets sealPaid claim the whole bar since 2026-10-15, so a
+  // claim nobody charged would cross the next gate for nothing: a save edited to a full bar
+  // and an empty purse did exactly that. Charged here, when the claim first appears, it is
+  // paid once, whichever pair crosses.
+  const at = Math.min(LAYERS - 1, after.realm * 9 - 1);
+  const same = after.realm === before.realm && before.layer === LAYERS_PER_REALM - 1;
+  const claimed = Math.max(0, deepPaid(after) - (same ? deepPaid(before) : 0));
+  const standing = claimed > 0
+    ? claimed * (SEAL_PAY_DEEP_MINUTES / 60) * Math.min(rateOn(before, at), rateOn(after, at)) : 0;
+  return crossed + standing;
+}
+
+/** 封 The seconds of a save's bar qi has paid past its cheap first SEAL_PAY_EASY_SHARE. */
+function deepPaid(s: State): number {
+  return Math.max(0, Math.max(0, s.sealPaid ?? 0) - SEAL_PAY_EASY_SHARE * sealDays(s.realm) * 86_400);
 }
 
 /** 業 The seconds of work the experience gained between two saves took, at its fastest. */

@@ -633,6 +633,30 @@ describe('驗 the server and the bar', () => {
     expect(verify({ ...at, qi: 1e15 }, { ...to, qi: 0, at: at.at + waited }, waited).why).not.toContain('too-fast');
   });
 
+  it('charges the deep share of the bar when a save first claims it, so an edited full bar crosses for nothing no longer', () => {
+    for (const r of [5, 6, 7, 8]) {
+      const { before, after } = pair(r, 1);
+      const deep = (1 - SEAL_PAY_EASY_SHARE) * sealDays(r) * DAY;
+      // A save edited to a whole bar paid and an empty purse: validate keeps the claim (qi can
+      // fill the whole bar now), so the pair that carries it pays the deep share in qi.
+      const forged = validate(JSON.parse(JSON.stringify({ ...before, qi: 0, sealPaid: 1e12 })), before.at);
+      expect(forged.sealPaid! / DAY).toBeCloseTo(sealDays(r), 6);
+      const prev = { ...before, at: before.at - 60 };
+      expect(sealQi(prev, forged, 60)).toBeCloseTo(deep * (SEAL_PAY_DEEP_MINUTES / 60) * gathering(before), -1);
+      if (r >= 6) expect(verify(prev, forged, 60).why).toContain('too-fast');
+      // The crossing after it owes nothing more: the claim was charged once, where it appeared.
+      expect(sealSeconds(forged, after)).toBe(0);
+      expect(sealQi(forged, after, 60)).toBe(0);
+      // An honest payer pays the same in two pairs as in one: 30% of the bar paid while standing,
+      // then crossed at once, is what crossing at once from an empty bar is charged.
+      const part = { ...before, sealPaid: (SEAL_PAY_EASY_SHARE + 0.3) * sealDays(r) * DAY };
+      const split = sealQi(before, part, 0) + sealQi(part, after, 0);
+      expect(split / sealQi(before, after, 0)).toBeCloseTo(1, 6);
+      // Paid at the cheap share only, nothing is charged while standing: that share is free to the server.
+      expect(sealQi(before, { ...before, sealPaid: SEAL_PAY_EASY_SHARE * sealDays(r) * DAY }, 0)).toBe(0);
+    }
+  });
+
   it('reads a pair from before the bar exactly as it always was', () => {
     for (const r of [5, 6, 7, 8]) {
       const { before, after } = pair(r, 1, false);
