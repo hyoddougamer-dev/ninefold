@@ -126,6 +126,8 @@ export function Ranks({ who, synced, syncedAt, syncError, reborn = false, onEnte
             ))}
           </div>
           <p className="rwhat">{RANKS.boards[current].what}</p>
+          {/* 期 A reborn life's climb is under the best one already on the board, so the week waits for it. */}
+          {current === 'week' && reborn && <p className="rnote small">{RANKS.weekReborn}</p>}
           {failed ? <p className="rnote">{RANKS.offline}</p>
             : rows === null ? <p className="rnote">{RANKS.loading}</p>
               : rows.length === 0 ? <p className="rnote">{current === 'samsara' && !season ? RANKS.emptySamsaraBefore : RANKS.emptyOf[current] ?? RANKS.empty}</p>

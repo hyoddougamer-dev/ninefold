@@ -691,7 +691,7 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
             <p className="hroom">{CULTIVATE.heavenRoom(LEVELS_PER_HEAVEN)}</p>
           </>}
           <p className="faint" style={{ margin: '7px 0 0', fontSize: 12.5 }}>
-            {CULTIVATE.ceiling(state.tribulation, `${(1 + TRIBULATION_GAIN).toFixed(2)}x`)}
+            {CULTIVATE.ceiling(state.tribulation, `${(1 + TRIBULATION_GAIN).toFixed(2)}x`, reborn || life > 1)}
           </p>
           {coming2 && left2 !== null && (
             <div className="hnext">

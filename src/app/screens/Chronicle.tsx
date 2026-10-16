@@ -20,6 +20,8 @@ import { walked } from '../../sim/save.ts';
 import { BOON_INFO, MEETINGS, meetingOf } from '../../data/meetings.ts';
 import { boons, heart, pathOf, stillToCome } from '../../sim/meet.ts';
 import { HEART_PATH } from '../../sim/balance.ts';
+import { lifeEcho, lifeOf, lifeStart } from '../../sim/rebirth.ts';
+import { echoPct } from '../ui/Rebirth.tsx';
 
 /**
  * 碑 The stele: everything this cultivator has done, on one page.
@@ -45,9 +47,18 @@ export function Chronicle({ state, pulse }: { state: State; pulse: number }) {
   // 舊 The closed test this device walked, read off the device and never the save: a line for
   // whoever holds this phone, which nobody else can see and which changes no number.
   const [was] = useState(walked);
+  // 世 A life past the first counts its own days, and says how long the run has been going.
+  const life = lifeOf(state);
+  const since = Math.floor(daysIn(state)) + 1;
+  const day = Math.floor(Math.max(0, state.at - lifeStart(state)) / 86_400) + 1;
+  // 世 Each life the record holds: how long it ran, from the end of the one before.
+  const lives = state.lives.map((l, i) => ({
+    n: i + 1, marks: l.marks,
+    days: Math.max(1, Math.floor((l.at - (i === 0 ? state.startedAt : Math.max(state.startedAt, state.lives[i - 1].at))) / 86_400)),
+  }));
 
   const figures: readonly { han: string; label: string; value: string }[] = [
-    { han: '日', label: CHRONICLE.day, value: `${Math.floor(daysIn(state)) + 1}` },
+    { han: '日', label: life > 1 ? CHRONICLE.dayOfLife(life) : CHRONICLE.day, value: `${life > 1 ? day : since}` },
     // 譯 The realm's characters stood alone here ("元嬰 4"); its English name leads now.
     { han: '境', label: CHRONICLE.realmNamed(r.name), value: `${state.realm} / 9` },
     { han: '階', label: CHRONICLE.rungs, value: `${Math.min(rungs, LAYERS)} / ${LAYERS}` },
@@ -81,7 +92,8 @@ export function Chronicle({ state, pulse }: { state: State; pulse: number }) {
         <span className="who"><Svg html={portraitLayers({ realm: state.realm, pulse, who: state.self })} /></span>
         <span className="said">
           <b className="cjk" style={{ color: heaven?.colour ?? r.colour }}>{heaven?.han ?? r.han}</b>
-          <i>{CHRONICLE.standing(Math.floor(daysIn(state)) + 1, heaven?.name ?? r.name)}</i>
+          <i>{life > 1 ? CHRONICLE.standingLife(day, life, since, heaven?.name ?? r.name)
+            : CHRONICLE.standing(since, heaven?.name ?? r.name)}</i>
           {next && (
             <em>
               {CHRONICLE.nearest(next.han, next.name)}
@@ -98,6 +110,18 @@ export function Chronicle({ state, pulse }: { state: State; pulse: number }) {
             <em>{CHRONICLE.walked}</em>
             <i>{CHRONICLE.walkedOf(SEASON.old(was.realm, was.layer, was.marks, was.rebirths))}</i>
           </span>
+        </div>
+      )}
+
+      {/* 世 The lives a rebirth ended. Everything below them is this life's and began again with
+          it, so the stele says so rather than reading "day 61" over a page of zeros. */}
+      {lives.length > 0 && (
+        <div className="chlives">
+          <em>{CHRONICLE.livesHead}</em>
+          <i>{CHRONICLE.livesNote}</i>
+          <ul>
+            {lives.map((l) => <li key={l.n}>{CHRONICLE.life(l.n, l.days, l.marks, echoPct(lifeEcho(l.marks)))}</li>)}
+          </ul>
         </div>
       )}
 

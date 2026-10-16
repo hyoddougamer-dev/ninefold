@@ -74,7 +74,7 @@ export const HELP = {
   ] as const,
   /** 印 The seal beside each promise, in order. Each title says what its character means. */
   seals: ['氣', '坐', '敗', '釋'] as const,
-  opens: 'Every realm opens something new, and nothing ever resets. The locked tabs say which realm opens them.',
+  opens: 'Every realm opens something new, and nothing resets on its own. The locked tabs say which realm opens them.',
   hunt: '',
   slow: '囊 Your master left you some qi. Spend it on upgrades, or let it fill the bar and open the first layer. Choosing between the two is the whole game.',
   begin: 'Back to the climb',
@@ -165,10 +165,16 @@ export const RANKS = {
   empty: 'Nobody here yet. The first to climb is the first on the board.',
   /** 輪迴 The Samsara board, empty: only a cultivator who has reborn ever sees it, so it says what fills it. */
   emptyOf: {
-    samsara: 'Nobody has been reborn yet this season. Your next sync puts you here.',
+    samsara: 'Nobody is on this board yet this season. A new life is listed once the server has checked it, within a day of the rebirth.',
   } as Partial<Record<'week' | 'climb' | 'samsara' | 'tower', string>>,
   /** 輪迴 The same, before the season opens, when there is no season to name yet. */
-  emptySamsaraBefore: 'Nobody has been reborn yet. Your next sync puts you here.',
+  emptySamsaraBefore: 'Nobody is on this board yet. A new life is listed once the server has checked it, within a day of the rebirth.',
+  /**
+   * 期 This Week, to a cultivator who has reborn. The week counts the furthest climb and the
+   * most marks ever held, so a new life adds nothing to it until it passes the old one, and
+   * the board never said why the new climb was missing from it.
+   */
+  weekReborn: 'Your new life counts here once it crosses more Dragons than your last one.',
   /**
    * 修士 What a placeholder name answers when it is tapped. A profile that never chose a name
    * wears 修士 and eight letters of its account, and ten of them on a board read as ten copies
@@ -350,7 +356,7 @@ export const RANKS = {
     unnamed: 'Choose your own name in 榜 Ranks, and the Cliff carves it.',
   },
   delete: 'Delete my ranked account',
-  deleteSure: 'This removes your name, your place on the boards and the cloud copy from the server. The game on this device is not touched. If the anti-cheat struck this account, a fingerprint of the email keeps the strikes.',
+  deleteSure: 'This removes your name, your place on the boards and the cloud copy from the server. Your 先行 Forerunner mark, your sect rank and any carving on the Cliff of Names go with it, for good. The game on this device is not touched. If the anti-cheat struck this account, a fingerprint of the email keeps the strikes.',
   deleteYes: 'Delete it',
   deleteNo: 'Keep it',
   privacy: 'Privacy',
@@ -497,8 +503,10 @@ export const CULTIVATE = {
 
   // 言 It ended "There is no rebirth yet", which is a note about the roadmap and not a
   // fact about the game. A player reads "yet" as a promise.
-  ceiling: (n: number, gain: string) =>
-    `Each 雷印 mark multiplies your power and your qi by ${gain}, for good. You hold ${n}.`,
+  // 轉世 "For good" until a rebirth can end the life that holds them: the marks begin again
+  // with it, and the offer to end it stands right under this line.
+  ceiling: (n: number, gain: string, thisLife = false) =>
+    `Each 雷印 mark multiplies your power and your qi by ${gain}, ${thisLife ? 'for this life' : 'for good'}. You hold ${n}.`,
 
   /**
    * 入定 Being there.
@@ -740,6 +748,15 @@ export const LADDER = {
 export const CHRONICLE = {
   title: 'The stele',
   standing: (day: number, realm: string) => `Day ${day} of the climb, standing in ${realm}.`,
+  /** 世 The same for a life past the first: its own day, and the day since the run began. */
+  standingLife: (day: number, life: number, since: number, realm: string) =>
+    `Day ${day} of life ${life} (day ${since} since you began), standing in ${realm}.`,
+  /** 世 The lives a rebirth ended, kept on the stele: what this page counts begins again with each. */
+  livesHead: '世 Lives behind you',
+  livesNote: 'The figures and deeds on this page are this life\'s. The lives before it are kept here.',
+  life: (n: number, days: number, marks: number, echo: string) =>
+    `Life ${n}: ${days} ${days === 1 ? 'day' : 'days'}, ${marks} ${marks === 1 ? 'mark' : 'marks'} crossed, left an Echo of ${echo}`,
+  dayOfLife: (life: number) => `day of life ${life}`,
   nearest: (han: string, name: string) => `Nearest: ${han} ${name} ·`,
   figures: 'Where you have got to',
   day: 'day', realm: 'realm',
@@ -951,7 +968,7 @@ export const KEY = {
   buysBlurb: 'Four upgrades. A realm holds so many levels of each; 妖丹 runs further, because you go and kill for it.',
 
   marksHead: '錄 The marks on every beast',
-  marksBlurb: 'Every beast you kill is counted for ever, and the count pays.',
+  marksBlurb: 'Every beast you kill in this life is counted, and the count pays.',
   mark: (at: number, pays: string) => `at ${at} ${at === 1 ? 'kill' : 'kills'} · ${pays}`,
   /** 精 絕 The deep marks pay the beast that earned them, and a little of every beast. */
   deep: (at: number, material: number, drop: number, everywhere: number) =>
@@ -1215,7 +1232,7 @@ export const HUNT = {
    * and on every row in the list. The screen was its own glossary because there was
    * nowhere smaller to put one. Now there is.
    */
-  record: 'Every kill is counted, for ever, and the count pays.',
+  record: 'Every kill in this life is counted, and the count pays.',
   /** 序 How the list is ordered, chosen by the player and kept on the device. */
   orderBy: 'Order the beasts by',
   order: { mark: 'Next mark', strong: 'Strongest', material: 'Most material' } as const,
@@ -1538,7 +1555,7 @@ export const REBIRTH = {
   carries: [
     ['宿慧', 'The Echo', 'qi gathered, under its roof'],
     ['世', 'A title', 'one for every life lived'],
-    ['榜', 'Your records', 'the boards keep the best you reached'],
+    ['榜', 'Your records', 'the Tower and your sect rank keep your best; the Heaven List gives way to 輪迴 Samsara'],
     ['譜', 'The codex', 'every set finished, at the best rank any life reached'],
     ['相', 'Who you are', 'and the chest’s filters'],
   ] as readonly (readonly [string, string, string])[],
@@ -1552,9 +1569,21 @@ export const REBIRTH = {
   /** 譜 Beside the codex in what carries: how many sets it holds now. */
   codexSets: (n: number) => `(${n} ${n === 1 ? 'set' : 'sets'} now)`,
   resetsHead: 'Begins again',
-  resets: 'Realm, layers and qi. Upgrades, gear and refining, materials and the tower. The Path, the Enlightenment cards, the road, the beds and the secret realm. In the workshop, the pouch, the tools, the arrays and the count of what was made, but not its codex. The marks and the heavens.',
+  resets: 'Realm, layers and qi. Upgrades, gear and refining, materials and the tower. The Path, the Enlightenment cards, the road, the beds and the secret realm. The hunt\'s counts and marks, and the stele\'s deeds. In the workshop, the pouch, the tools, the arrays and the count of what was made, but not its codex. The marks and the heavens.',
   /** The same when nothing of the workshop is carried (CRAFT_CARRY of 0). */
-  resetsAll: 'Realm, layers and qi. Upgrades, gear and refining, materials and the tower. The Path, the Enlightenment cards, the road, the beds, the secret realm and the workshop, all but its codex. The marks and the heavens.',
+  resetsAll: 'Realm, layers and qi. Upgrades, gear and refining, materials and the tower. The Path, the Enlightenment cards, the road, the beds, the secret realm and the workshop, all but its codex. The hunt\'s counts and marks, and the stele\'s deeds. The marks and the heavens.',
+  /**
+   * 價 What a rebirth costs, read off the save: the marks multiply qi now, and a new life
+   * begins with the Echo alone. The page showed the Echo in gold and never the price.
+   */
+  cost: (marks: number, now: string, next: string, days: number) =>
+    `${marks === 1 ? 'Your mark multiplies' : `Your ${marks} marks multiply`} your qi by ${now} now. `
+    + `A new life begins in the first realm at ${next}, and this one has run ${days} ${days === 1 ? 'day' : 'days'}.`,
+  /**
+   * 待 The ranked server checks a new life against real time like any climb, so for up to a
+   * day after the rebirth the rank reads as waiting. Said before the choice, not discovered.
+   */
+  ranked: 'On the boards, a new life is checked against real time like any climb: for up to a day your rank says it is waiting. Nothing is lost.',
   staying: 'Staying loses nothing: the Dragon keeps coming, a mark every few days, and this waits for as long as you like.',
   begin: 'Begin a new life',
   /** The word the player types to confirm. It is the word itself, not a button label. */
