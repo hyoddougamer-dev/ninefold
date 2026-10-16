@@ -622,6 +622,19 @@ function season(upto) {
     spec.messages.push(...(st.messages ?? []));
     spec.posts.push(...(st.posts ?? []));
     spec.threads.push(...(st.threads ?? []));
+    // 整 A thread put in tidy by a stage ends on its one final from that push on; one already
+    // tidied is changed through tidyEdits instead, so no thread is ever tidied twice.
+    for (const t of st.tidy ?? []) {
+      if (spec.tidy.some((x) => x.forum === t.forum && x.title === t.title)) check(false, `the Season 0 stage ${st.key} tidies "${t.title}" again: use tidyEdits`);
+      else spec.tidy.push(t);
+    }
+    // 標 A retag gives every answer to that thread the same tags, so two entries never pull a
+    // thread's tags back and forth; a thread with no answer yet gets one that only tags it.
+    for (const r of st.retag ?? []) {
+      const at = spec.threads.filter((a) => a.forum === r.forum && a.title === r.title);
+      if (at.length) for (const a of at) a.tags = r.tags;
+      else spec.threads.push({ forum: r.forum, title: r.title, tags: r.tags });
+    }
     if (st.roles) spec.roles = st.roles;
     if (st.onboarding) spec.onboarding = st.onboarding;
     for (const e of st.edits ?? []) {
@@ -647,10 +660,45 @@ check(draftKeys.every((k, i) => draftKeys.indexOf(k) === i && ![...SPEC.messages
 // drafts' own notes to the developer (when, push, approve, needs).
 const readable = (spec) => JSON.stringify(spec, (k, v) => (['_comment', 'when', 'push', 'approve', 'needs'].includes(k) ? undefined : v));
 check(![readable(SPEC), readable(DRAFTS)].some((t) => /bruno/i.test(t)), "the developer's real name is in nothing members read, live or drafted");
-check(!/先(?!行)/.test(JSON.stringify(DRAFTS.stages.map((st) => [st.messages, st.posts, st.roles, st.onboarding, st.edits, st.tidyEdits]))
+// 名 A thread is found on Discord by its exact title, so a stage may only tidy or retag a thread
+// server.json already answers: a title typed from memory would be skipped without a word.
+const known = new Set([...SPEC.threads, ...SPEC.tidy].map((a) => `${a.forum}\u0000${a.title}`));
+const named = DRAFTS.stages.flatMap((st) => [...(st.tidy ?? []), ...(st.retag ?? []), ...(st.tidyEdits ?? [])]);
+check(named.every((a) => known.has(`${a.forum}\u0000${a.title}`)),
+  `the ${named.length} threads the Season 0 drafts tidy or retag are threads server.json already knows by that title`);
+// 標 Two answers to one thread with different tags would set them back and forth on every run.
+const torn = (spec) => {
+  const tags = new Map();
+  return spec.threads.filter((a) => a.tags?.length).filter((a) => {
+    const k = `${a.forum}\u0000${a.title}`, t = JSON.stringify([...a.tags].sort());
+    if (!tags.has(k)) tags.set(k, t);
+    return tags.get(k) !== t;
+  }).map((a) => a.title);
+};
+const tornAt = DRAFTS.stages.map((st, i) => torn(season(i))).flat();
+check(tornAt.length === 0, `after every Season 0 stage, each thread's answers agree on its tags${tornAt.length ? `: ${[...new Set(tornAt)].join(' | ')}` : ''}`);
+check(!/先(?!行)/.test(JSON.stringify(DRAFTS.stages.map((st) => [st.messages, st.posts, st.roles, st.onboarding, st.edits, st.tidyEdits, st.tidy]))
   .replace(/先 alone|先父/g, '')), 'the mark is 先行, never 先 alone (beside a name 先 reads "the late")');
 await scenario({}, async (port, env, state) => {
+  // 整 The members' threads server.json answers, there before the first run as on the real
+  // server, so a stage's tidy and retag reach real threads with the bot's earlier replies in
+  // them; without them every tidy and retag below is "not found, skipped" and proves nothing.
+  const forumAt = (key) => state.channels.find((c) => c.name === all.find((x) => x.key === key).name);
+  const botOpened = (a) => SPEC.posts.some((p) => p.forum === a.forum && p.title === a.title);
   await runSetup(port, env);
+  const members = [...SPEC.threads, ...SPEC.tidy].filter((x, i, xs) => !botOpened(x)
+    && xs.findIndex((y) => y.forum === x.forum && y.title === x.title) === i);
+  for (const a of members) {
+    const t = { id: id(), parent_id: forumAt(a.forum).id, name: a.title, flags: 0, applied_tags: [], owner_id: '4242', thread_metadata: { archived: true } };
+    state.threads.push(t);
+    state.messages[t.id] = [{ id: t.id, author: { id: '4242' }, pinned: false, content: 'a tester wrote this', embeds: [] }];
+  }
+  await runSetup(port, env);
+  // A member's thread (owned by 4242 here) or, for a post the bot opened itself, the bot's own thread (no owner).
+  const threadOf = (a) => state.threads.find((t) => t.name === a.title && t.parent_id === forumAt(a.forum).id
+    && (botOpened(a) ? !t.owner_id : t.owner_id === '4242'));
+  const botSaid = (a) => (state.messages[threadOf(a)?.id] ?? []).filter((x) => x.author.id === BOT && !!x.content);
+  const tagsOf = (t) => { const f = state.channels.find((c) => c.id === t.parent_id); return t.applied_tags.map((x) => f.available_tags.find((y) => y.id === x)?.name).sort(); };
   const tester = state.roles.find((r) => r.name === '測 Tester');
   state.members['4242'] = { roles: [tester.id] };
   const roles = state.roles.length;
@@ -680,6 +728,24 @@ await scenario({}, async (port, env, state) => {
       // The words themselves, not only the message: a body edit has to reach the description.
       const said = (e.body ?? []).filter((l) => l).every((l) => (embed?.description ?? '').includes(l.split(/\{#\w+\}/)[0].slice(0, 40)));
       check(!!embed && (!e.footer || embed.footer?.text === e.footer) && said, `${e.key} is edited in place`);
+    }
+    // 整 A thread the stage tidies (or whose final it rewrites) ends on that one final reply,
+    // the bot's earlier answers there gone; a member's words stay.
+    const want = season(i);
+    for (const t of [...(st.tidy ?? []), ...(st.tidyEdits ?? [])]) {
+      if (!threadOf(t)) { check(false, `${st.key}: the thread "${t.title}" is in the fake server`); continue; }
+      const final = want.tidy.find((x) => x.forum === t.forum && x.title === t.title).final.join('\n');
+      const said = botSaid(t);
+      // The post it opens with stays: a member's words, or the bot's own post (its embeds) when the bot opened it.
+      const opener = state.messages[threadOf(t).id].find((x) => x.id === threadOf(t).id);
+      const kept = botOpened(t) ? !!opener?.embeds?.length : opener?.author.id === '4242';
+      check(said.length === 1 && said[0].content.endsWith(final) && kept,
+        `${st.key}: "${t.title}" ends on its one final reply, and the post it opens with is still there (${said.length} from the bot)`);
+    }
+    // 標 And a thread it retags wears exactly those tags.
+    for (const r of st.retag ?? []) {
+      const got = threadOf(r) ? tagsOf(threadOf(r)) : null;
+      check(JSON.stringify(got) === JSON.stringify([...r.tags].sort()), `${st.key}: "${r.title}" is tagged ${r.tags.join(', ')}`, JSON.stringify(got));
     }
   }
   const again = await runSetup(port, { ...env, DISCORD_SPEC: spec(DRAFTS.stages.length - 1), DISCORD_MAX_NEW: '' });

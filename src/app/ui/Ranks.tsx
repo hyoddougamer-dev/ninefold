@@ -117,7 +117,7 @@ export function Ranks({ who, synced, syncedAt, syncError, reborn = false, onEnte
             </div>
           )}
           <Status synced={synced} syncedAt={syncedAt} suspect={me?.suspect ?? false} error={syncError ?? null} />
-          {wasEdited() && <p className="rstatus" data-tone="bad">{RANKS.edited}</p>}
+          {wasEdited() && <p className="rstatus" data-tone="bad">{season ? RANKS.edited : RANKS.editedTest}</p>}
           <div className="rtabs" role="tablist" style={{ gridTemplateColumns: `repeat(${shown.length}, 1fr)` }}>
             {shown.map((k) => (
               <button key={k} role="tab" aria-selected={current === k} data-on={current === k} onClick={() => setTab(k)}>
@@ -162,7 +162,7 @@ export function Ranks({ who, synced, syncedAt, syncError, reborn = false, onEnte
             <b>{RANKS.titlesHead}</b> {RANKS.titles}
           </p>
           <p className="rnote small">
-            <b>{RANKS.fairHead}</b> {RANKS.fair}
+            <b>{RANKS.fairHead}</b> {season ? RANKS.fair : RANKS.fairTest}
           </p>
           <Account who={who} me={me} ask={asked} onSignOut={onSignOut} onRenamed={(m) => setMe(m)}
                    onLinked={async () => { const w = await cloud.who(); if (w) onEnter(w, ''); }} />

@@ -1,5 +1,5 @@
 {
-  "_comment": "開山 Season 0 · The Founding: the Discord posts, drafted and NOT live. tools/discord.mjs reads server.json only, never this file, and it has no draft flag: anything in server.json goes up the next time main moves. So every Season 0 post waits here until the developer approves its words. To release a stage, move what it holds into server.json in the main push of its day: its messages, posts and threads appended, its roles and onboarding replacing server.json's own, each edit applied to the message, post or tidy entry it names, and every file in needs already on main in an earlier push. node tools/discord-check.mjs plays these stages one after another against a fake Discord, so each one is proved to post within the brake (two new posts a run, one of them to @everyone). Source of the words: docs/SEASON0-THEME.md (sections 2b to 2f, 3) and docs/SEASON0-BRIEF.md section 6. English, no dashes, signed 師 Shibaki.",
+  "_comment": "開山 Season 0 · The Founding: the Discord posts, drafted and NOT live. tools/discord.mjs reads server.json only, never this file, and it has no draft flag: anything in server.json goes up the next time main moves. So every Season 0 post waits here until the developer approves its words. To release a stage, move what it holds into server.json in the main push of its day: its messages, posts, threads and tidy entries appended, its roles and onboarding replacing server.json's own, each edit applied to the message, post or tidy entry it names, each retag given as the tags of every threads entry with that forum and title (or as a new threads entry with no reply, when there is none), and every file in needs already on main in an earlier push. node tools/discord-check.mjs plays these stages one after another against a fake Discord, so each one is proved to post within the brake (two new posts a run, one of them to @everyone). Source of the words: docs/SEASON0-THEME.md (sections 2b to 2f, 3) and docs/SEASON0-BRIEF.md section 6. English, no dashes, signed 師 Shibaki.",
   "stages": [
     {
       "key": "s0-teaser",
@@ -27,12 +27,180 @@
       "key": "s0-push-a",
       "when": "Monday 19 October",
       "push": "Push A (docs/SEASON0-THEME.md 2f): the season card, the last-week notice, the closed-test copy retired, 先行 on the boards",
-      "approve": "The announcement, the dev log and the line added to the rebirth thread. Drop the dev log's 先行 field if the board seal waits for a later push. If the three rebirth changes are not in this push, drop the dev log's 轉世 field and put back the reply's first paragraph as server.json has it today (it says they are built and waiting). The 封 seal field in the dev log and the two corrected seal replies (tidyEdits) go only if the seal change (qi fills the whole bar, 60 minutes an hour past 40%) is in this push; otherwise drop all three.",
+      "approve": "The announcement, the dev log and the line added to the rebirth thread. Drop the dev log's 先行 field if the board seal waits for a later push. If the three rebirth changes are not in this push, drop the dev log's 轉世 field and put back the reply's first paragraph as server.json has it today (it says they are built and waiting). The words fixes (polish/WORDS.md): the pinned state post edited in place under its own title; g-ranks says the boards accept every save until 26 October; g-trib says what the boards keep after a rebirth; ideas-deep, ideas-qol and ideas-workshop drop promises that are kept or out of date; nine threads whose last word was \"in the next update\" end on one dated answer (tidy); three bug threads retagged; the 議 Rebirth thread ends on where its three points landed. The state post's seal line and the \"Arbitrary wait 2 days\" answer go only with the seal change; without it the state post says \"The seal on gates 5 to 8 stays as it is for Season 0\" and that thread's tidy entry is dropped. Without the three rebirth changes, drop the state post's Rebirth sentence, the g-trib edit and the 議 Rebirth final. The 封 seal field in the dev log and the two corrected seal replies (tidyEdits) go only if the seal change (qi fills the whole bar, 60 minutes an hour past 40%) is in this push; otherwise drop all three.",
       "needs": [
         "public/discord/banner/s0-founding.webp",
         "public/discord/banner/update-2026-10-19.webp",
         "public/discord/promo/founding-keyart.webp (the key art, 1920 by 1080, from the trailer work)",
-        "public/discord/season0/founding-trailer.mp4 (the trailer v6, under 10 MB)"
+        "public/discord/season0/founding-trailer.mp4 (the trailer v6, under 10 MB)",
+        "public/discord/update-1019-samsara.webp (the 輪迴 board off the real game, npm run samsara at 400 wide; shoot it again if the board changes before the push)"
+      ],
+      "edits": [
+        {
+          "key": "state-2026-10-13",
+          "body": [
+            "Updated 19 October. This is the one place for what is in the game, what is decided and what is still open. (On 13 October the bot's piled-up corrections in the threads were cleaned up; nothing you wrote was touched.)"
+          ],
+          "fields": [
+            ["▸ In the game now", "All nine realms. The Workshop with seven crafts, fusing, the Secret Realm, the Platform, the Tower, the Furnace and the Dragon. Rebirth after your first Dragon: a new life keeps all of its craft experience, it is confirmed by typing Reincarnate, and reborn lives climb their own 輪迴 Samsara board."],
+            ["▸ Season 0", "The closed test ends on Monday 26 October at 00:00 UTC, and everyone begins again in the first realm, once. Until then the boards accept every save while we test. Details in the Season 0 announcement in this channel."],
+            ["▸ Decided for Season 0", "The seal on gates 5 to 8 can be opened with qi all the way, at double price past 40% of the bar, and waiting is still free. The pace after realm 6 stays as it is: realms 7 and 8 are the long part of the mountain on purpose. A realm's own gear starts falling at layer 6 of that realm, and the hunt row says when."],
+            ["▸ Still open", "Crafts that feel optional. Wildfire, which does not raise the melting allowance. The Celestial Master, which climbs less than the Sword Immortal today. The Echo that won the rebirth poll (10% per mark, capped at 35%), measured and decided before anyone can be reborn in Season 0. Spare Path points once the tree is full."],
+            ["▸ Polls", "One or two at a time, and only on questions not decided yet."],
+            ["▸ Questions", "Ask in {#ideas} or {#bugs}. I answer there myself."]
+          ]
+        },
+        {
+          "key": "g-ranks",
+          "body": [
+            "Your game lives on the device and the browser you play on. The app, Chrome and a PC are separate games unless you sign in.",
+            "",
+            "**Joining the rankings** takes a name, then either nothing (a guest, on this device) or an email: you get a 6-digit code (and a link), and the same cultivator opens anywhere you type it. No password, ever.",
+            "",
+            "Until Monday 26 October the boards accept every save while we test. From Season 0 every climb on the boards is checked against real time on the server, so nobody can edit or clock their way up.",
+            "",
+            "You can delete your ranked account from the Rankings screen (*Delete my ranked account*). It removes your name, your place on the boards and the cloud copy, and leaves the game on your device alone."
+          ],
+          "fields": [
+            ["▸ The three boards", "期榜 This Week: layers climbed since Monday. Everybody starts the week level, so a new player can top it in their first week. The rankings open here.\n天榜 Heaven List: the furthest climb. Once you have reborn, you move to the 輪迴 Samsara board, ranked by the life you are living.\n塔榜 The Tower: the highest floor."],
+            ["▸ On the Android app", "Sign in with your email like anywhere else, and type the 6-digit code from the email into the game. The app never needs to open the link."],
+            ["▸ Without an account", "≡ Menu → *Your save* → *Copy the save*, and on the other device *Restore from a copy*. The copy is sealed and restores exactly as it was."],
+            ["▸ 盾 Fair play", "Your save is sealed on your device: it reads as noise, and the game notices when one was changed by hand. That keeps the casual edit out. The real guard is the server: from Season 0 (Monday 26 October) every climb on the boards is measured against how much real time has passed, so an edited save, a moved clock or a forged copy never reaches them. An edited save still plays on your device, because nothing is ever taken away. It is just never ranked."]
+          ]
+        },
+        {
+          "key": "g-trib",
+          "fields": [
+            ["▸ 爐 The three pills", "煉體 Body: +3% power each, multiplied. 破煞 Bane: the first takes 0.9% off every beast's power, each later one a little less, never under 40% of a beast's power, and never the Dragon. 聚寶 Fortune: +4% luck each on the rare end of the drop table, so Mystic, Earth and Heaven pieces drop more, the last two most. Each pill on the furnace says what all of yours come to now."],
+            ["▸ The nine heavens", "真仙 True Immortal · 金仙 Golden Immortal · 太乙 Supreme Unity · 大羅 Grand Veil · 准聖 Quasi-Sage · 聖人 Sage · 道祖 Dao Ancestor · 混元 Primordial Unity · 鴻蒙 The Uncarved"],
+            ["▸ And after that", "The Tower has no top, the week turns every Monday for ever, and the 天榜 Heaven List counts thunder marks past the summit. Or begin again: see 轉世 Rebirth below."],
+            ["▸ 轉世 Rebirth", "At the summit, once the first Dragon has fallen, a life may end and begin again in the first realm. The further it went, the more the next one carries: 宿慧 the Echo, +5% to every second of qi gathered for its first mark and +2.5% more for every doubling after (up to +12.5% a life), +25% across the first lives, then a slow tail to a roof of +35% over forty lives. It is qi gathered only, never a lump, and the page shows the exact Echo before you confirm. Each life carries a title (再世 Twice-Born, 三世 Thrice-Born...), the 譜 codex (every Hundredfold set finished, at its best rank), who you are, your chest filters and all of each craft's experience; the pouch, tools and counts begin again. On the boards, the 塔榜 Tower keeps your best floor and the 輪迴 Samsara board ranks the life you are living, in place of the 天榜 Heaven List. Never forced; staying loses nothing. Measured: 5% to 20% sooner to the summit, by how deep it went. *Rebirth* is on 修 Cultivate and in the menu; you type Reincarnate to confirm."]
+          ]
+        },
+        {
+          "key": "ideas-deep",
+          "body": [
+            "**Decision, 7 October: we are not building this.** Thank you all for the votes, and rekaris above all, for the long answer and for taking it back when you thought again. The proposal stays below so you can see what was asked and why it was dropped.",
+            "",
+            "Two to four votes a poll is thin, but it points one way: nobody picked the proposal's own ×8 trait, and the two traits it was built on (Armoured and Spectral) got no votes at all. Your second answer said it better than I did: this is an idle game first, and a new layer of rules is the wrong answer to a numbers problem.",
+            "",
+            "The problem under it is real: past the first realms the hunt's beasts are too weak for power to matter. Elites came first (6 October): from the second realm, the last beast of each realm stands far above the rest and asks for power. The ordinary beasts stay as they are for Season 0. The polls are closed, and anything else you want to say is still read.",
+            "",
+            "**The original proposal:** Before we build it, we want to know what you think. Thank you, rekaris, for the posts that started it.",
+            "",
+            "Right now, once you can beat a realm's warden, power stops mattering: every beast falls in one blow, so the best gear is qi gear. Deeper hunts would give power a use every day, without touching qi."
+          ]
+        },
+        {
+          "key": "ideas-qol",
+          "body": [
+            "**Making the game easier to play is always open here.** Most of the small changes between 2 and 14 October began in this forum, and so did most of the picture below. Thank you for every post.",
+            "",
+            "Reply here with anything that costs you a tap, a scroll or a wait you would rather not spend. Small is perfect. *\"I open the gear tab every visit just to check one thing\"* is exactly what we want to hear."
+          ],
+          "fields": [
+            ["❓ Some places to start", "**1.** What do you tap every visit that could be one tap?\n**2.** What do you have to remember that the game could remind you of?\n**3.** What do you scroll past or search for every time?\n**4.** On a computer: which key would you want, and for what?\n**5.** What would make a two-minute check-in faster?\n**6.** What did Dao of the Endless Sky, or another idle game, do that you miss here?"],
+            ["✍️ How to answer", "One idea per reply is easiest to track, and a screenshot of the screen you mean helps a lot. Say whether you play on a phone or a computer."],
+            ["守 What stays", "Nothing is taken away for being away, and losing a fight costs nothing. Those are the game's promises, so ideas that keep them are the ones we can build."],
+            ["📌 What happens next", "Every reply is read, and the ideas that make the most players' days easier go in first."]
+          ]
+        },
+        {
+          "key": "ideas-workshop",
+          "fields": [
+            ["業 In one line", "Gather (藥 herbs, 礦 ore, 解 beast parts) › make (鑄 metal, tools and gear, 丹 elixirs, 符 sigils) › carry an elixir and a sigil into a warden, heart demon or secret realm gate › keep 陣 arrays that make it all faster. The chart below has every craft."],
+            ["守 The promises it keeps", "It works 12 hours after you leave and loses nothing. Nothing it makes raises your qi rate. A lost fight never spends your kit. It is a second road that pays, not a toll: measured over the whole climb, an active player who uses it reaches the ninth realm two to four days sooner than one who ignores it (day 46, against day 48 for one who pays qi at the sealed gates and day 50 for one who waits them out)."],
+            ["❓ What we want to know", "**1.** Which craft would you start with, and why?\n**2.** Are 12 hours of work while you are away enough?\n**3.** Alchemy opens at realm 5, Sigils at 6, Arrays at 7. Too late, or right?\n**4.** Does 1 to 99 sound like the right length?\n**5.** What from the jobs in Dao of the Endless Sky would you miss here?"],
+            ["📷 The real thing", "Every picture here is the game itself, not a mockup. Now that it is in, a screenshot of your first forged piece or elixir is the best answer we could get."]
+          ]
+        }
+      ],
+      "tidy": [
+        {
+          "forum": "ideas",
+          "title": "QoL",
+          "final": [
+            "Everything asked for in this thread went into the game on 2 October. Enter or Space collects, Esc closes things, and clicking outside a window closes it. There's an Again button right next to Collect (R on the keyboard), and Auto (A) if you'd rather it keep hunting that beast on its own while the game is open. The upgrades got a Max button too.",
+            "You were right about the balance as well: with Auto on, melting gear turned kills into qi so fast that the whole climb went about three times quicker. Since 2 October melting pays qi from an allowance that refills as you gather, and past it pieces melt into material. Auto opens for a beast once it's Known (10 kills), and the drive is the way to hunt while the game is closed.",
+            "And the Treasure Smith: once the allowance ran out, its bonus did nothing. Since 2 October the class refills the melting allowance 30% faster, and anything that melts into material past it gives 30% more material too. On lowering the base to a third instead: with Auto, a third of a lot is still a lot, so it would only slow the leak down. The allowance is what keeps melting from ever outpacing cultivating.",
+            "Thank you, this thread shaped a whole day of updates.",
+            "· 師 Shibaki"
+          ]
+        },
+        {
+          "forum": "ideas",
+          "title": "Add hover info on materials in crafting",
+          "final": [
+            "Thanks, that was a real gap. Since 2 October every material in a recipe names itself when you hover or tap it, says which craft makes it, and has a button that takes you straight to that recipe.",
+            "· 師 Shibaki"
+          ]
+        },
+        {
+          "forum": "ideas",
+          "title": "Order enemies based on their power",
+          "final": [
+            "Fair point, thanks! The order was built for someone learning the hunt, not for someone farming it.",
+            "Since 2 October there's a switch above the list: Next mark, Strongest or Most material, and your device remembers it. Since 4 October Strongest and Most material keep finished beasts in their place.",
+            "· 師 Shibaki"
+          ]
+        },
+        {
+          "forum": "bugs",
+          "title": "Saves being flagged for climbing the tower",
+          "final": [
+            "Thank you for spotting this. It was a server bug, not anything you did. Two things were wrong: the server checked a new floor against what you were wearing when the game synced, so climbing and then putting qi gear back on looked impossible, and it didn't count a floor's qi as a payment, so a big climb read as gathering faster than anyone can. Both were fixed on 4 October, and the flags this caused were cleared by hand the same day. Nobody's game was touched.",
+            "Since 5 October the rankings screen also says why a save is not ranked, instead of a plain \"Not synced yet\".",
+            "· 師 Shibaki"
+          ]
+        },
+        {
+          "forum": "ideas",
+          "title": "Spread of available gear schools",
+          "final": [
+            "Answered since 8 October: once a realm's warden has fallen, the forge makes any of that realm's 54 shapes, so every school can be worn whole from a single realm, and the Hundredfold sets let you choose every line on top. Drops stay as they are; the forge is where you choose.",
+            "Thank you for counting it out, the table was right.",
+            "· 師 Shibaki"
+          ]
+        },
+        {
+          "forum": "ideas",
+          "title": "Show quality on equipped pieces too",
+          "final": [
+            "Done since 7 October: the ×1.xx sits at the foot of the six pieces you wear as well, and in the tile's label. Thank you.",
+            "· 師 Shibaki"
+          ]
+        },
+        {
+          "forum": "ideas",
+          "title": "Arbitrary \"wait 2 days\" limits don't feel good.",
+          "final": [
+            "You were right about the principle, and your version of the gate was better than mine. Since 9 October the seal is a bar on the warden's card: time fills it by itself, exactly as before, and a pill made for a realm below fills up to 40% more, eaten from the card. Since 19 October qi can fill all of it, 10% a tap: the first 40% costs 30 minutes of your own gathering for every hour of the bar, the rest an hour for an hour. The Breakthrough Pill for the gate's own realm still breaks the whole bar at once, and waiting is still free and opens every gate.",
+            "We measured it on every way of playing: whoever waits climbs exactly as before, and whoever pays stops standing at the gate. Any new wait is held to the same test: a way to spend something to shorten it.",
+            "· 師 Shibaki"
+          ]
+        },
+        {
+          "forum": "ideas",
+          "title": "Hundredfold set lines require inaccessible materials",
+          "final": [
+            "That example was a fair one: a first-realm sword should not ask for a sixth-realm ore. Since 8 October every line you cannot make yet says what it waits on (the craft, its level and the realm), and the set page says how a line opens.",
+            "And what you actually asked is in too, since 9 October. 24 of the 72 lines across the nine sets asked for an ore from a later realm than the set's own. At Mystic and Earth those lines now ask for the set's own ore (Mortal Iron for the first set, up to Immortal Gold for the ninth), so you can craft your own to push. Heaven still asks for the rare ones, so it stays the demanding rank: I tried it at every rank first, and it pulled the ninth realm three days earlier than I allow. Pieces made before were untouched.",
+            "· 師 Shibaki"
+          ]
+        },
+        {
+          "forum": "ideas",
+          "title": "Qi spent in layers",
+          "final": [
+            "You were right, and the guide promised more choice than the game gave. Since 9 October there is a switch under the ladder on 修 Cultivate, 留 Hold the layer, off by default so nothing changes for anyone who leaves it. On, a full bar waits until you tap Open layer, so you can spend the qi on upgrades first. It cannot give you more qi than not holding. I measured what a careful player gets from it: up to about 9% sooner to the ninth realm, which seemed fair for the attention it asks. Tell me if it feels like too much or too little.",
+            "· 師 Shibaki"
+          ]
+        }
+      ],
+      "retag": [
+        { "forum": "bugs", "title": "Golden Immortal still loses Qi when they spend it", "tags": ["Text", "Fixed"] },
+        { "forum": "bugs", "title": "no R6 Gear", "tags": ["Balance"] },
+        { "forum": "bugs", "title": "realm key rewards seem much lower", "tags": ["Balance", "Fixed"] }
       ],
       "messages": [
         {
@@ -68,6 +236,7 @@
           "title": "開山 Update · The trailer, and the closed test's last week",
           "color": "#D4AF56",
           "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/update-2026-10-19.webp?v=1",
+          "image": "https://hyoddougamer-dev.github.io/ninefold/discord/update-1019-samsara.webp?v=1",
           "body": [
             "The Season 0 trailer is out, and today's update gets the game ready for the switch on Monday 26 October at 00:00 UTC. Until then you play the closed test exactly as before."
           ],
@@ -75,6 +244,8 @@
             ["▸ The trailer", "[Season 0 · The Founding 開山 · trailer](https://hyoddougamer-dev.github.io/ninefold/discord/season0/founding-trailer.mp4) (voice: elevenlabs.io). One minute: the seal falls once on the closed test, nine roads through the game, the Dragon, and the Cliff of Names, still empty."],
             ["終 The last week", "The game shows one notice with the end of the closed test in your own time, and how to carry 先行 Forerunner: join 榜 Ranks once before the switch. A guest only needs a name."],
             ["先行 On the boards", "Every account the ranked server has seen in the closed test wears a small gold 先行 seal beside its name, and so will every account that joins before the switch. Tap it to read what it means."],
+            ["榜 The boards this week", "Until Monday 26 October the boards show every save while we test, even one the server's check would refuse, and the 盾 Fair play line under them says so. From Season 0 every rank is checked from the first second, and nothing from the closed test reaches the Cliff of Names."],
+            ["輪迴 The Samsara board", "The picture is the board reborn lives climb, off the real game (its names are made up). It has no tower column and no title for first place for now: the tower is not counted per life yet, and 天下第一 belongs to the Heaven List."],
             ["季 The season card", "The first time you open the game after the switch, one card says goodbye to your closed-test cultivator in one line, shows the season's law and begins Season 0. No progress from the closed test is kept on the device."],
             ["轉世 Rebirth", "What the rebirth polls asked for: a new life keeps all of its craft experience, a rebirth is confirmed by typing Reincarnate, and reborn lives climb their own 輪迴 Samsara board."],
             ["封 The seal", "The seal on gates 5 to 8 can now be opened with qi all the way. The first 40% of the bar costs what it did, 30 minutes of your own gathering for every hour of the bar. Past that, an hour of the bar costs an hour of your gathering. Waiting is still free and still opens every gate, and Breakthrough Pills work as before. Paying gets you through the gate now; it does not get you to the summit sooner, so waiting is never the wrong choice. And one card now tells you about the seal the moment you reach realm 5, long before its warden comes out."]
@@ -83,6 +254,14 @@
         }
       ],
       "tidyEdits": [
+        {
+          "forum": "ideas",
+          "title": "議 Rebirth: what would make it worth taking?",
+          "final": [
+            "Where your three points landed. Crafting: since 19 October a new life keeps all of its craft experience. Ranking: since 19 October a cultivator who has reborn leaves the Heaven List for the 輪迴 Samsara board, ranked by the life being lived now, and each rebirth starts it again. Echo: the version that won the poll, 10% per mark with a roof of 35%, keeps the rule that nothing uncapped may raise the qi rate, so it is not ruled out. It is being measured over many runs, and the answer comes in this thread before anyone can be reborn in Season 0.",
+            "· 師 Shibaki"
+          ]
+        },
         {
           "forum": "ideas",
           "title": "Consider adding reincarnation option  after reaching Golden Immortal",
@@ -159,8 +338,21 @@
       "key": "s0-open",
       "when": "Monday 26 October, after 00:00 UTC",
       "push": "the launch push (it can travel with Push B, or before it: Push B waits for the developer's own words on the rows)",
-      "approve": "The launch line, the role rename and the new onboarding answer, the footers, and the second rule (D4: the game is no longer closed, so the rule against sharing it goes). 位 And, if the sect ranks show from the switch (decision 1 of docs/SEASON-RANKS.md, recommended), the launch post's sect rank line and the g-ranks guide's new field; if they wait for week two, both move to that week's push. The g-ranks edit replaces the guide's fields whole: re-read them against server.json before posting.",
+      "approve": "The launch line, the role rename and the new onboarding answer, the footers, and the second rule (D4: the game is no longer closed, so the rule against sharing it goes). The words fixes (polish/WORDS.md): the state post's second version (no last-week field, Season 0 in the game); g-ranks without the testing line and with the closed-test copy that cannot be restored; g-start's promise says the one wipe happened; g-faq opens with what happened to the closed-test cultivator, and says no shop and no ads without \"in the test\" (or \"in Season 0\", if that is the promise you would rather make). The Dragon thread is tagged Fixed, and its last word (tidyEdits) says the roof is in, only if its footing guard (EVEN_ROOF) is live by then; otherwise drop the retag and that final, since the reply it replaces promised a post here when the fix is done. 位 And, if the sect ranks show from the switch (decision 1 of docs/SEASON-RANKS.md, recommended), the launch post's sect rank line and the g-ranks guide's 位 Sect rank field; if they wait for week two, both move to that week's push. The g-ranks edit replaces the guide's fields whole: re-read them against server.json before posting.",
       "needs": ["public/discord/banner/s0-open.webp"],
+      "retag": [
+        { "forum": "bugs", "title": "Are you sure the dragon power calculations are correct?", "tags": ["Balance", "Fixed"] }
+      ],
+      "tidyEdits": [
+        {
+          "forum": "bugs",
+          "title": "Are you sure the dragon power calculations are correct?",
+          "final": [
+            "As promised, the follow-up: this is fixed. The fight that could not be lost was mended on 5 October, and the reading each crossing takes now has a roof. No honest build reads a Dragon more than about six times its own power, and a Dragon is never built from a reading above eight, so one bad fight can no longer set every Dragon after it far too high. Season 0 began every cultivator again, so no Dragon carries the old height. Thank you for not letting this one go.",
+            "· 師 Shibaki"
+          ]
+        }
+      ],
       "messages": [
         {
           "key": "s0-open",
@@ -238,20 +430,77 @@
       },
       "edits": [
         { "key": "welcome-main", "footer": "九境 Ninefold · Season 0" },
-        { "key": "g-start", "footer": "九境 Ninefold · Season 0" },
-        { "key": "g-install", "footer": "九境 Ninefold · Season 0" },
-        { "key": "known-android", "footer": "九境 Ninefold · Season 0" },
+        {
+          "key": "g-start",
+          "body": [
+            "**Ninefold is an idle cultivation game.** Qi gathers on its own, even with the game shut. You spend it to grow stronger, or let it fill the bar and climb.",
+            "",
+            "**Three promises the game keeps**",
+            "· Nothing is ever taken away for being away. Close it for a week and you come back further along.",
+            "· Losing a fight costs nothing. Not qi, not material, not a level.",
+            "· Nothing resets on its own. Season 0 began with the closed test's one wipe, and nothing is wiped after it. Every realm adds something and keeps everything you had. At the summit, 轉世 Rebirth is an offer you can take or leave, never forced."
+          ],
+          "footer": "九境 Ninefold · Season 0"
+        },
+        {
+          "key": "state-2026-10-13",
+          "body": [
+            "Updated 26 October. This is the one place for what is in the game, what is decided and what is still open."
+          ],
+          "fields": [
+            ["▸ In the game now", "Season 0 · The Founding, since 26 October: every rank is checked from the first second, 先行 Forerunner stands beside the names of those who walked the closed test, and the 題名崖 Cliff of Names in 榜 Ranks carves the first 81 through each gate. All nine realms. The Workshop with seven crafts, fusing, the Secret Realm, the Platform, the Tower, the Furnace and the Dragon. Rebirth after your first Dragon: a new life keeps all of its craft experience, it is confirmed by typing Reincarnate, and reborn lives climb their own 輪迴 Samsara board."],
+            ["▸ Decided for Season 0", "The seal on gates 5 to 8 can be opened with qi all the way, at double price past 40% of the bar, and waiting is still free. The pace after realm 6 stays as it is: realms 7 and 8 are the long part of the mountain on purpose. A realm's own gear starts falling at layer 6 of that realm, and the hunt row says when."],
+            ["▸ Still open", "Crafts that feel optional. Wildfire, which does not raise the melting allowance. The Celestial Master, which climbs less than the Sword Immortal today. The Echo that won the rebirth poll (10% per mark, capped at 35%), measured and decided before anyone can be reborn in Season 0. Spare Path points once the tree is full."],
+            ["▸ Polls", "One or two at a time, and only on questions not decided yet."],
+            ["▸ Questions", "Ask in {#ideas} or {#bugs}. I answer there myself."]
+          ]
+        },
         {
           "key": "g-ranks",
+          "body": [
+            "Your game lives on the device and the browser you play on. The app, Chrome and a PC are separate games unless you sign in.",
+            "",
+            "**Joining the rankings** takes a name, then either nothing (a guest, on this device) or an email: you get a 6-digit code (and a link), and the same cultivator opens anywhere you type it. No password, ever.",
+            "",
+            "Every climb on the boards is checked against real time on the server, so nobody can edit or clock their way up.",
+            "",
+            "You can delete your ranked account from the Rankings screen (*Delete my ranked account*). It removes your name, your place on the boards and the cloud copy, and leaves the game on your device alone."
+          ],
           "fields": [
             ["▸ The three boards", "期榜 This Week: layers climbed since Monday. Everybody starts the week level, so a new player can top it in their first week. The rankings open here.\n天榜 Heaven List: the furthest climb. Once you have reborn, you move to the 輪迴 Samsara board, ranked by the life you are living.\n塔榜 The Tower: the highest floor."],
             ["▸ 位 Sect rank", "Your sect rank comes from the realms you have opened and the thunder marks you carry: Inner Disciple 內門弟子 at Foundation, Core 核心弟子 at Nascent Soul, True 真傳弟子 at Void Refining, Guardian 護法 at Great Vehicle, Elder 長老 at your first mark, then Peak Lord 峰主, Supreme Elder 太上長老 and Ancestor 老祖 at 5, 10 and 20 marks. It never falls: not for being away, not for a rebirth, not when a season ends. Tap your rank at the head of 榜 Ranks to see the whole ladder."],
             ["▸ On the Android app", "Sign in with your email like anywhere else, and type the 6-digit code from the email into the game. The app never needs to open the link."],
-            ["▸ Without an account", "≡ Menu → *Your save* → *Copy the save*, and on the other device *Restore from a copy*. The copy is sealed and restores exactly as it was."],
+            ["▸ Without an account", "≡ Menu → *Your save* → *Copy the save*, and on the other device *Restore from a copy*. The copy is sealed and restores exactly as it was. A copy taken in the closed test cannot be restored in Season 0."],
             ["▸ 盾 Fair play", "Your save is sealed on your device: it reads as noise, and the game notices when one was changed by hand. That keeps the casual edit out. The real guard is the server: every climb on the boards is measured against how much real time has passed, so an edited save, a moved clock or a forged copy never reaches them. An edited save still plays on your device, because nothing is ever taken away. It is just never ranked."]
           ],
           "footer": "九境 Ninefold · Season 0"
         },
+        {
+          "key": "g-faq",
+          "body": [
+            "**What happened to my closed-test cultivator?** It ended with the closed test. On 26 October everyone began again in the first realm, once, and nothing is wiped after it. Your account and your name carried over, and so did the 先行 Forerunner mark if you were in 榜 Ranks by the switch. A copy taken in the closed test cannot be restored.",
+            "",
+            "**Do I lose anything if I stop playing for a while?** No. Qi gathers the whole time, and nothing is ever taken away for being away.",
+            "",
+            "**What does a lost fight cost?** Nothing. Try the beasts you are not sure about.",
+            "",
+            "**Is there anything to buy?** No. There is no shop and no ads.",
+            "",
+            "**The APK download stops at 100% on my phone.** Take the same APK in a zip, or install the game from Chrome with no file at all. Both ways, step by step with pictures: *裝 Installing on Android* in {#guides}.",
+            "",
+            "**Can I play on my phone and my PC?** Yes. Sign in with your email on both, the Android app included: type the 6-digit code from the email into the game.",
+            "",
+            "**The music is too loud, or I want it off.** ≡ Menu has a slider for the sound and one for the music, each with a mute beside it. Your levels are remembered on the device.",
+            "",
+            "**Can I start again from the first realm?** Only if you want to. At the summit, once the first Dragon has fallen, 轉世 Rebirth ends a life and begins the next, carrying an Echo of qi gathered, your records and the codex of every set you finished. Staying loses nothing. See 雷池 The Tribulation in {#guides}.",
+            "",
+            "**What do the characters mean?** ≡ Menu → *What the characters mean*. Every character has an English name beside it or under a tap.",
+            "",
+            "**How do I report a bug?** One post in {#bugs}: what you did, what you expected, what happened, and the *Build* line from the foot of the ≡ menu."
+          ]
+        },
+        { "key": "g-install", "footer": "九境 Ninefold · Season 0" },
+        { "key": "known-android", "footer": "九境 Ninefold · Season 0" },
         {
           "key": "welcome-rules",
           "body": [
