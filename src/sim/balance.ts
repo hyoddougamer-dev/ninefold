@@ -2742,3 +2742,21 @@ export const CODEX_CAP = {
   hunt: 0.2, elite: 0.24, vault: 0.24, demon: 0.15, work: 0.2,
   bond: 0.4, gates: 2, tower: 0.15, platform: 0.15,
 } as const;
+
+/**
+ * 位 The sect rank (docs/SEASON-RANKS.md, section 3): the score `climb + marks` at which each of
+ * the nine ranks begins, Outer Disciple at 0 to Ancestor at 100. Climb is (realm - 1) * 9 +
+ * layer, so the first four steps land on the arrival in realms 2, 4, 6 and 8 (Cliff gates 1, 3,
+ * 5 and 7), Elder on the summit with the first thunder mark (gate 9), then 5, 10 and 20 marks.
+ *
+ * Cosmetic: it is read from the server's verified row, never from the game's state, and it
+ * changes no number. It never falls, so **a later release may lower a threshold but never raise
+ * one** (rung.test.ts holds this against a pinned copy). rung_of() in
+ * supabase/migrations/20261016100000_sect_rank.sql mirrors it; the schema test holds the two
+ * equal for every score from 0 to 120. Measured on 15 Oct 2026 with every habit: in a 16-week
+ * Season 0 every habit that fights reaches True Disciple, six reach Supreme Elder and nobody
+ * reaches Ancestor; with the economy 10% slower or faster, the ranks up to Elder move 0 to 9
+ * days and nothing walls. The thresholds sit on realm arrivals and marks, so they are no
+ * knife edge: a rank is a place on the climb, not a tuned number.
+ */
+export const RUNG_AT: readonly number[] = [0, 9, 27, 45, 63, 81, 85, 90, 100];
