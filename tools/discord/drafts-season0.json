@@ -321,10 +321,20 @@
       "key": "s0-open",
       "when": "Monday 26 October, after 00:00 UTC",
       "push": "the launch push (it can travel with Push B, or before it: Push B waits for the developer's own words on the rows)",
-      "approve": "The launch line, the role rename and the new onboarding answer, the footers, and the second rule (D4: the game is no longer closed, so the rule against sharing it goes). The words fixes (polish/WORDS.md): the state post's second version (no last-week field, Season 0 in the game); g-ranks without the testing line and with the closed-test copy that cannot be restored; g-start's promise says the one wipe happened; g-faq opens with what happened to the closed-test cultivator, and says no shop and no ads without \"in the test\" (or \"in Season 0\", if that is the promise you would rather make). The Dragon thread is tagged Fixed only if its footing guard (EVEN_ROOF) is live by then; otherwise drop the retag.",
+      "approve": "The launch line, the role rename and the new onboarding answer, the footers, and the second rule (D4: the game is no longer closed, so the rule against sharing it goes). The words fixes (polish/WORDS.md): the state post's second version (no last-week field, Season 0 in the game); g-ranks without the testing line and with the closed-test copy that cannot be restored; g-start's promise says the one wipe happened; g-faq opens with what happened to the closed-test cultivator, and says no shop and no ads without \"in the test\" (or \"in Season 0\", if that is the promise you would rather make). The Dragon thread is tagged Fixed, and its last word (tidyEdits) says the roof is in, only if its footing guard (EVEN_ROOF) is live by then; otherwise drop the retag and that final, since the reply it replaces promised a post here when the fix is done.",
       "needs": ["public/discord/banner/s0-open.webp"],
       "retag": [
         { "forum": "bugs", "title": "Are you sure the dragon power calculations are correct?", "tags": ["Balance", "Fixed"] }
+      ],
+      "tidyEdits": [
+        {
+          "forum": "bugs",
+          "title": "Are you sure the dragon power calculations are correct?",
+          "final": [
+            "As promised, the follow-up: this is fixed. The fight that could not be lost was mended on 5 October, and the reading each crossing takes now has a roof. No honest build reads a Dragon more than about six times its own power, and a Dragon is never built from a reading above eight, so one bad fight can no longer set every Dragon after it far too high. Season 0 began every cultivator again, so no Dragon carries the old height. Thank you for not letting this one go.",
+            "· 師 Shibaki"
+          ]
+        }
       ],
       "messages": [
         {
