@@ -647,7 +647,20 @@ export function carry(s: State, hand: Hand, key: string | null): State {
  * best: what the screen offers when nothing is carried yet, so "carry one" names a number.
  */
 export function breachHeld(s: State, b: Beast): number {
-  // The best of each hand alone, then all three carried together, as the fight reads them.
+  const best = breachBest(s, b);
+  let all = carry(carry(carry(s, 'elixir', null), 'sigil', null), 'pill', null);
+  for (const hand of HANDS) if (best[hand].key) all = carry(all, hand, best[hand].key);
+  return kitFor(all, b, 'warden').kit.breach ?? 0;
+}
+
+/** 破境 The hands breachHeld would fill, so the line that says what to carry names only those. */
+export function breachHands(s: State, b: Beast): readonly Hand[] {
+  const best = breachBest(s, b);
+  return HANDS.filter((hand) => best[hand].key);
+}
+
+/** The best of each hand alone, as the fight reads them. */
+function breachBest(s: State, b: Beast): Record<Hand, { key: string | null; days: number }> {
   const alone = carry(carry(carry(s, 'elixir', null), 'sigil', null), 'pill', null);
   const best: Record<Hand, { key: string | null; days: number }> = {
     elixir: { key: null, days: 0 }, sigil: { key: null, days: 0 }, pill: { key: null, days: 0 },
@@ -658,9 +671,7 @@ export function breachHeld(s: State, b: Beast): number {
     const days = kitFor(carry(alone, hand, key), b, 'warden').kit.breach ?? 0;
     if (days > best[hand].days) best[hand] = { key, days };
   }
-  let all = alone;
-  for (const hand of HANDS) if (best[hand].key) all = carry(all, hand, best[hand].key);
-  return kitFor(all, b, 'warden').kit.breach ?? 0;
+  return best;
 }
 
 /**
