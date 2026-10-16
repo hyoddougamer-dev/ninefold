@@ -167,8 +167,11 @@ for (const [label, W, H] of [['phone', 400, 860], ['desktop', 1440, 900]]) {
   await page.evaluate(() => localStorage.setItem('ninefold.edited', '1'));
   await page.locator('.ranks .rtabs button', { hasText: 'Tower' }).click();
   await page.waitForTimeout(400);
-  check(/changed outside the game/.test(await page.locator('.ranks .rstatus[data-tone="bad"]').textContent().catch(() => '')),
-    'a save changed outside the game is told, in words, that the boards only count what verifies');
+  const told = await page.locator('.ranks .rstatus[data-tone="bad"]').textContent().catch(() => '');
+  check(/changed outside the game/.test(told), 'a save changed outside the game is told, in words, that the boards only count what verifies');
+  // 試 And, like the fair-play line, truly on either side of the switch (the after side is also read below, on a season clock).
+  if (Date.now() / 1000 < SEASON_START) check(/While we test/.test(told), 'before the switch it is told the boards show every save while we test', told);
+  else check(!/While we test/.test(told), 'from the switch it is not told the boards show it', told);
   if (SHOTS) {
     await page.locator('.ranks').evaluate((el) => { el.style.height = 'auto'; el.style.maxHeight = 'none'; el.style.overflow = 'visible'; });
     await page.locator('.ranks').screenshot({ path: `${SHOTS}/${label}-fair.png` });
@@ -294,6 +297,22 @@ for (const [label, W, H, whole] of [['320', 320, 720, true], ['desktop', 1280, 7
   console.log(`\nthe Cliff of Names, day 9, ${label}${whole ? '' : ', without forerunners()'}`);
   const { page, errors } = await seasonPage(W, H, 9, { cliff: day9, forerunners: whole ? forerunnerRows(day9) : null });
   check(await page.locator('.ranks .rcliffdoor').isVisible(), 'from the switch, Rankings has a way to the Cliff');
+  // 試 The fair-play line from the switch on, read today on the season's own clock rather than
+  // waiting for the real one to pass it.
+  if (label === '320') {
+    const fair = await page.locator('.ranks').textContent();
+    check(/was checked by the server/.test(fair) && !/while we test/i.test(fair),
+      'on a season clock the fair-play line says every climb was checked, and nothing about testing');
+    await page.evaluate(() => localStorage.setItem('ninefold.edited', '1'));
+    await page.locator('.ranks .rtabs button', { hasText: 'Tower' }).click();
+    await page.waitForTimeout(300);
+    const told = await page.locator('.ranks .rstatus[data-tone="bad"]').textContent().catch(() => '');
+    check(/only ever count what the server can verify/.test(told) && !/While we test/.test(told),
+      'and an edited save is told the boards only count what verifies', told);
+    await page.evaluate(() => localStorage.removeItem('ninefold.edited'));
+    await page.locator('.ranks .rtabs button').first().click();
+    await page.waitForTimeout(200);
+  }
   await page.waitForSelector('.ranks .rmine', { timeout: 6000 }).catch(() => {});
   check(await page.locator('.ranks .rmine .rmseal[aria-label="Forerunner"]').count() === 1,
     'the head of Rankings carries the player\'s own 先行, on the server\'s word');

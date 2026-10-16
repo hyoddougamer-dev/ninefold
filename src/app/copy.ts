@@ -195,6 +195,11 @@ export const RANKS = {
   fairTest: 'Your save is sealed on this device. Until Season 0 begins (Monday 26 October, 00:00 UTC) these boards show every save while we test, even one the server\'s check would refuse. From then every climb is checked against real time, and a save changed by hand still plays but is never ranked.',
   /** 改 Only on a phone whose save was changed outside the game. Nothing is taken away. */
   edited: 'This save was changed outside the game. It still plays here, but the boards only ever count what the server can verify.',
+  /**
+   * 試 The same before the season. The server ranks every save while the test runs, an edited one
+   * too, so "only ever count what the server can verify" would contradict fairTest just under it.
+   */
+  editedTest: 'This save was changed outside the game. It still plays here. While we test the boards show it like any other save; from Season 0 they only ever count what the server can verify.',
   titlesHead: '冠 Titles',
   titles: 'The first on the Heaven List wears 天下第一 First Under Heaven. The week\'s top 1, 10 and 100 wear 期首, 期十 or 期百 for the week after.',
   cloudHead: 'A cultivator in the cloud',
