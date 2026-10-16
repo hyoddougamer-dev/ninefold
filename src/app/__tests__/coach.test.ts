@@ -60,7 +60,8 @@ const T0 = 1_700_000_000;
 
 /**
  * The places along the first realm where the last step points somewhere new: before the
- * warden, at a warden still too strong (the quarry can fill the realm in seconds), at a
+ * warden, at a warden still too strong (qi saved or bought can fill the realm before the
+ * build is ready), at a
  * warden that is an even fight, and past it.
  */
 function states(): State[] {

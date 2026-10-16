@@ -2,6 +2,7 @@ import { huntable, isElite, type Beast } from '../data/bestiary.ts';
 import { HERBS, type Herb } from '../data/herbs.ts';
 import { roomsFor } from '../data/secret.ts';
 import type { State } from './state.ts';
+import { QUARRY_FROM_REALM } from './balance.ts';
 
 /**
  * 期 The week, and the three things it moves.
@@ -68,12 +69,14 @@ function hash(n: number): number {
  * realms above the player, the mark does nothing, and a rotation that does nothing most
  * weeks is worse than no rotation, because the player learns to stop looking.
  *
- * So it is drawn from 狩 what has walked out. A first-realm cultivator has three to draw
- * from and a ninth-realm one has twenty-seven, which is the rotation getting richer as
+ * So it is drawn from 狩 what has walked out. A first-realm cultivator has none (there is
+ * no quarry before QUARRY_FROM_REALM), a second-realm one has the first realm's three and
+ * those of its own that have walked out, and a ninth-realm one has twenty-seven, which is the rotation getting richer as
  * the game does. The draw moves when the realm does, and that is on purpose: a new realm
  * is allowed to hand over a new quarry.
  */
 export function quarryOf(s: State): Beast | null {
+  if (s.realm < QUARRY_FROM_REALM) return null;
   // 精 Never an elite: the week's errand is one every hunter can run, and an elite is a wall.
   const pool = huntable(s.realm, s.layer).filter((b) => !isElite(b));
   if (!pool.length) return null;

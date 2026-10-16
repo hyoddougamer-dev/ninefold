@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { BEASTS, huntable, isElite, wardenOf } from '../../data/bestiary.ts';
 import { HERBS } from '../../data/herbs.ts';
 import { roomsFor } from '../../data/secret.ts';
-import { BLESSED_ROOM, QUARRY_LOOT, SEASON_HARVEST } from '../balance.ts';
+import { BLESSED_ROOM, QUARRY_FROM_REALM, QUARRY_LOOT, SEASON_HARVEST } from '../balance.ts';
 import { newState, type State } from '../state.ts';
 import { validate } from '../load.ts';
 import {
@@ -37,6 +37,7 @@ describe('期 the week', () => {
         for (let w = 0; w < 60; w++) {
           const s = at(r, MONDAY + w * WEEK, layer);
           const q = quarryOf(s);
+          if (r < QUARRY_FROM_REALM) { expect(q).toBeNull(); continue; }
           expect(q).not.toBeNull();
           expect(huntable(r, layer).map((b) => b.key)).toContain(q!.key);
           expect(q!.warden).toBeUndefined();
@@ -114,7 +115,7 @@ describe('期 the week', () => {
 
   it('survives a save it was not in, and caps a forged one', () => {
     const now = MONDAY + 30 * WEEK;
-    const old = validate({ ...newState(now - 86400 * 30), at: now }, now);
+    const old = validate({ ...newState(now - 86400 * 30), at: now, realm: 2 }, now);
     expect(old.quarryWeek).toBe(-1);
     expect(quarryOwed(old)).toBe(true);
     const forged = validate({ ...old, quarryWeek: 9e9 }, now);

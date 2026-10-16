@@ -330,16 +330,6 @@ export function guide(s: State): Guiding | null {
 export const DISMISSED = 'guide';
 
 /**
- * 一 The guide's first chapter is still being walked: the first realm, the guide not put
- * away, a first life. While it is, the screens leave out what the guide has not reached:
- * the 期 Week's quarry chip stood on the very first screen, before a word about weeks or
- * quarries, beside a card asking for something else (played 2026-10-16).
- */
-export function inFirstChapter(s: State): boolean {
-  return s.realm === 1 && !s.seen.includes(DISMISSED) && (s.lives?.length ?? 0) === 0;
-}
-
-/**
  * 囊 The opening purse is the player's to spend, so the first rung waits for them.
  *
  * Played from a fresh save at 400 wide. The title, the prologue and 相 the face question

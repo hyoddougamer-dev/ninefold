@@ -1197,6 +1197,18 @@ export const QUARRY_BOUNTY = 0.1;
  * realm's middle rate. Measured with tools/platformpay.ts over eight seeds, see there.
  */
 export const QUARRY_HOURS = 2;
+/**
+ * 初 The week names a quarry from this realm on. In the first realm the floor above paid
+ * 19 952 qi when layers 1 to 8 cost 3 852 together, and in the season's first two weeks a
+ * new save's quarry was the Mountain Rat, the first beast the guide sends it to. Played on
+ * the built game (2026-10-16) the first realm filled in seven seconds and the guide jumped
+ * from its second step to its fifth. So the first realm has no quarry: the week's waits for
+ * the second, where the floor (156 282) is about a ninth of what layers 1 to 8 cost there
+ * (1 368 974), a lump and not a skip, and a twenty-third by the third realm.
+ * 驗 The server still credits a quarry at any realm (verify.ts, quarryQi), so a client from
+ * before this that took one in the first realm is never flagged for it.
+ */
+export const QUARRY_FROM_REALM = 2;
 
 /**
  * 緣 The bond with one beast: how many wins fill it, and what a full one promises.

@@ -110,15 +110,18 @@ describe('待 what is waiting', () => {
 
   /**
    * 一 The 期 chip stood on the very first screen of a new cultivator, before the guide had said
-   * a word about weeks, beside a card asking for a purchase (played 2026-10-16). It waits for the
-   * guide's first chapter to end, and a cultivator who put the guide away gets it at once.
+   * a word about weeks, beside a card asking for a purchase (played 2026-10-16), and the quarry
+   * it pointed at filled the first realm in seven seconds. The week names no quarry before the
+   * second realm (QUARRY_FROM_REALM), so the chip waits for it too.
    */
-  it('leaves the week\'s quarry off while the guide\'s first chapter is walked', () => {
+  it('leaves the week\'s quarry off in the first realm', () => {
     const fresh = newState(T0);
-    expect(quarryOf(fresh) && quarryOwed(fresh)).toBeTruthy();
+    expect(quarryOf(fresh)).toBeNull();
     const heavy = { ...NONE, quarry: 0.9 };
     expect(ready(fresh, heavy).some((w) => w.key === 'quarry')).toBe(false);
-    expect(ready({ ...fresh, seen: [...fresh.seen, 'guide'] }, heavy).some((w) => w.key === 'quarry')).toBe(true);
-    expect(ready({ ...fresh, realm: 2 }, heavy).some((w) => w.key === 'quarry')).toBe(true);
+    expect(ready({ ...fresh, seen: [...fresh.seen, 'guide'] }, heavy).some((w) => w.key === 'quarry')).toBe(false);
+    const second = { ...fresh, realm: 2 };
+    expect(quarryOf(second) && quarryOwed(second)).toBeTruthy();
+    expect(ready(second, heavy).some((w) => w.key === 'quarry')).toBe(true);
   });
 });

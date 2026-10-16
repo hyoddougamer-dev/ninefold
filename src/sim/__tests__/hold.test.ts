@@ -58,11 +58,14 @@ describe('留 hold the layer: off for everyone until it is turned on', () => {
   });
 
   it('with the toggle off, the harness cultivators climb exactly as they did before it existed', () => {
-    // 量 Fingerprints taken on the commit before this change (npm run habits' players, 120 days):
-    // the day each realm was reached, to the thousandth, and the fights fought. Off means off.
+    // 量 Fingerprints of the climb before Hold existed (npm run habits' players, 120 days): the
+    // day each realm was reached, to the thousandth, and the fights fought. Taken on e1c5d13, the
+    // commit before it, and taken again once when the week's quarry moved to the second realm
+    // (QUARRY_FROM_REALM, 2026-10-16), by playing e1c5d13 with only that gate added to quarryOf:
+    // the same digits as here with the toggle off. Off means off.
     const was: Record<string, { arrival: number[]; fights: number; power: number }> = {
-      active: { arrival: [0, 0.5, 1.167, 3.5, 8.333, 14.667, 24.167, 36.5, 49.667], fights: 4070, power: 76075247000 },
-      'drives it all': { arrival: [0, 0.5, 1.167, 3.5, 7.833, 13.833, 24.333, 36.667, 49.5], fights: 32353, power: 63184492000 },
+      active: { arrival: [0, 0.5, 1, 3.333, 7.833, 13.833, 23.5, 35, 47.667], fights: 3901, power: 67075506000 },
+      'drives it all': { arrival: [0, 0.5, 1.167, 3.5, 7.667, 14, 24.333, 36.667, 48.5], fights: 25258, power: 65582374000 },
     };
     for (const [name, want] of Object.entries(was)) {
       const run = play(HABITS.find((h) => h.name === name)!, 120);
@@ -224,6 +227,11 @@ describe('留 the most the toggle is worth, played by the cultivator who uses it
    * a rate upgrade bought before a layer starts paying earlier. It makes no qi: at any one
    * moment a held cultivator is behind a free one (the test above). The ceiling below is what
    * keeps that nine per cent from growing without anyone noticing.
+   *
+   * 期 Measured again when the week's quarry moved to the second realm (2026-10-16): holds the
+   * layer is unchanged at 45.33, and active reaches the ninth realm on day 47.67, because its
+   * first quarry is now paid at the second realm's floor instead of the first's. So the toggle
+   * is worth about five per cent there now, inside the same ceiling.
    */
   const active = HABITS.find((h) => h.name === 'active')!;
   const free = play(active, 120);
