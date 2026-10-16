@@ -9,7 +9,7 @@ import { answer, canAnswer, giftOf, meetingDue, priceOf } from '../src/sim/meet.
 import { conquer, conquerTwice, demonDue, demonOf, demonPower, repel, seclude } from '../src/sim/seclusion.ts';
 import { FORGED, NOT_USED, feedShare, kitFor, pillHeld, soulLocked, spendKit, unsealCarried, work } from '../src/sim/crafts.ts';
 import { NO_KIT } from '../src/sim/kit.ts';
-import { carryBest, craftVisit, toLearn } from './crafter.ts';
+import { carryBest, craftVisit, forgeKeep, forgeVisit, toLearn } from './crafter.ts';
 import { fuseIn, stash } from '../src/sim/stash.ts';
 import { LAYERS, focusAt, ladderBetween } from '../src/sim/balance.ts';
 import {
@@ -148,6 +148,13 @@ export interface Habit {
    * whole workshop is worth to the ladder, played greedily (see tools/crafter.ts).
    */
   readonly crafts?: boolean;
+  /**
+   * 職 鑄 Whether a class-builder who does not craft opens the workshop for the one thing a
+   * class can need from it: the shape no drop has given them (tools/crafter.ts forgeVisit).
+   * Nothing without a `calling`, and nothing for somebody who `crafts`, whose workshop
+   * already forges the class's places.
+   */
+  readonly forges?: boolean;
   /**
    * 封 Whether they put qi into a sealed gate's bar before they spend it on anything else
    * (paySeal, as often as the cap and the purse allow), and eat the lesser Breakthrough Pills
@@ -571,6 +578,7 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher, start?: State, ga
   const layerDay = [0];
   let fights = 0;
   let arrangedOn = -1;
+  const forging = !h.crafts && !!h.forges && !!h.calling && h.gear;
   // 器 The drops are seeded, so the same habit always finds the same gear.
   let seed = h.seed ?? 991;
   // 氣源 The ledger: every rung the clock paid for, every unit spent, and the three named sources.
@@ -619,7 +627,7 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher, start?: State, ga
     }
     t += tick;
     tickTo(t);
-    if (h.crafts) s = work(s, t);
+    if (h.crafts || forging) s = work(s, t);
 
     watch?.((t - T0) / DAY, s);
 
@@ -767,7 +775,10 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher, start?: State, ga
     // the first of the visit's hunts, which made the errand a quarter of a once-a-day
     // player's hunting, and once 精 the elites paid triple (2026-10-06) that quarter was
     // worth three days of the climb that the workshop never cost a real player.
-    const learn = h.crafts && h.hunts > 0 ? toLearn(s, huntable(s.realm, s.layer).filter((x) => odds(s, x) > 0.7)) : undefined;
+    // 鑄 The class-builder who forges runs it too: the knife opens on a first-realm common it
+    // knows, and one who left the first realm before ten of any had fallen held a Rendering
+    // stuck at level 1, so no warden's part and no shape of 百形 (獵王 at seed 991).
+    const learn = (h.crafts || forging) && h.hunts > 0 ? toLearn(s, huntable(s.realm, s.layer).filter((x) => odds(s, x) > 0.7)) : undefined;
     if (learn) {
       s = quarried(s, takeKill(s, learn));
       if (h.gear) s = takeDrop(s, learn, ++seed, h.calling);
@@ -862,8 +873,8 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher, start?: State, ga
     // 業 The workshop, last thing on the visit: settle it, cut arrays into the floor, set
     // it on something that will still be running when they are back, and wear a forged
     // piece the moment the game would mark it ▲, as with anything that falls.
-    if (h.crafts) {
-      s = craftVisit(s, t, tick, h.calling, h.hundred ?? false);
+    if (h.crafts || forging) {
+      s = h.crafts ? craftVisit(s, t, tick, h.calling, h.hundred ?? false) : forgeVisit(s, t, tick, h.calling!);
       for (const it of s.chest.filter((x) => x.from === FORGED)) {
         const slot = templateOf(it).slot as Slot;
         const worn = s.worn[slot];
@@ -894,7 +905,8 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher, start?: State, ga
      * decision the early game did not have.
      */
     if (h.gear && isOpen(s.realm, 'refine')) for (let i = 0; i < 60; i++) {
-      const keep = isOpen(s.realm, 'cores') && canBuy(s, 'cores') ? upgradeCost(s, 'cores') : 0;
+      // 留 And somebody forging the shape a class lacks keeps back what the forge waits for.
+      const keep = (isOpen(s.realm, 'cores') && canBuy(s, 'cores') ? upgradeCost(s, 'cores') : 0) + (forging ? forgeKeep(s) : 0);
       const slot = SLOTS.filter((x) => s.worn[x] && canRefine(s, x))
         .sort((a, b) => wornWorth(s, b) - wornWorth(s, a))[0];
       if (!slot) break;

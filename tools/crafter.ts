@@ -17,7 +17,7 @@ import type { Beast } from '../src/data/bestiary.ts';
 import { effectiveBeastPower, oddsRaw } from '../src/sim/combat.ts';
 import { power, sealDays, sealed } from '../src/sim/state.ts';
 import {
-  HANDS, ITEM_BY_KEY, RECIPES, SKILL_KEYS, arraySlots, canSet, carry, carrySlot, held, kitFor, levelIn,
+  HANDS, ITEM_BY_KEY, RECIPES, SKILL_KEYS, arraySlots, blocked, canSet, carry, carrySlot, held, kitFor, levelIn,
   needsOf, placeArray, recipesOf, known, knownAt, secondsOf, setOrder, setTask, skillOpen, work, workSeconds,
   workshopOpen, xpOf, type Where,
 } from '../src/sim/crafts.ts';
@@ -80,6 +80,122 @@ function forFor(s: State, build: School | Pair, span: number): string | null {
         && schoolOf(x) === schoolOfAxis(tpl.affix) && TEMPLATE_BY_KEY[x.template].realm >= r.realm);
       if (have) break;
       const t = feed(s, r, span);
+      if (t) return t;
+    }
+  }
+  return null;
+}
+
+/**
+ * 職 鑄 The class-builder who is no crafter: the workshop opened for one thing only, the
+ * place the class is short of, and shut again once the body has it.
+ *
+ * Found on 2026-10-16 when the week's quarry moved to the second realm: one roll of the
+ * dice left 陣師 the Formation Master with every 法 Arts piece it owned in places its 器
+ * Artificer pieces filled and no boots of either school, so it wore three and two for the
+ * whole climb and the test read the class unreachable. The game's answer to that is the
+ * forge (百形: any shape of a realm once its warden has fallen), and a harness whose
+ * class-builder never opened the workshop could not take it. So this one does, the way a
+ * player after the missing piece does: the recipe forFor() would pick, and where its
+ * level, its metal or its warden's parts are short, the craft that stands in the way,
+ * named in red on the screen, levelled or fed first. No kit, no arrays, no tools sought:
+ * those are the crafter's (craftVisit), and carrying them would make this a crafter.
+ * Every price is the game's own: the ore, the metal, the parts, the material that refining
+ * would otherwise have had, and the hours the workshop spends.
+ */
+export function forgeVisit(s: State, now: number, span: number, build: School | Pair): State {
+  if (!workshopOpen(s)) return s;
+  s = work(s, now);
+  const want = forFor(s, build, span) ?? toward(s, build, span);
+  return want === s.crafts.task ? s : setTask(s, want, now);
+}
+
+/** 留 The 材 material the forge's piece is waiting for, kept back from refining (see unblock). */
+export function forgeKeep(s: State): number {
+  const r = s.crafts.task ? RECIPE_BY_KEY[s.crafts.task] : undefined;
+  if (!r || r.makes.kind !== 'gear') return 0;
+  return needsOf(s, r).find(([k]) => k === 'mat')?.[1] ?? 0;
+}
+
+/**
+ * 職 How much of the build the pieces owned could meet, worn in the best way: one school per
+ * place, a school counted up to its quota. The same count arrange() in tools/habits.ts
+ * maximises, read on the places and schools alone (`school:slot`), since any piece of a
+ * school in a place serves the class there.
+ */
+function meetable(owned: ReadonlySet<string>, want: Partial<Record<School, number>>): number {
+  const schools = Object.keys(want) as School[];
+  const counts = schools.map(() => 0);
+  let most = 0;
+  const walk = (i: number) => {
+    if (i === SLOTS.length) {
+      most = Math.max(most, schools.reduce((a, sc, k) => a + Math.min(counts[k], want[sc] ?? 0), 0));
+      return;
+    }
+    walk(i + 1);
+    schools.forEach((sc, k) => {
+      if (!owned.has(`${sc}:${SLOTS[i]}`)) return;
+      counts[k]++; walk(i + 1); counts[k]--;
+    });
+  };
+  walk(0);
+  return most;
+}
+
+/**
+ * 職 The next step toward the piece the class is short of, when forFor() has nothing: a
+ * shape that, owned, lets the body meet more of the build than everything it owns can now,
+ * the one asking the lowest level first, and whatever stands in its way. Read on what is
+ * owned and not on what is worn, because the class can be missing a place that no short
+ * school has a shape for: 獵王 the Hunt King held 運 Fortune pieces only where its 體 Body
+ * ones went and no crown of either, and the shape it lacked was a Body helm, so that Body
+ * could give up a place to Fortune (seed 991, measured 2026-10-16).
+ */
+function toward(s: State, build: School | Pair, span: number): string | null {
+  if (forging === 'none') return null;
+  const want = quotas(build);
+  const total = Object.values(want).reduce((a, n) => a + (n ?? 0), 0);
+  const pieces = [...s.chest, ...SLOTS.map((x) => s.worn[x])].filter((x) => !!x && !!TEMPLATE_BY_KEY[x.template]);
+  const owned = new Set(pieces.map((x) => `${schoolOf(x!)}:${TEMPLATE_BY_KEY[x!.template].slot}`));
+  const now = meetable(owned, want);
+  if (now >= total) return null;
+  const targets = RECIPES.filter((r) => {
+    if (r.makes.kind !== 'gear' || s.realm < r.realm || r.realm < s.realm - 1) return false;
+    if (!skillOpen(s, r.skill) || (r.remains && !known(s, r.remains)) || (r.anyShape && forging === 'taught')) return false;
+    const tpl = TEMPLATE_BY_KEY[r.makes.template];
+    const key = tpl && `${schoolOfAxis(tpl.affix)}:${tpl.slot}`;
+    return !!key && !owned.has(key) && meetable(new Set([...owned, key]), want) > now;
+  }).sort((a, b) => a.level - b.level || b.realm - a.realm);
+  for (const r of targets) { const t = unblock(s, r, span); if (t) return t; }
+  return null;
+}
+
+/**
+ * 鏈 feed(), with the level followed as well: a recipe the craft is not yet good enough
+ * for sets that craft levelling on its best rate, and a need it is short of is fed the
+ * same way down the chain (the metal to its ore, the part to the knife). 留 A piece short
+ * of nothing but 材 material is set and waits for it, as the game lets a task wait, and the
+ * harness keeps that much back from refining meanwhile (forgeKeep): the refining loop
+ * spent every visit's material first, so a forge that asked for 150 never saw it.
+ */
+function unblock(s: State, r: Recipe, span: number, depth = 0): string | null {
+  if (runnable(s, span, [r]).length) return r.key;
+  if (depth > 3) return null;
+  const b = blocked(s, r);
+  if (b === 'needs' && needsOf(s, r).every(([k, n]) => k === 'mat' || held(s, k) >= n)) return r.key;
+  if (b === 'level') {
+    const up = best(s, runnable(s, span, recipesOf(r.skill as SkillKey).filter((x) => x.makes.kind !== 'tool')));
+    if (up) return up.key;
+    const top = recipesOf(r.skill as SkillKey).filter((x) => canSet(s, x) && x.makes.kind === 'item')
+      .sort((a, z) => z.level - a.level);
+    for (const x of top.slice(0, 3)) { const t = feed(s, x, span); if (t) return t; }
+    return null;
+  }
+  if (b !== 'needs') return null;
+  for (const [k, n] of needsOf(s, r)) {
+    if (k === 'mat' || held(s, k) >= n) continue;
+    for (const m of RECIPES.filter((x) => x.makes.kind === 'item' && x.makes.item === k)) {
+      const t = unblock(s, m, span, depth + 1);
       if (t) return t;
     }
   }

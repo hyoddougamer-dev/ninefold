@@ -32,7 +32,8 @@ export function playPlain(): number {
 }
 
 export function playClass(build: Build, marks = 40, seed?: number): ClassRun {
-  const h = { ...active(), name: `active ${build}`, calling: build, ...(seed !== undefined ? { seed } : {}) };
+  // 鑄 Forging the shape no drop gave them, as a player after the class would (forgeVisit).
+  const h = { ...active(), name: `active ${build}`, calling: build, forges: true, ...(seed !== undefined ? { seed } : {}) };
   let held = 0, days = 0;
   const run = play(h, 400, (_d, s) => {
     days++;
