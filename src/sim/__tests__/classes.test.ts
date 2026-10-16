@@ -195,6 +195,17 @@ describe('職 the sheet never calls a piece that costs the class an upgrade', ()
  * own gathering. It is a slope, not a wall: the slowest arrives about day 49.
  */
 describe('職 every class, played out', () => {
+  /**
+   * 鑄 The share of the climb a class must be worn for. It was "more than nothing", which a
+   * class worn for one day in four hundred passed: 武神 the War God read 7% on the default
+   * dice and 獵王 the Hunt King 0% on seed 31337 (69222ab), and 陣師 the Formation Master 0%
+   * on the default dice once the week's quarry moved, because no drop gave it the shape it
+   * lacked.
+   * With the class-builder forging that shape (tools/crafter.ts forgeVisit), every class
+   * held 81% or more on all five seeds measured (991, 1234, 5555, 7777, 31337; 2026-10-16),
+   * so half is a floor with room under it and still one a stranded class cannot pass.
+   */
+  const HELD_FLOOR = 0.5;
   let plain = 0;
   const rows: string[] = [];
   const crossed = new Map<string, number>();
@@ -211,7 +222,7 @@ describe('職 every class, played out', () => {
       crossed.set(build, r.crossings.reduce((a, x) => a + x, 0));
       rows.push(`    ${build.padEnd(14)} realm 9 on day ${r.realm9.toFixed(1).padStart(5)}   class held ${String(Math.round(100 * r.held)).padStart(3)}%` +
         `   40 crossings ${String(r.crossings.reduce((a, x) => a + x, 0)).padStart(4)} days, longest ${Math.max(...r.crossings)}`);
-      expect(r.held, `${build} is reachable`).toBeGreaterThan(0);
+      expect(r.held, `${build} is held`).toBeGreaterThanOrEqual(HELD_FLOOR);
       expect(r.realm9, `${build} climbs`).toBeLessThan(plain * 1.2);
       expect(r.realm9, `${build} is not a shortcut`).toBeGreaterThan(plain * 0.8);
       expect(r.crossings, `${build} crosses forty`).toHaveLength(40);
