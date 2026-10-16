@@ -369,6 +369,14 @@ Some cases cannot be reached live, so they go in `src/sim/__tests__/sync.test.ts
 - The time switch removes both problems.
 - A gate is still worth adding to pages.yml for the Samsara ordering if the check in 5.1 shows the error is ugly.
 
+### 5.3 Pushes to `main` during the season (audit of 16 Oct, deploy-order)
+
+Once the season is open, a push that changes the sim reaches players and the server in no order: Pages and supabase.yml start together. For those minutes (and for days, for a tab nobody reloads) the client and the server can disagree about a climb, and a refused sync counts against an honest player.
+
+- **Ship the worker stamp first.** From the Push A that carries `tools/swstamp.ts`, every build is a new `sw.js`, so an open game offers 新 the update within thirty minutes (`updates.ts` asks every half hour). Before it, no release since 28 September reached an open tab on its own.
+- **Server first, then the client,** for any push that touches `src/sim/**` or `src/data/**`: run supabase.yml by hand (`workflow_dispatch`) on the exact commit that will go to `main`, wait for it to go green, then push `main`. The lasting fix is pages.yml's `deploy` job waiting for supabase.yml on the same commit; it does not today. A push that changes only screens or words needs neither.
+- **A change the server must accept before the client sends it** (a new field, a looser check) goes in one push and the client that uses it in the next.
+
 ## 6. (e) The announcement (draft, English, no dashes)
 
 > **Superseded.** The announcement for The Founding, and every other Season 0 post, is drafted in `tools/discord/drafts-season0.json` (stages by day, proved against a fake Discord by `node tools/discord-check.mjs`); docs/SEASON0-BRIEF.md section 6 holds their words. The draft below promised a kept copy, which Bruno's decision removed.

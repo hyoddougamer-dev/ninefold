@@ -235,7 +235,7 @@
             ["題名崖 The Cliff of Names", "Season 0's own monument: nine columns, one for each gate, from the Spirit Fox to the Dragon. The first 81 cultivators through each gate are carved on it, with the date the server saw them. A new column opens every few days for about five weeks. Only players in 榜 Ranks are carved, and every carving is checked."],
             ["▸ The trailer", "[Watch the Season 0 trailer](https://hyoddougamer-dev.github.io/ninefold/discord/season0/founding-trailer.mp4). One minute; the voice is made with elevenlabs.io."],
             ["▸ What stays", "Losing a fight costs nothing. Nothing is taken away for being away. Every system you know is still there, opening realm by realm as before."],
-            ["▸ If the game is open at the switch", "Take the update when it offers it. The first time you open Season 0, the game says goodbye to your closed-test cultivator in one line, and you begin again."]
+            ["▸ If the game is open at the switch", "Close it and open it again. The first time you open Season 0, the game says goodbye to your closed-test cultivator in one line, and you begin again."]
           ],
           "gallery": ["https://hyoddougamer-dev.github.io/ninefold/discord/promo/founding-keyart.webp?v=1"],
           "footer": "Thank you for the closed test · 師 Shibaki"
@@ -340,7 +340,7 @@
             "",
             "**Last call for 先行 Forerunner.** If you played the closed test and never joined 榜 Ranks, join it once before then. A guest only needs a name.",
             "",
-            "If the game is open at the switch, take the update when it offers it."
+            "If the game is open at the switch, close it and open it again."
           ],
           "footer": "· 師 Shibaki"
         }
