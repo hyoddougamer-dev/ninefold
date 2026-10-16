@@ -2,6 +2,7 @@ import { WARDENS } from '../data/bestiary.ts';
 import { RUNGS, TOP_RUNG, gateOfRung, rungFrom } from '../sim/rung.ts';
 import { RANKS } from './copy.ts';
 import type { Notice } from './notices.ts';
+import { isPlaceholder } from '../net/names.ts';
 
 /**
  * 升 The one card a sect rank brings (docs/SEASON-RANKS.md, section 7), with the Cliff carving
@@ -61,7 +62,7 @@ export function sectNotice(seen: readonly string[], word: SectWord | null): Noti
 
   const gates = carved.reduce((m, c) => m | bit(c.gate), was.gates);
   const key = `${SECT_KEY}${Math.max(was.rung, rung ?? 0)}:${gates}`;
-  const unnamed = typeof word.name === 'string' && word.name.startsWith('修士');
+  const unnamed = isPlaceholder(word.name);
   const tail = (lines: string[]) => [...lines, ...(unnamed ? [RANKS.sect.unnamed] : [])].join(' ');
 
   if (risen !== null) {

@@ -109,7 +109,7 @@ export function Ranks({ who, synced, syncedAt, syncError, reborn = false, onEnte
           )}
           {/* 位 The sect rank, on the server's word only: nothing before the switch, a line while held. */}
           {me && <SectHead me={me} rung={rung} season={season} onLadder={() => setSteps(true)} />}
-          {me && rung !== null && rung >= 1 && me.name.startsWith('修士') && !nudged && (
+          {me && rung !== null && rung >= 1 && isPlaceholder(me.name) && !nudged && (
             <div className="rnudge">
               <span>{RANKS.sect.nudge}</span>
               <button type="button" className="act small" onClick={() => { setAsked((n) => n + 1); setNudged(true); }}>{RANKS.sect.nudgeGo}</button>
@@ -279,6 +279,8 @@ function Account({ who, me, ask = 0, onSignOut, onRenamed, onLinked }: {
   useEffect(() => {
     if (!ask) return;
     setEditing(true);
+    // A placeholder is not a name to edit: the box opens empty, as Choose a name opens it.
+    if (isPlaceholder(me?.name)) setName('');
     box.current?.scrollIntoView({ block: 'center', behavior: 'smooth' });
   }, [ask]);
   const unnamed = isPlaceholder(me?.name);
