@@ -30,6 +30,8 @@ export function useCloud(ready: boolean, latest: MutableRefObject<State>) {
    * null until it has answered, and again whenever nobody is signed in.
    */
   const [forerunner, setForerunner] = useState<boolean | null>(null);
+  /** 名 The name the boards show for the signed-in account, as the server last said it. */
+  const [myName, setMyName] = useState<string | null>(null);
   const pushing = useRef(false);
   const push = useCallback(async (name?: string) => {
     if (pushing.current) return;
@@ -40,8 +42,13 @@ export function useCloud(ready: boolean, latest: MutableRefObject<State>) {
         if (r.error !== 'too-soon') setSyncError(r.error);
       } else {
         setSyncError(null);
+        // 名 A name kept for the link has done its one job once a sync has gone.
+        if (name !== undefined) cloud.forgetWantedName();
         setSynced(r); setSyncedAt(Date.now() / 1000);
-        cloud.mine().then((m) => { setTitle(m?.title ?? null); if (m) setForerunner(!!m.forerunner); }).catch(() => {});
+        cloud.mine().then((m) => {
+          setTitle(m?.title ?? null);
+          if (m) { setForerunner(!!m.forerunner); setMyName(m.name); }
+        }).catch(() => {});
         cloud.place().then(setPlace).catch(() => {});
       }
     } catch { setSyncError('offline'); /* the next one will do */ }
@@ -69,7 +76,8 @@ export function useCloud(ready: boolean, latest: MutableRefObject<State>) {
           return;
         }
       }
-      void push();
+      // 名 The name typed before the link was sent rides on the first sync after it.
+      void push(fromLink ? cloud.wantedName() : undefined);
     })();
     return () => { live = false; };
   }, [ready, push]);
@@ -77,9 +85,9 @@ export function useCloud(ready: boolean, latest: MutableRefObject<State>) {
   // and the Account block say it from the server's own answer, never from anything on the
   // device. A sign-out forgets it, so the next account is asked afresh.
   useEffect(() => {
-    if (!who) { setForerunner(null); return; }
+    if (!who) { setForerunner(null); setMyName(null); return; }
     let live = true;
-    cloud.mine().then((m) => { if (live && m) setForerunner(!!m.forerunner); }).catch(() => {});
+    cloud.mine().then((m) => { if (live && m) { setForerunner(!!m.forerunner); setMyName(m.name); } }).catch(() => {});
     return () => { live = false; };
   }, [who]);
   useEffect(() => {
@@ -92,6 +100,6 @@ export function useCloud(ready: boolean, latest: MutableRefObject<State>) {
 
   return {
     ranks, setRanks, who, setWho, synced, setSynced, syncedAt, syncError, setSyncError,
-    cloudPick, setCloudPick, title, setTitle, place, setPlace, push, forerunner,
+    cloudPick, setCloudPick, title, setTitle, place, setPlace, push, forerunner, myName, setMyName,
   };
 }

@@ -1,4 +1,6 @@
-import { SEASON } from '../copy.ts';
+import { useEffect, useState } from 'react';
+import { RANKS, SEASON } from '../copy.ts';
+import { cleanName, isPlaceholder } from '../../net/names.ts';
 import { realm as realmOf } from '../../data/realms.ts';
 import type { Farewell } from '../../sim/save.ts';
 import { ForerunnerSeal } from './Forerunner.tsx';
@@ -66,15 +68,23 @@ function SealPrint() {
  * when it says no or has not answered. Signed out, it points to signing in, and never says the
  * server did not see this player, because from here nobody can tell.
  */
-export function SeasonCard({ farewell, sky, forerunner, signedOut, onBegin }: {
+export function SeasonCard({ farewell, sky, forerunner, signedOut, name = null, onRename, onBegin }: {
   farewell: Farewell;
   sky: string | null;
   /** The server's answer for the signed-in account, or null when there is none (yet). */
   forerunner: boolean | null;
   /** Nobody is signed in on this device. */
   signedOut: boolean;
+  /** 修士 The name the boards show for the signed-in account, once the server has said it. */
+  name?: string | null;
+  /** 修士 Choose a name on the server (set_name), as Rankings' Account block does. */
+  onRename?: (name: string) => Promise<{ name: string } | { error: string }>;
   onBegin: () => void;
 }) {
+  // 修士 Once asked, the question stays on the card until it is put away, so the answer can
+  // be seen landing: the name it asks about changes the moment it is answered.
+  const [asked, setAsked] = useState(false);
+  useEffect(() => { if (isPlaceholder(name)) setAsked(true); }, [name]);
   return (
     <div className="season0" role="dialog" aria-modal="true" aria-labelledby="s0title">
       <div className="s0art">
@@ -99,10 +109,45 @@ export function SeasonCard({ farewell, sky, forerunner, signedOut, onBegin }: {
         ) : signedOut ? (
           <p className="s0signed">{SEASON.signedOut}</p>
         ) : null}
+        {onRename && (asked || isPlaceholder(name)) && <AskName name={name ?? ''} onRename={onRename} />}
         <div className="s0acts">
           <button className="act" onClick={onBegin}>始 <span>{SEASON.begin}</span></button>
         </div>
       </div>
+    </div>
+  );
+}
+
+/**
+ * 修士 The one time the game asks for a name on its own: a signed-in account that still wears a
+ * placeholder, on the card that opens the season. Most of those came from signing in by the
+ * email link, which used to drop the name typed before it. Rankings keeps a line about it for
+ * as long as it lasts; this card is seen once.
+ */
+function AskName({ name, onRename }: { name: string; onRename: (name: string) => Promise<{ name: string } | { error: string }> }) {
+  const [typed, setTyped] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [done, setDone] = useState<string | null>(null);
+  const [bad, setBad] = useState<string | null>(null);
+  const clean = cleanName(typed);
+  if (done) return <p className="s0named">{SEASON.nameDone(done)}</p>;
+  return (
+    <div className="s0name">
+      <p>{SEASON.nameAsk(name)}</p>
+      <div className="s0namerow">
+        <input value={typed} maxLength={20} autoComplete="nickname" aria-label={RANKS.namePrompt}
+               placeholder={SEASON.namePlaceholder}
+               onChange={(e) => { setTyped(e.target.value); setBad(null); }} />
+        <button className="act small" disabled={!clean || busy} onClick={async () => {
+          setBusy(true);
+          const r = await onRename(clean!).catch(() => ({ error: 'offline' }));
+          setBusy(false);
+          if ('error' in r) setBad(RANKS.nameErrors[r.error as keyof typeof RANKS.nameErrors] ?? RANKS.nameErrors.offline);
+          else setDone(r.name);
+        }}>{SEASON.nameSave}</button>
+      </div>
+      {typed.trim().length >= 2 && !clean && <small data-tone="bad">{RANKS.nameRule}</small>}
+      {bad ? <small data-tone="bad">{bad}</small> : <small>{SEASON.nameLater}</small>}
     </div>
   );
 }

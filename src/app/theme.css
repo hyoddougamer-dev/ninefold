@@ -2653,6 +2653,12 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .itemsheet .line .lab { flex: 1; min-width: 0; font-size: 13.5px; }
 .itemsheet .line .lab em { font-style: normal; font-size: 11px; color: var(--jade);
                            margin-left: 7px; }
+/* 主 The lead line, named in English first, the character beside it. */
+.itemsheet .line .lab em.lead { font-family: Archivo, sans-serif; font-size: 10px; font-weight: 600;
+                                letter-spacing: .08em; text-transform: uppercase; color: var(--gold);
+                                border: 1px solid rgba(212,175,86,.45); border-radius: 4px;
+                                padding: 1px 5px; white-space: nowrap; }
+.itemsheet .line .lab em.lead .cjk { font-size: 11px; letter-spacing: 0; }
 /* 比 Both sides of the trade, always: losing 破 sunder is as much a fact as gaining 力. */
 .itemsheet .line .vs { flex: none; display: flex; align-items: baseline; gap: 7px;
                        font-size: 14px; }
@@ -2984,6 +2990,12 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .weekband .wsay u { display: block; text-decoration: none; margin-top: 4px; font-size: 11.5px;
                     color: var(--faint); }
 .weekband .wsay u i { font-style: normal; }
+/* 疊 Folded once the week's qi is taken: one line, a small painting, the same button. */
+.weekband[data-folded] { padding: 6px 12px; gap: 9px; margin-top: 10px; }
+.weekband[data-folded] .wsay { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 8px; min-width: 0; }
+.weekband[data-folded] .wsay b { flex: none; font-size: 12.5px; }
+/* The name wraps under the head on a narrow phone rather than being cut: its English is the name. */
+.weekband[data-folded] .wsay i { margin: 0; min-width: 0; font-size: 12px; line-height: 1.4; color: var(--faint); }
 
 /* 冠 A title from the boards, under the realm's name. */
 .wears { display: inline-flex; align-items: baseline; gap: 6px; margin-top: 4px; padding: 3px 10px;
@@ -3046,6 +3058,10 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .ranks .ror::before, .ranks .ror::after { content: ''; flex: 1; height: 1px; background: var(--line); }
 .ranks .rrow { display: flex; gap: 8px; align-items: center; }
 .ranks .rname { flex: 1; font-size: 17px; font-weight: 500; }
+/* 修士 A placeholder name: tappable, in the face the names are set in, not the characters' own. */
+.ranks .rnamed .term { font-family: inherit; }
+.ranks .runnamed { margin: 0; font-size: 12.5px; line-height: 1.5; color: var(--gold); padding: 8px 11px;
+                   border-radius: 9px; border: 1px solid rgba(212,175,86,.4); background: rgba(212,175,86,.06); }
 .ranks .rlink { color: var(--faint); font-size: 12.5px; text-underline-offset: 3px; }
 .ranks .rlink:hover { color: var(--text); }
 .ranks .rdel { align-self: flex-start; background: none; border: 0; padding: 2px 0; font: inherit; font-size: 12.5px;
@@ -3436,6 +3452,10 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
    Every rule is scoped under .crafts: the recipe row, the pouch and the skill grid are
    new shapes, and a class shared with another screen has bitten this repo three times. */
 .crafts .act.small { width: auto; flex: none; padding: 7px 12px; font-size: 12px; letter-spacing: .08em; border-radius: 8px; }
+/* 熟今 The craft's mastery and what is new for it in this realm, under its level. */
+.crafts .cmastery { margin: 6px 0 0; font-size: 12px; line-height: 1.5; color: var(--text); }
+.crafts .cmastery .term { color: var(--gold); margin-right: 2px; }
+.crafts .cnewhere { margin: 4px 0 0; font-size: 12px; line-height: 1.5; color: var(--faint); }
 .crafts .act.small[data-on='true'] { background: none; color: var(--gold); border: 1px solid var(--gold); box-shadow: none; }
 .crafts .act.small.ghost { background: none; color: var(--faint); border: 1px solid var(--line); box-shadow: none; }
 .crafts .cic { display: inline-grid; place-items: center; flex: none; border-radius: 9px; overflow: hidden;
@@ -4422,6 +4442,19 @@ nav.tabs .tabkey { display: none; }
 .season0 .s0seal i { font-style: normal; display: block; }
 .season0 .s0signed { margin: 0; padding: 10px 13px; border-radius: 10px; border: 1px dashed var(--gild);
   font-size: 13px; line-height: 1.5; color: var(--faint); }
+/* 修士 The one time the game asks for a name: an account still wearing a placeholder. */
+.season0 .s0name { display: flex; flex-direction: column; gap: 8px; padding: 12px 13px; border-radius: 10px;
+  border: 1px solid var(--gild-strong); background: rgba(212,175,86,.05); }
+.season0 .s0name p { margin: 0; font-size: 13.5px; line-height: 1.5; color: #F1E6CF; }
+.season0 .s0namerow { display: flex; flex-wrap: wrap; gap: 8px; align-items: stretch; min-width: 0; }
+.season0 .s0namerow input { flex: 1 1 150px; min-width: 0; font: inherit; font-size: 15px; color: var(--text); background: var(--ground);
+  border: 1px solid var(--line); border-radius: 9px; padding: 9px 11px; }
+.season0 .s0namerow input:focus { outline: none; border-color: var(--gold); }
+.season0 .s0namerow .act { flex: 1 0 auto; width: auto; padding: 8px 13px; font: 500 13px/1.2 Archivo, ui-sans-serif, system-ui, sans-serif; }
+.season0 .s0name small { font-size: 12px; line-height: 1.45; color: var(--faint); }
+.season0 .s0name small[data-tone='bad'] { color: var(--cinnabar); }
+.season0 .s0named { margin: 0; padding: 10px 13px; border-radius: 10px; border: 1px solid rgba(127,180,149,.45);
+  font-size: 13.5px; line-height: 1.5; color: var(--jade); }
 .season0 .s0acts { display: flex; flex-direction: column; gap: 8px; margin-top: auto; padding-top: 4px; }
 .season0 .s0acts .act { width: 100%; }
 @media (max-width: 360px) {

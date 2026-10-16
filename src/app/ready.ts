@@ -8,6 +8,7 @@ import { cardDue } from '../sim/awaken.ts';
 import { spendablePoints } from '../sim/points.ts';
 import { blocked, held, needsOf, workshopOpen } from '../sim/crafts.ts';
 import { quarryOf, quarryOwed, weekLeft } from '../sim/week.ts';
+import { inFirstChapter } from './guide.ts';
 import { standingFloor, towerOpen } from '../sim/trials.ts';
 import { floorBeast, floorPower } from '../sim/tower.ts';
 import { limitFor } from '../sim/stash.ts';
@@ -130,7 +131,9 @@ export function ready(s: State, heavy: Heavy = heavyOf(s)): readonly Waiting[] {
   }
 
   const q = quarryOf(s);
-  if (q && quarryOwed(s) && heavy.quarry >= QUARRY_READY) {
+  // 一 Not while the guide's first chapter is being walked: the quarry is the hunt's own band
+  // there, and the first screen is the guide's (guide.ts, inFirstChapter).
+  if (q && quarryOwed(s) && heavy.quarry >= QUARRY_READY && !inFirstChapter(s)) {
     add('quarry', '期', 'hunt', READY.quarry.short, READY.quarry.long(q.name, duration(weekLeft(s))));
   }
   if (towerOpen(s) && heavy.floor >= FLOOR_READY) {

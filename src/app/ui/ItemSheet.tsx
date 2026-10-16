@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import {
-  AFFIX_INFO, FUSED, RARITIES, RARITY_INFO, SLOT_INFO, callingOf, realmSet, schoolOf, templateOf,
+  AFFIX_INFO, FUSED, RARITIES, RARITY_INFO, SLOT_INFO, callingOf, primaryOf, realmSet, schoolOf, templateOf,
   type Affix, type Calling, type Item,
 } from '../../data/gear.ts';
 import { fightDeps } from '../memo.ts';
@@ -68,6 +68,7 @@ export function ItemSheet({ state, item, wearing, onWear, onTakeOff, onSalvage, 
   // 承 The place's refining: a piece worn there has it, so both pieces are read at it.
   const level = levelAt(state.refined, tpl.slot);
   const lines = compare(item, against, level);
+  const lead = primaryOf(item)?.affix;
   // 判 A chest piece is read against what is worn; a worn piece against the same place
   // left empty, which is what it is doing for you right now.
   const move: Swing = wearing ? wornSwing(state, item) : swing(state, item);
@@ -254,14 +255,18 @@ export function ItemSheet({ state, item, wearing, onWear, onTakeOff, onSalvage, 
 
         <h3>{against ? ITEM.against(templateOf(against).name) : ITEM.what}</h3>
         <div className="lines">
-          {lines.map((d, i) => {
+          {lines.map((d) => {
             const delta = d.theirs - d.mine;
             return (
               <div key={d.affix} className="line" data-up={delta > 0} data-down={delta < 0}>
                 <b className="cjk">{AFFIX_INFO[d.affix].han}</b>
                 <span className="lab">
                   {AFFIX_INFO[d.affix].label}
-                  {i === 0 && !against && <em className="cjk">主</em>}
+                  {/* 主 The piece's own lead line, wherever the fixed order of the axes puts it.
+                      It used to mark whichever line came first, which is power, so a Qi piece
+                      with a power side line read as leading with power (rekaris, "does power
+                      roll twice?"). It never does: the lead is drawn out of the side lines. */}
+                  {d.affix === lead && <em className="lead">{ITEM.lead} <span className="cjk">主</span></em>}
                   {/* 頂 The one line that reads bigger than it is, said where it is read. */}
                   {d.affix === 'rate' && d.theirs > 0 && <i className="cap">{ITEM.qiCeiling}</i>}
                 </span>

@@ -1,6 +1,7 @@
 import { Fragment, useEffect, useState } from 'react';
 import { FORERUNNER, RANKS } from '../copy.ts';
 import { ForerunnerSeal } from './Forerunner.tsx';
+import { Named } from './Named.tsx';
 import { pictureOf } from '../../data/pictures.ts';
 import { columns, FIRST, foot, seenAt, shown, type Column } from '../cliff.ts';
 import type { Carved } from '../../net/cloud.ts';
@@ -127,7 +128,7 @@ function Gate({ col, all }: { col: Column; all: boolean }) {
                  data-gap={i > 0 && r.rank !== list[i - 1].rank + 1 || undefined}>
               <span className="rcoln">{r.rank}</span>
               <span className="rcolw">
-                <b>{r.name}{r.rank === col.mine && <em> · {C.you}</em>}</b>
+                <b><Named name={r.name} />{r.rank === col.mine && <em> · {C.you}</em>}</b>
                 <i>{seenAt(r.at)}</i>
               </span>
             </div>
