@@ -622,6 +622,19 @@ function season(upto) {
     spec.messages.push(...(st.messages ?? []));
     spec.posts.push(...(st.posts ?? []));
     spec.threads.push(...(st.threads ?? []));
+    // 整 A thread put in tidy by a stage ends on its one final from that push on; one already
+    // tidied is changed through tidyEdits instead, so no thread is ever tidied twice.
+    for (const t of st.tidy ?? []) {
+      if (spec.tidy.some((x) => x.forum === t.forum && x.title === t.title)) check(false, `the Season 0 stage ${st.key} tidies "${t.title}" again: use tidyEdits`);
+      else spec.tidy.push(t);
+    }
+    // 標 A retag gives every answer to that thread the same tags, so two entries never pull a
+    // thread's tags back and forth; a thread with no answer yet gets one that only tags it.
+    for (const r of st.retag ?? []) {
+      const at = spec.threads.filter((a) => a.forum === r.forum && a.title === r.title);
+      if (at.length) for (const a of at) a.tags = r.tags;
+      else spec.threads.push({ forum: r.forum, title: r.title, tags: r.tags });
+    }
     if (st.roles) spec.roles = st.roles;
     if (st.onboarding) spec.onboarding = st.onboarding;
     for (const e of st.edits ?? []) {
@@ -647,7 +660,24 @@ check(draftKeys.every((k, i) => draftKeys.indexOf(k) === i && ![...SPEC.messages
 // drafts' own notes to the developer (when, push, approve, needs).
 const readable = (spec) => JSON.stringify(spec, (k, v) => (['_comment', 'when', 'push', 'approve', 'needs'].includes(k) ? undefined : v));
 check(![readable(SPEC), readable(DRAFTS)].some((t) => /bruno/i.test(t)), "the developer's real name is in nothing members read, live or drafted");
-check(!/先(?!行)/.test(JSON.stringify(DRAFTS.stages.map((st) => [st.messages, st.posts, st.roles, st.onboarding, st.edits, st.tidyEdits]))
+// 名 A thread is found on Discord by its exact title, so a stage may only tidy or retag a thread
+// server.json already answers: a title typed from memory would be skipped without a word.
+const known = new Set([...SPEC.threads, ...SPEC.tidy].map((a) => `${a.forum}\u0000${a.title}`));
+const named = DRAFTS.stages.flatMap((st) => [...(st.tidy ?? []), ...(st.retag ?? []), ...(st.tidyEdits ?? [])]);
+check(named.every((a) => known.has(`${a.forum}\u0000${a.title}`)),
+  `the ${named.length} threads the Season 0 drafts tidy or retag are threads server.json already knows by that title`);
+// 標 Two answers to one thread with different tags would set them back and forth on every run.
+const torn = (spec) => {
+  const tags = new Map();
+  return spec.threads.filter((a) => a.tags?.length).filter((a) => {
+    const k = `${a.forum}\u0000${a.title}`, t = JSON.stringify([...a.tags].sort());
+    if (!tags.has(k)) tags.set(k, t);
+    return tags.get(k) !== t;
+  }).map((a) => a.title);
+};
+const tornAt = DRAFTS.stages.map((st, i) => torn(season(i))).flat();
+check(tornAt.length === 0, `after every Season 0 stage, each thread's answers agree on its tags${tornAt.length ? `: ${[...new Set(tornAt)].join(' | ')}` : ''}`);
+check(!/先(?!行)/.test(JSON.stringify(DRAFTS.stages.map((st) => [st.messages, st.posts, st.roles, st.onboarding, st.edits, st.tidyEdits, st.tidy]))
   .replace(/先 alone|先父/g, '')), 'the mark is 先行, never 先 alone (beside a name 先 reads "the late")');
 await scenario({}, async (port, env, state) => {
   await runSetup(port, env);
