@@ -119,6 +119,16 @@ export function nowBuyable(s: State): string | undefined {
 }
 
 /**
+ * 力 The same, power first: what closes the gap to a warden that still wins is power, and
+ * the card waiting on one says so. A rate box only when no power box can be bought.
+ */
+export function powerBuyable(s: State): string | undefined {
+  const u = UPGRADES.find((x) => UPGRADE_INFO[x].affects === 'power'
+    && (x !== 'cores' || isOpen(s.realm, 'cores')) && canBuy(s, x));
+  return u ? `upg-${u}` : nowBuyable(s);
+}
+
+/**
  * 守 The share of fights the guide wants a cultivator to win before it points at a fight they
  * have to choose: the warden in the first realm, a beast that leaves gear in the second. Not a
  * balance number: nothing in the game changes with it, only where the ring is drawn.
@@ -199,7 +209,7 @@ export const STEPS: readonly Step[] = [
     ready: (s) => wardenStands(s) && (s.wardenFell || oddsRaw(s, wardenOf(s.realm)) >= WARDEN_EVEN),
     waiting: {
       text: (s) => (wardenStands(s) ? GUIDE.climb.wardenAhead : GUIDE.climb.waiting),
-      at: (s) => nowBuyable(s),
+      at: (s) => (wardenStands(s) ? powerBuyable(s) : nowBuyable(s)),
     },
     at: (s) => (canBreakThrough(s) ? 'breakthrough' : 'fight-warden'),
     done: (s) => s.realm > 1,

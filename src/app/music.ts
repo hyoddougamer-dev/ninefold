@@ -298,7 +298,7 @@ export function setMusicMuted(on: boolean): void {
 /**
  * 背 Whether the music keeps playing while the game is hidden. Off by default, because a game
  * that goes on singing from a tab nobody is looking at is a surprise; on, for whoever asked
- * (rekaris, 2026-10: the music stopped every time he switched windows). It is only the
+ * (a tester, 2026-10: it stopped at every switch of window). It is only the
  * music: Auto still stops when the game is hidden (useFight.ts), and nothing about the
  * climb changes. Remembered on the device, like the volume.
  */

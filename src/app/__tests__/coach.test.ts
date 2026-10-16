@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { STEPS, WARDEN_EVEN, guide, waitingText } from '../guide.ts';
 import { LAYERS_PER_REALM } from '../../sim/balance.ts';
-import { UPGRADES, buy, newState, type State } from '../../sim/state.ts';
+import { UPGRADES, buy, canBuy, newState, upgradeCost, type State } from '../../sim/state.ts';
 import { wardenOf } from '../../data/bestiary.ts';
 import { oddsRaw } from '../../sim/combat.ts';
 import { GUIDE } from '../copy.ts';
@@ -120,7 +120,14 @@ describe('指 the pointing finger', () => {
     expect(g.step.key).toBe('climb');
     expect(g.ready).toBe(false);
     expect(g.at).not.toBe('fight-warden');
+    // And the box it points at is power, which is what the card asks for and what closes
+    // the gap: the first box in the list is a qi box when the power box costs more.
+    expect(g.at).toBe('upg-technique');
     expect(g.text).toBe(GUIDE.climb.wardenAhead);
+    const cheap: State = { ...weak, qi: upgradeCost(weak, 'method') };
+    expect(canBuy(cheap, 'technique')).toBe(false);
+    expect(canBuy(cheap, 'method')).toBe(true);
+    expect(guide(cheap)!.at).toBe('upg-method');
     // Mid-realm the last step is not even the current one, and when it is reached by
     // the ceiling rule it waits rather than pointing at a fight that does not exist.
     const climb = STEPS[STEPS.length - 1];

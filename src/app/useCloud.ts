@@ -36,14 +36,19 @@ export function useCloud(ready: boolean, latest: MutableRefObject<State>) {
   const push = useCallback(async (name?: string) => {
     if (pushing.current) return;
     pushing.current = true;
+    // 名 The name typed before an email link rides on every sync until one lands, not only
+    // the first after the link: that one can fail (offline, a moment's error), or wait behind
+    // the cloud-or-device question, and the timer's next sync has no name of its own. The
+    // server reads a name only when it makes the profile, so an account with one keeps it.
+    const n = name ?? cloud.wantedName();
     try {
-      const r = await cloud.sync(latest.current, name);
+      const r = await cloud.sync(latest.current, n);
       if ('error' in r) {
         if (r.error !== 'too-soon') setSyncError(r.error);
       } else {
         setSyncError(null);
-        // 名 A name kept for the link has done its one job once a sync has gone.
-        if (name !== undefined) cloud.forgetWantedName();
+        // A name kept for the link has done its one job once a sync has gone.
+        if (n !== undefined) cloud.forgetWantedName();
         setSynced(r); setSyncedAt(Date.now() / 1000);
         cloud.mine().then((m) => {
           setTitle(m?.title ?? null);
@@ -76,8 +81,8 @@ export function useCloud(ready: boolean, latest: MutableRefObject<State>) {
           return;
         }
       }
-      // 名 The name typed before the link was sent rides on the first sync after it.
-      void push(fromLink ? cloud.wantedName() : undefined);
+      // 名 The name typed before the link was sent rides on the sync (push reads it).
+      void push();
     })();
     return () => { live = false; };
   }, [ready, push]);

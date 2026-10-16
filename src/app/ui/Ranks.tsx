@@ -108,7 +108,7 @@ export function Ranks({ who, synced, syncedAt, syncError, reborn = false, onEnte
           <p className="rwhat">{RANKS.boards[current].what}</p>
           {failed ? <p className="rnote">{RANKS.offline}</p>
             : rows === null ? <p className="rnote">{RANKS.loading}</p>
-              : rows.length === 0 ? <p className="rnote">{RANKS.emptyOf[current] ?? RANKS.empty}</p>
+              : rows.length === 0 ? <p className="rnote">{current === 'samsara' && !season ? RANKS.emptySamsaraBefore : RANKS.emptyOf[current] ?? RANKS.empty}</p>
                 : (
                   <ol className="rlist">
                     {rows.map((r) => (

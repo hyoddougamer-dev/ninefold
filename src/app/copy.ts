@@ -162,10 +162,12 @@ export const RANKS = {
   emptyOf: {
     samsara: 'Nobody has been reborn yet this season. Your next sync puts you here.',
   } as Partial<Record<'week' | 'climb' | 'samsara' | 'tower', string>>,
+  /** 輪迴 The same, before the season opens, when there is no season to name yet. */
+  emptySamsaraBefore: 'Nobody has been reborn yet. Your next sync puts you here.',
   /**
    * 修士 What a placeholder name answers when it is tapped. A profile that never chose a name
    * wears 修士 and eight letters of its account, and ten of them on a board read as ten copies
-   * of one cultivator (raziel, 2026-10-15).
+   * of one cultivator (the Discord, 2026-10-15).
    */
   placeholder: {
     han: '修士',
@@ -1598,7 +1600,7 @@ export const WEEK = {
   bounty: (qi: string) => `first kill pays ${qi} qi`,
   bountyTaken: 'the week\u2019s qi is taken',
   /** 疊 The band folded to one line once the week's qi is taken. */
-  quarryFolded: (name: string, left: string) => `${name} \u00b7 double 材 \u00b7 ${left} left`,
+  quarryFolded: (name: string, left: string) => `${name} \u00b7 double 材 material \u00b7 ${left} left`,
   /** How long is left, where the sentence around it has already named the week. */
   left: (when: string) => `${when} left`,
   /**

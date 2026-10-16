@@ -37,8 +37,8 @@ const CORS = {
 };
 
 /** A stand-in for the project: auth, the sync function and the board RPCs. */
-function server(page, { cloud = null, email = null, cliff = [], cliffDown = false, forerunners = null } = {}) {
-  const seen = { syncs: [], names: [] };
+function server(page, { cloud = null, email = null, cliff = [], cliffDown = false, forerunners = null, failSyncs = 0 } = {}) {
+  const seen = { syncs: [], names: [], failed: 0 };
   const user = email ? { ...USER, email, is_anonymous: false } : USER;
   page.route(`${API}/**`, async (route) => {
     const req = route.request();
@@ -55,6 +55,8 @@ function server(page, { cloud = null, email = null, cliff = [], cliffDown = fals
       case '/auth/v1/token': return reply(200, session(user));
       case '/functions/v1/sync':
         if (body?.action === 'pull') return reply(200, { save: cloud, at: new Date().toISOString() });
+        // 斷 The first few syncs can be made to fail, as a dropped connection would.
+        if (seen.failed < failSyncs) { seen.failed++; seen.syncs.push({ ...body, failed: true }); return reply(500, { error: 'offline' }); }
         seen.syncs.push(body);
         if (body?.name) seen.names.push(body.name);
         return reply(200, { ranked: true, state: 'verified', why: [], suspect: false, standing: null, behindHours: 0 });
@@ -243,6 +245,40 @@ console.log('\na name typed before the email link, after the link');
   check(seen.names[0] === 'Lantern', 'and the first sync after the link carries it', JSON.stringify(seen.syncs.map((x) => x?.name ?? null)));
   await page.waitForTimeout(300);
   check(await page.evaluate(() => localStorage.getItem('ninefold.join.name')) === null, 'and then forgets it');
+  await page.close();
+}
+
+// 名 The same, when the first sync after the link does not land: the name waits on the device
+// and rides on the next one (the timer's, or the one when the app is put away), which has no
+// name of its own to give.
+console.log('\na name typed before the email link, when the first sync after it fails');
+{
+  const page = await browser.newPage({ viewport: { width: 400, height: 860 } });
+  const now = Math.floor(Date.now() / 1000);
+  const seen = server(page, { email: 'tester@example.com', failSyncs: 1 });
+  await fresh(page);
+  await page.goto(BASE);
+  await page.waitForSelector('.prologue');
+  await page.click('.prologue .phave');
+  await page.waitForSelector('.ranks .rjoin');
+  await page.fill('.ranks .rjoin input:not([type=email])', 'Lantern');
+  await page.fill('.ranks .rjoin input[type=email]', 'tester@example.com');
+  await page.locator('.ranks .rjoin button.act.ghost').click();
+  await page.waitForSelector('.ranks .rcode input', { timeout: 5000 }).catch(() => {});
+  await page.goto('about:blank');
+  await page.goto(`${BASE}#access_token=test-token&refresh_token=test-refresh&expires_in=3600&expires_at=${now + 3600}&token_type=bearer&type=magiclink`);
+  for (let i = 0; i < 40 && !seen.failed; i++) await page.waitForTimeout(250);
+  check(seen.failed === 1 && seen.names.length === 0, 'the first sync after the link fails, and nothing is named yet');
+  check(await page.evaluate(() => localStorage.getItem('ninefold.join.name')) === 'Lantern', 'and the name is still kept on the device');
+  // 隱 The app put away: the sync that goes then is the next one.
+  await page.evaluate(() => {
+    Object.defineProperty(document, 'visibilityState', { value: 'hidden', configurable: true });
+    document.dispatchEvent(new Event('visibilitychange'));
+  });
+  for (let i = 0; i < 40 && !seen.names.length; i++) await page.waitForTimeout(250);
+  check(seen.names[0] === 'Lantern', 'and the next sync carries it', JSON.stringify(seen.syncs.map((x) => x?.name ?? null)));
+  await page.waitForTimeout(300);
+  check(await page.evaluate(() => localStorage.getItem('ninefold.join.name')) === null, 'and then it is forgotten');
   await page.close();
 }
 

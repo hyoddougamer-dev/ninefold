@@ -264,8 +264,8 @@ export function ItemSheet({ state, item, wearing, onWear, onTakeOff, onSalvage, 
                   {AFFIX_INFO[d.affix].label}
                   {/* 主 The piece's own lead line, wherever the fixed order of the axes puts it.
                       It used to mark whichever line came first, which is power, so a Qi piece
-                      with a power side line read as leading with power (rekaris, "does power
-                      roll twice?"). It never does: the lead is drawn out of the side lines. */}
+                      with a power side line read as leading with power, and a tester took it for
+                      power rolled twice. It never is: the lead is drawn out of the side lines. */}
                   {d.affix === lead && <em className="lead">{ITEM.lead} <span className="cjk">主</span></em>}
                   {/* 頂 The one line that reads bigger than it is, said where it is read. */}
                   {d.affix === 'rate' && d.theirs > 0 && <i className="cap">{ITEM.qiCeiling}</i>}
