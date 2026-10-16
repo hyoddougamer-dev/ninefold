@@ -2,6 +2,8 @@ import { describe, expect, it, beforeAll } from 'vitest';
 import { PGlite } from '@electric-sql/pglite';
 import { readFileSync, readdirSync } from 'node:fs';
 import { SEASON_START } from '../season.ts';
+import { rungOf } from '../rung.ts';
+import { RANK_NAMES, cleanName } from '../../net/names.ts';
 
 /**
  * 榜 The ranked schema, run in a real Postgres (PGlite) with the three things Supabase
@@ -473,6 +475,32 @@ describe('榜 the ranked schema', () => {
   });
 
   /**
+   * 天 R0 (docs/SEASON-RANKS.md): 天下第一 on 修 is the first on the Heaven List, which lists only
+   * the never-reborn. Before 20261016090000_heaven_first.sql, a reborn account whose account best
+   * was the highest was told it wore the crown while absent from the board that gives it.
+   */
+  it('the first under Heaven on my own screen is the first on the Heaven List, never a reborn account above it', async () => {
+    const T = 'd2000000-0000-0000-0000-000000000001'; // reborn once, best 80 and 9 marks: above everyone
+    const H = 'd2000000-0000-0000-0000-000000000002'; // never reborn, 80 and 2 marks: Heaven's first
+    await db.exec(`
+      insert into auth.users values ('${T}'), ('${H}');
+      insert into profiles (id, name) values ('${T}', 'Reborn Above'), ('${H}', 'Heaven First');
+      insert into standings (user_id, climb, marks, tower, week, week_from, lives, samsara_climb) values
+        ('${T}', 80, 9, 0, week_of(), 0, 1, 20), ('${H}', 80, 2, 0, week_of(), 0, 0, 80);
+    `);
+    try {
+      const first = (await as(null, `select name, title from board('climb') where rank = 1`)).rows[0] as any;
+      expect(first).toEqual({ name: 'Heaven First', title: '天下第一' });
+      expect(((await as(H, `select my_standing() as s`)).rows[0] as any).s.title).toBe('天下第一');
+      expect(((await as(T, `select my_standing() as s`)).rows[0] as any).s.title).not.toBe('天下第一');
+      expect(((await as(A, `select my_standing() as s`)).rows[0] as any).s.title).not.toBe('天下第一');
+    } finally {
+      await db.exec(`delete from auth.users where id in ('${T}', '${H}')`);
+    }
+    expect(((await as(A, `select my_standing() as s`)).rows[0] as any).s.title).toBe('天下第一');
+  });
+
+  /**
    * 輪迴 The Samsara board (decided 2026-10-11). Heaven lists only the cultivators who have never
    * reborn; the Samsara board lists those who have, by the record of the life they are living,
    * which a rebirth sets back. The weekly board and the tower are not changed by it.
@@ -754,7 +782,7 @@ describe('開山 the Founding: Forerunner, the Cliff, staff', () => {
         .toEqual({ 'Fore Stamped': true });
       const cols = async (sql: string) => (await db.query(`${sql} limit 0`)).fields.map((f: any) => f.name);
       expect(await cols(`select * from board('climb')`)).toEqual(
-        ['rank', 'name', 'climb', 'marks', 'tower', 'gain', 'title', 'me', 'calling', 'forerunner']);
+        ['rank', 'name', 'climb', 'marks', 'tower', 'gain', 'title', 'me', 'calling', 'forerunner', 'rung']);
       expect(await cols(`select * from samsara_board()`)).toEqual(await cols(`select * from board('climb')`));
       expect(((await as(F(1), `select my_standing() as s`)).rows[0] as any).s).toMatchObject({ name: 'Fore Refused', forerunner: true });
       expect(((await as(F(5), `select my_standing() as s`)).rows[0] as any).s).toMatchObject({ forerunner: false });
@@ -1063,5 +1091,153 @@ describe('開山 the Founding: Forerunner, the Cliff, staff', () => {
     } finally {
       await switchBack();
     }
+  });
+});
+
+/**
+ * 位 The sect rank (docs/SEASON-RANKS.md, section 3; 20261016100000_sect_rank.sql). Derived from
+ * the verified standings and never stored, so no player can write one; dormant until the switch
+ * (every rung null, every count zero); from it, shown on season rows only, never for an account
+ * held for review or banned, and never falling with a rebirth.
+ */
+describe('位 the sect rank', () => {
+  const at = (ms: number) => `'${new Date(ms).toISOString()}'::timestamptz`;
+  const switchAt = (t: string) => db.exec(`create or replace function public.season_start() returns timestamptz
+    language sql stable set search_path = public as $$ select ${t} $$`);
+  const switchBack = () => switchAt(`to_timestamp(${SEASON_START})`);
+  const R = (n: number) => `a0000000-0000-0000-0000-${String(n).padStart(12, '0')}`;
+  const mine = async (uid: string) => ((await as(uid, `select my_standing() as s`)).rows[0] as any).s;
+  const counts = async () => Object.fromEntries(((await as(null, `select rung, players from rungs()`)).rows as any[])
+    .map((r) => [Number(r.rung), Number(r.players)])) as Record<number, number>;
+  const rungsOn = async (sql: string) => Object.fromEntries(((await as(null, sql)).rows as any[])
+    .filter((r) => /Rank/.test(r.name)).map((r) => [r.name, r.rung]));
+  // Six cultivators: 1 at 86 (Peak Lord), reborn and climbing again at 20; 2 at 82 (Elder);
+  // 3 at 27 (Core); 4 at 63, held for review; 5 at 45, banned; 6 at 9, the closed test's row.
+  const seed = () => db.exec(`
+    insert into auth.users values ('${R(1)}'), ('${R(2)}'), ('${R(3)}'), ('${R(4)}'), ('${R(5)}'), ('${R(6)}');
+    insert into profiles (id, name, suspect, banned) values ('${R(1)}', 'Rank Reborn', false, false),
+      ('${R(2)}', 'Rank Elder', false, false), ('${R(3)}', '修士 Rank', false, false), ('${R(4)}', 'Rank Held', true, false),
+      ('${R(5)}', 'Rank Banned', false, true), ('${R(6)}', 'Rank Closed', false, false);
+    insert into standings (user_id, climb, marks, tower, week, week_from, lives, samsara_climb, samsara_marks, updated_at) values
+      ('${R(1)}', 80, 6, 4, week_of(), 0, 1, 20, 0, now()),
+      ('${R(2)}', 80, 2, 3, week_of(), 0, 0, 80, 2, now()),
+      ('${R(3)}', 27, 0, 2, week_of(), 0, 0, 27, 0, now()),
+      ('${R(4)}', 63, 0, 1, week_of(), 0, 0, 63, 0, now()),
+      ('${R(5)}', 45, 0, 1, week_of(), 0, 0, 45, 0, now()),
+      ('${R(6)}', 9, 0, 1, week_of(), 0, 0, 9, 0, now());`);
+  const unseed = () => db.exec(`delete from auth.users where id::text like 'a0000000-%'`);
+
+  it('rung_of() on the server is rungOf() in the game, for every score from 0 to 120', async () => {
+    const got = (await db.query(`select s, rung_of(s) as r from generate_series(0, 120) s order by s`)).rows as any[];
+    expect(got).toHaveLength(121);
+    for (const { s, r } of got) expect(Number(r), `score ${s}`).toBe(rungOf(Number(s)));
+    expect(Number(((await db.query(`select rung_of(null) as r`)).rows[0] as any).r)).toBe(0);
+  });
+
+  it('before the switch it is dormant: no rung on any board or on my own screen, no carving, nine zeros', async () => {
+    await switchAt(`now() + interval '1 day'`);
+    await seed();
+    try {
+      for (const sql of [`select name, rung from board('climb')`, `select name, rung from board('week')`,
+        `select name, rung from board('tower')`, `select name, rung from samsara_board()`]) {
+        const rows = (await as(R(2), sql)).rows as any[];
+        expect(rows.filter((r) => /Rank/.test(r.name)).length, sql).toBeGreaterThan(0);
+        expect(rows.every((r) => r.rung === null), sql).toBe(true);
+      }
+      for (const n of [1, 2, 3]) {
+        const s = await mine(R(n));
+        expect(s.rung, `rank ${n}`).toBeNull();
+        expect(s.carved, `rank ${n}`).toBeNull();
+      }
+      const zeros = (await as(null, `select rung, players from rungs()`)).rows as any[];
+      expect(zeros.map((r) => [Number(r.rung), Number(r.players)])).toEqual(Array.from({ length: 9 }, (_, i) => [i, 0]));
+    } finally {
+      await unseed();
+      await switchBack();
+    }
+  });
+
+  it('from the switch, a rung on every season row: the account best, never the held, the banned or the closed test', async () => {
+    const SWITCH = Date.now() - 3_600_000;
+    await switchAt(at(SWITCH));
+    const before = await counts();
+    await seed();
+    await db.exec(`update standings set updated_at = ${at(SWITCH)} - interval '1 day' where user_id = '${R(6)}'`);
+    try {
+      // Every board carries the rung of the account's verified climb plus marks.
+      expect(await rungsOn(`select name, rung from board('tower')`)).toEqual({ 'Rank Reborn': 6, 'Rank Elder': 5, '修士 Rank': 2 });
+      expect(await rungsOn(`select name, rung from board('climb')`)).toEqual({ 'Rank Elder': 5, '修士 Rank': 2 });
+      // Samsara ranks the life being lived (climb 20), and the rung is the account's (86).
+      const sam = ((await as(null, `select name, climb, rung from samsara_board()`)).rows as any[]).find((r) => r.name === 'Rank Reborn');
+      expect(sam).toEqual({ name: 'Rank Reborn', climb: 20, rung: 6 });
+      // Where I stand: my rung; none while held or banned; none for a row the closed test wrote.
+      expect((await mine(R(1))).rung).toBe(6);
+      expect((await mine(R(3))).rung).toBe(2);
+      expect(await mine(R(4))).toMatchObject({ suspect: true, rung: null });
+      expect(await mine(R(5))).toMatchObject({ banned: true, rung: null });
+      expect((await mine(R(6))).rung).toBeNull();
+      // The counts: the three honest season rows, nobody held, banned or from the closed test.
+      const after = await counts();
+      const delta = Object.fromEntries(Object.keys(after).map((k) => [k, after[+k] - (before[+k] ?? 0)]));
+      expect(delta).toEqual({ 0: 0, 1: 0, 2: 1, 3: 0, 4: 0, 5: 1, 6: 1, 7: 0, 8: 0 });
+      // A rebirth never lowers it: the account best stays, whatever this life reads.
+      await db.exec(`update standings set lives = 2, samsara_climb = 3, updated_at = now() where user_id = '${R(1)}'`);
+      expect((await mine(R(1))).rung).toBe(6);
+      // Cleared from review, the rung comes back.
+      await db.exec(`update profiles set suspect = false where id = '${R(4)}'`);
+      expect((await mine(R(4))).rung).toBe(4);
+    } finally {
+      await unseed();
+      await switchBack();
+    }
+  });
+
+  it('rungs() answers counts only, and where I was carved reads exactly as the Cliff does', async () => {
+    const cols = (await db.query(`select * from rungs() limit 0`)).fields.map((f: any) => f.name);
+    expect(cols).toEqual(['rung', 'players']);
+    await switchAt(at(Date.now() - 3_600_000));
+    await seed();
+    try {
+      expect(JSON.stringify((await as(null, `select * from rungs()`)).rows)).not.toMatch(/[0-9a-f]{8}-[0-9a-f]{4}-|Rank/);
+      for (const n of [1, 2, 3]) {
+        const name = (await mine(R(n))).name;
+        const cliff = ((await as(R(n), `select gate, rank, name from cliff()`)).rows as any[])
+          .filter((r) => r.name === name).map((r) => ({ gate: r.gate, rank: r.rank }));
+        expect(cliff.length, name).toBeGreaterThan(0);
+        expect((await mine(R(n))).carved, name).toEqual(cliff);
+      }
+      // 修士 Rank is at 27: through gates 1 to 3. The held are carved, and read none until cleared.
+      expect((await mine(R(3))).carved.map((c: any) => c.gate)).toEqual([1, 2, 3]);
+      expect((await mine(R(4))).carved).toEqual([]);
+    } finally {
+      await unseed();
+      await switchBack();
+    }
+  });
+
+  it('keeps the nine ranks out of the names, whole, in every form, and leaves the near names alone', async () => {
+    for (const n of RANK_NAMES) await expect(as(A, `select set_name($1)`, [n]), n).rejects.toThrow(/name reserved/);
+    for (const n of ['内门弟子', '長 老', '护法', '真传弟子', ' 核心 弟子 ', '太上 长老']) {
+      await expect(as(A, `select set_name($1)`, [n]), n).rejects.toThrow(/name reserved/);
+      expect(cleanName(n), n).toBeNull();
+    }
+    for (const n of ['長老鶴', '老祖宗', '峰主人', 'Elder Wu']) {
+      expect(((await as(A, `select set_name($1) as n`, [n])).rows[0] as any).n, n).toBe(n);
+      expect(cleanName(n), n).toBe(n);
+    }
+    await db.exec(`update profiles set name = '修士 Alpha' where id = '${A}'`);
+  });
+
+  it('no player writes a rank: it is no column anywhere, and its functions search pg_temp last', async () => {
+    const col = await db.query(`select 1 from information_schema.columns where table_schema = 'public' and column_name = 'rung'
+      and table_name in (select table_name from information_schema.tables where table_schema = 'public' and table_type = 'BASE TABLE')`);
+    expect(col.rows).toEqual([]);
+    await expect(as(A, `update standings set climb = 100 where user_id = '${A}'`)).rejects.toThrow(/permission denied/);
+    const got = (await db.query(`select p.proname, p.prosecdef, array_to_string(p.proconfig, ',') as cfg
+      from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+      where n.nspname = 'public' and p.proname in ('rung_on', 'rung_of', 'rungs')`)).rows as any[];
+    expect(got.map((r) => r.proname).sort()).toEqual(['rung_of', 'rung_on', 'rungs']);
+    for (const r of got) expect(r.cfg, r.proname).toMatch(/^search_path=.*\bpg_temp$/);
+    expect(got.find((r) => r.proname === 'rungs').prosecdef).toBe(true);
   });
 });
