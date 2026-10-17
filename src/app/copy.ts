@@ -2425,7 +2425,7 @@ export const NOTICE = {
       + 'falls off beasts. Until you have some, this realm\'s warden will not fall.',
   },
   platform: {
-    title: '擂台 Three challengers a week',
+    title: 'The Platform: three challengers a week',
     text: 'On 塔 Trials. They stand against your own power, so the build wins them, not the number. '
       + 'A win pays a fixed sum of qi, the same for everyone in your realm and class; a loss costs nothing, and the dice are set for the week.',
   },

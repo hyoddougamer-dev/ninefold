@@ -85,7 +85,7 @@ import { Breakthrough, bloomHolds } from './ui/Breakthrough.tsx';
 import { LockedSystem } from './ui/LockedSystem.tsx';
 import { NoticeCard, UpdateBar } from './ui/Notices.tsx';
 import { takeUpdate, watchForUpdates } from './updates.ts';
-import { nextNotice } from './notices.ts';
+import { nextNotice, type NoticeGo } from './notices.ts';
 import { SECT_KEY, sectNotice, withShown } from './sect.ts';
 import { rungFrom } from '../sim/rung.ts';
 import { DISMISSED, guide } from './guide.ts';
@@ -454,11 +454,12 @@ export function App() {
     [state, ready, battle, bloom, season, who, standing],
   );
 
-  const readNotice = useCallback((key: string, go?: 'hunt' | 'trials' | 'gear' | 'dao' | 'crafts') => {
+  const readNotice = useCallback((key: string, go?: NoticeGo) => {
     // 升 The sect key replaces the one before it: one key however many ranks and gates it has shown.
     setState((s) => (s.seen.includes(key) ? s
       : { ...s, seen: key.startsWith(SECT_KEY) ? withShown(s.seen, key) : [...s.seen, key] }));
-    if (go) setTab(go);
+    if (go === 'ranks') setRanks(true);
+    else if (go) setTab(go);
     sfx.tap();
     haptics.tap();
   }, []);

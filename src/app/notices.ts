@@ -36,6 +36,8 @@ export function endsHere(): string {
  *   3. **It never blocks.** The card sits at the foot of the screen and the game carries
  *      on behind it.
  */
+export type NoticeGo = 'hunt' | 'trials' | 'gear' | 'dao' | 'crafts' | 'ranks';
+
 export interface Notice {
   readonly key: string;
   readonly han: string;
@@ -43,8 +45,8 @@ export interface Notice {
   readonly text: string;
   /** Is this true yet? */
   readonly when: (s: State) => boolean;
-  /** Where to send the player, if there is somewhere. */
-  readonly tab?: 'hunt' | 'trials' | 'gear' | 'dao' | 'crafts';
+  /** Where to send the player, if there is somewhere: a tab, or 榜 Ranks, which is not one. */
+  readonly tab?: NoticeGo;
 }
 
 /** 封 The seal's card, read off SEAL_DAYS: the sealed realms, and the shortest and longest seal. */
@@ -59,7 +61,8 @@ export const NOTICES: readonly Notice[] = [
     // 終 The closed test's last week: from 19 October until the switch, never before and never
     // after, read off the game's own clock. First in the list, because it is the one card that
     // stops being true. Once read it is in `seen`, and the save it is in retires at the switch.
-    key: 'lastweek', han: '終', title: NOTICE.lastWeek.title, text: NOTICE.lastWeek.text(endsHere()),
+    // 榜 Its button opens Ranks, because joining Ranks before the switch is what it asks for.
+    key: 'lastweek', han: '終', title: NOTICE.lastWeek.title, text: NOTICE.lastWeek.text(endsHere()), tab: 'ranks',
     when: (s) => s.at >= LAST_WEEK && s.at < SEASON_START,
   },
   {
@@ -124,5 +127,6 @@ export const NOTICES: readonly Notice[] = [
  */
 export function nextNotice(s: State): Notice | null {
   const fresh = freshTabs(s);
-  return NOTICES.find((n) => !s.seen.includes(n.key) && !(n.tab && fresh.includes(n.tab)) && n.when(s)) ?? null;
+  return NOTICES.find((n) => !s.seen.includes(n.key)
+    && !(n.tab && n.tab !== 'ranks' && fresh.includes(n.tab)) && n.when(s)) ?? null;
 }

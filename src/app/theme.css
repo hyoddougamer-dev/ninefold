@@ -710,6 +710,13 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
                  padding: 8px 12px; cursor: pointer; font-weight: 600; }
 @keyframes arrive { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .notice { animation: none; } }
+/* 窄 At 320 the button beside the words left them a column of 140px and the card ran to twelve
+   lines over the screen. Below about 360px it goes under them, on the right, as a reply would. */
+@media (max-width: 359px) {
+  .notice { flex-wrap: wrap; row-gap: 8px; }
+  .notice > span { flex: 1 1 calc(100% - 64px); min-width: 0; }
+  .notice button { margin-left: auto; }
+}
 /* 版 On a PC the card sits over the stage, clear of the rail, and no wider than it reads:
    left and right with a max width and auto margins centre it without a transform. */
 @media (min-width: 1100px) {
