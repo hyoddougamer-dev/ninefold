@@ -244,7 +244,14 @@ describe('同步 the ranked sync', () => {
 
   it('a guest signed up now cannot take first place with a save that says it began a month ago', async () => {
     const m = memory();
-    const far = shots[shots.length - 1].s;
+    // 月 A month, as the name says. It was the twentieth day of the shared walk, which the
+    // server's best-rate reading put at 1.07 of the three days PRE_JOIN_CREDIT allows; once a
+    // realm's meetings and second demon waited for its layers (d8c7ac3) that day stood a layer
+    // lower and read 0.998, inside them. Measured 2026-10-17: day 25 reads 0.99 and day 30
+    // (the seventh realm, layer 5) 1.29. Three days of credit cover what this cultivator
+    // climbs in about twenty-five, which is the credit's design and worth knowing.
+    const month = walk(30);
+    const far = month[month.length - 1].s;
     const r = await sync(m.store, 'g1', far, far.at + 10, 'Cheat', far.at + 10);
     expect(r.status).toBe(200);
     if (r.status === 200) {

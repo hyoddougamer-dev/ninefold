@@ -66,9 +66,14 @@ describe('留 hold the layer: off for everyone until it is turned on', () => {
     // quarry stopped changing animal inside a week (drawn from the realm's first layer, not the
     // layer stood on): e1c5d13 with the gate and that draw gives these same digits again, and so
     // does this tree with the toggle off. Off means off.
+    // 層 Taken a fourth time on 2026-10-17, when a realm's meetings and its second heart demon
+    // moved to its layers (d8c7ac3, MEET_LAYERS and DEMON_LATE_LAYER). That change touches the
+    // road and the door, never the hold, and 875e601, the tree before it, still gives the old
+    // digits (active on day 47.667, drives it all 48.5); these are the same habits on this tree
+    // with the toggle off. Off still means off: the toggle is false through every walk below.
     const was: Record<string, { arrival: number[]; fights: number; power: number }> = {
-      active: { arrival: [0, 0.5, 1, 3.333, 7.833, 13.833, 23.5, 35, 47.667], fights: 3901, power: 67075506000 },
-      'drives it all': { arrival: [0, 0.5, 1.167, 3.5, 7.667, 14, 24.333, 36.667, 48.5], fights: 25258, power: 65582374000 },
+      active: { arrival: [0, 0.5, 1, 3.333, 7.667, 14.333, 24.5, 35.667, 49.5], fights: 3931, power: 60968266000 },
+      'drives it all': { arrival: [0, 0.5, 1.167, 3.5, 7.833, 14, 24.167, 35.833, 49.5], fights: 29413, power: 61713545000 },
     };
     for (const [name, want] of Object.entries(was)) {
       const run = play(HABITS.find((h) => h.name === name)!, 120);

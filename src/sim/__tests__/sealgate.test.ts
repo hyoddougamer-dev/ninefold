@@ -723,9 +723,16 @@ describe('量 what paying into the bar changes (tools/seal.ts)', () => {
     // Paying is a gain, but a small one: a day or two of fifty, never a shortcut past the summit.
     expect(real.realm9!).toBeLessThanOrEqual(waits.realm9!);
     expect(waits.realm9! - real.realm9!).toBeLessThan(4);
-    // Off its value either way, it moves by a day at a tenth and two at half and double: not a knife edge.
-    expect(Math.abs(less.realm9! - real.realm9!)).toBeLessThanOrEqual(1);
-    expect(Math.abs(more.realm9! - real.realm9!)).toBeLessThanOrEqual(1);
+    // Off its value either way, it moves by a day and a half at a tenth and two at half and
+    // double: not a knife edge. 量 A day and a half, not one, since 2026-10-17: read over five
+    // seeds (991, 7, 42, 1234, 2026), a tenth either side moved the ninth realm by 0.0 to 1.1
+    // days on 875e601 and 0.0 to 1.5 once the road and the second demon waited for the layers
+    // (d8c7ac3), the 1.5 at this seed, where paying at the real price happened to land early
+    // (47.3, against 47.7 to 48.2 at the others). The same seed noise moves half and double by
+    // up to 1.8 on 875e601 and 1.4 now. Every one of them still beats waiting.
+    expect(Math.abs(less.realm9! - real.realm9!)).toBeLessThanOrEqual(1.5);
+    expect(Math.abs(more.realm9! - real.realm9!)).toBeLessThanOrEqual(1.5);
+    for (const r of [less, more, cheap, dear]) expect(r.realm9!).toBeLessThan(waits.realm9!);
     expect(Math.abs(cheap.realm9! - real.realm9!)).toBeLessThanOrEqual(2);
     expect(Math.abs(dear.realm9! - real.realm9!)).toBeLessThanOrEqual(2);
     // What the seal was asked to fix: the payer stands at the gate less than the waiter.
