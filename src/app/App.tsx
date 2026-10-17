@@ -939,10 +939,10 @@ export function App() {
       )}
       {cards && (
         <Cards state={state} onClose={() => { setCards(false); sfx.tap(); }}
-          onTrade={(i, key) => {
+          onTrade={(i, key, pay) => {
             const id = tap();
             setState((s) => {
-              const r = retrade(s, i, key);
+              const r = retrade(s, i, key, pay);
               if (!r.refused) once(id, () => { float(AWAKEN.hand.traded(cardOf(key)?.name ?? ''), 'gold'); sfx.buy(); haptics.strike(); });
               return r.state;
             });

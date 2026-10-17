@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { AWAKENINGS, held, type Card } from '../../sim/awaken.ts';
-import { alternatives, retrade, retradeCost, retradeDays } from '../../sim/retrade.ts';
+import { alternatives, paysInDao, retrade, retradeCost, retradeDao, retradeDays, type Pay } from '../../sim/retrade.ts';
+import { freePoints } from '../../sim/points.ts';
 import { cardWorth } from '../../sim/cardworth.ts';
 import { HEAVENS } from '../../data/heavens.ts';
 import { realm as realmOf } from '../../data/realms.ts';
@@ -32,13 +33,19 @@ function whence(i: number): string {
 
 export function Cards({ state, onTrade, onClose }: {
   state: State;
-  onTrade: (index: number, key: string) => void;
+  onTrade: (index: number, key: string, pay: Pay) => void;
   onClose: () => void;
 }) {
   const cards = held(state.awakened);
   const [open, setOpen] = useState<number | null>(null);
   /** 確 The card a first tap asked for. Qi paid is gone, so the second tap is the one that pays. */
   const [sure, setSure] = useState<string | null>(null);
+  /**
+   * 道 What a tap pays with. A finished tree's spare points are offered first, because qi still
+   * buys things and those points buy nothing else; a tree that still grows only ever pays qi.
+   */
+  const finished = paysInDao(state);
+  const [pay, setPay] = useState<Pay>('dao');
 
   /** What an alternative does, read as if it stood where card `i` stands. */
   const says = (i: number, c: Card) => AWAKEN.effect(c.effect, cardWorth(state, c, i));
@@ -50,6 +57,10 @@ export function Cards({ state, onTrade, onClose }: {
 
       {cards.map((c, i) => {
         const cost = retradeCost(state, i);
+        const points = retradeDao(state.awakened, i);
+        // A purse short of this card's price pays in qi, and the switch says so.
+        const short = freePoints(state) < points;
+        const paying: Pay = finished && !short ? pay : 'qi';
         const isOpen = open === i;
         return (
           <section key={`${i}${c.key}`} className="cb-card" data-open={isOpen || undefined}>
@@ -68,8 +79,20 @@ export function Cards({ state, onTrade, onClose }: {
             {isOpen && (
               <div className="cb-alts">
                 <p className="cb-cost">{AWAKEN.hand.cost(days(retradeDays(state.awakened, i)), `${num(cost)} qi`)}</p>
+                {finished && <>
+                  <p className="cb-cost cb-dao">{AWAKEN.hand.costDao(points)}</p>
+                  <div className="cb-pay" role="radiogroup">
+                    {(['dao', 'qi'] as const).map((p) => (
+                      <button key={p} type="button" role="radio" aria-checked={paying === p} data-on={paying === p}
+                        disabled={p === 'dao' && short}
+                        onClick={() => { setPay(p); setSure(null); }}>
+                        {p === 'dao' ? AWAKEN.hand.payDao : AWAKEN.hand.payQi}
+                      </button>
+                    ))}
+                  </div>
+                </>}
                 {alternatives(state.awakened, i).map((alt) => {
-                  const refused = retrade(state, i, alt.key).refused;
+                  const refused = retrade(state, i, alt.key, paying).refused;
                   return (
                     <div key={alt.key} className="cb-alt">
                       <span className="cb-icon"><Svg html={icon(alt.icon, 26)} /></span>
@@ -81,9 +104,10 @@ export function Cards({ state, onTrade, onClose }: {
                       <button type="button" className={sure === alt.key ? 'act' : 'act ghost'} disabled={!!refused}
                         onClick={() => {
                           if (sure !== alt.key) { setSure(alt.key); return; }
-                          onTrade(i, alt.key); setOpen(null); setSure(null);
+                          onTrade(i, alt.key, paying); setOpen(null); setSure(null);
                         }}>
-                        {sure === alt.key ? AWAKEN.hand.sure(num(cost)) : AWAKEN.hand.trade}
+                        {sure === alt.key ? (paying === 'dao' ? AWAKEN.hand.sureDao(points) : AWAKEN.hand.sure(num(cost)))
+                          : AWAKEN.hand.trade}
                       </button>
                     </div>
                   );

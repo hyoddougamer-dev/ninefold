@@ -147,7 +147,8 @@ export function Dao({ state, onUnlock, onSwap, onStance, onSequence }: {
    */
   const [half, setHalf] = useState<Half>('tree');
   const earned = earnedOf(state);
-  const spent = daoSpent(state.unlocked);
+  // 改 Points a card trade took are spent as surely as a node's (sim/retrade.ts).
+  const spent = daoSpent(state.unlocked) + Math.max(0, state.daoPaid ?? 0);
   const free = freeOf(state);
   /**
    * 點 Points a node in reach would take. The pip and the gold read this and not `free`:

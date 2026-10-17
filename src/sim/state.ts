@@ -234,6 +234,12 @@ export interface State {
   /** 龕 The 道 points 秘境 the vault's shrines have paid, against SHRINE_DAO_PER_REALM. */
   vaultDao: number;
   /**
+   * 改 The 道 points paid for 悟道 card trades (sim/retrade.ts, RETRADE_DAO), which only a tree
+   * finished for good can pay. Spent like a node is spent: freePoints takes it off. Older
+   * saves have none.
+   */
+  daoPaid?: number;
+  /**
    * 緣 Which answer each meeting was given, by key. The road remembers it: some people
    * only come back to somebody who answered them one way, the 心 heart is added up from
    * it, and the things that stay (boons) are read from it. Older saves have none, and
@@ -494,7 +500,7 @@ export function newState(now: number): State {
     filters: [],
     brewed: { ...NO_PILLS },
     awakened: [],
-    met: [], metAt: 0, metPoints: 0, vaultDao: 0, chose: {},
+    met: [], metAt: 0, metPoints: 0, vaultDao: 0, daoPaid: 0, chose: {},
     beds: Array.from({ length: BEDS }, () => EMPTY), reaped: 0,
     runStep: -1, runAt: 0, runs: 0, lastRun: NO_TAKE, keyDay: 0, forkAt: 0,
     spring: 0, springAt: now, incenseUntil: 0, trail: false,

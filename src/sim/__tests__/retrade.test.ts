@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { ALL_NODES } from '../../data/techniques.ts';
 import { TRIOS } from '../awaken.ts';
-import { RETRADE_DAYS } from '../balance.ts';
+import { RETRADE_DAO, RETRADE_DAYS } from '../balance.ts';
 import { chestLimit } from '../chest.ts';
-import { canUnlock } from '../dao.ts';
-import { freePoints } from '../points.ts';
-import { alternatives, retrade, retradeCost, retradeDays } from '../retrade.ts';
+import { canUnlock, capstonesOpen } from '../dao.ts';
+import { earnedPoints, freePoints, treeFull } from '../points.ts';
+import { alternatives, paysInDao, retrade, retradeCost, retradeDao, retradeDays } from '../retrade.ts';
+import { isOpen } from '../unlocks.ts';
 import { newState, rate, type State } from '../state.ts';
 import { validate } from '../load.ts';
 
@@ -93,5 +94,75 @@ describe('改 trading a card already taken', () => {
     expect(retrade(s, 0, other.key).refused).toBe('chest');
     // With room to spare it goes through.
     expect(retrade({ ...s, chest: chest.slice(0, 2) }, 0, other.key).refused).toBeNull();
+  });
+});
+
+/** Every node the tree will take, bought the way a cultivator who buys everything buys. */
+function spentOut(s0: State): State {
+  let s = s0;
+  for (let guard = 0; guard < 400; guard++) {
+    const free = freePoints(s);
+    const n = ALL_NODES.find((x) => canUnlock(x.key, s.unlocked, free, isOpen(s.realm, 'keystones'), capstonesOpen(s.realm)));
+    if (!n) break;
+    s = { ...s, unlocked: [...s.unlocked, n.key] };
+  }
+  return s;
+}
+
+/**
+ * 道 The release audit of 2026-10-16: from the sixth realm to the summit a finished tree held
+ * 7 to 52 points that nothing would take. A trade can be paid in them instead of qi, and only
+ * there, so a tree that still grows never spends its points on a card by mistake.
+ */
+describe('道 a finished tree can pay a trade in points', () => {
+  // Read through validate() first, so the purse is one a load keeps as it is.
+  const rich = () => spentOut(validate(JSON.parse(JSON.stringify(body({ realm: 8, metPoints: 60, qi: 0 }))), T0));
+
+  it('prices one point for each card back, the step the qi price climbs by', () => {
+    const s = body();
+    expect(retradeDao(s.awakened, 2)).toBe(RETRADE_DAO);
+    expect(retradeDao(s.awakened, 0)).toBe(3 * RETRADE_DAO);
+    expect(retradeDao(s.awakened, 3)).toBe(Infinity);
+  });
+
+  it('pays from the purse, keeps the qi, and reads back the same after a load', () => {
+    const s = rich();
+    expect(treeFull(s, false)).toBe(true);
+    expect(paysInDao(s)).toBe(true);
+    const free = freePoints(s);
+    // A card that pays no 道 of its own, so the purse moves by the price and nothing else.
+    const to = TRIOS[0].find((c) => c.key !== s.awakened[0] && c.effect.kind !== 'dao')!.key;
+    expect(TRIOS[0].find((c) => c.key === s.awakened[0])!.effect.kind).not.toBe('dao');
+    const r = retrade(s, 0, to, 'dao');
+    expect(r.refused).toBeNull();
+    expect(r.state.awakened[0]).toBe(to);
+    expect(r.state.qi).toBe(s.qi);
+    expect(r.state.daoPaid).toBe(retradeDao(s.awakened, 0));
+    expect(freePoints(r.state)).toBe(free - retradeDao(s.awakened, 0));
+    const back = validate(JSON.parse(JSON.stringify(r.state)), T0);
+    expect(back.daoPaid).toBe(r.state.daoPaid);
+    expect(freePoints(back)).toBe(freePoints(r.state));
+  });
+
+  it('is refused to a tree that still has a node to buy, whatever the purse holds', () => {
+    const s = body({ metPoints: 60 });
+    expect(treeFull(s, false)).toBe(false);
+    const r = retrade(s, 0, TRIOS[0][1].key, 'dao');
+    expect(r.refused).toBe('points');
+    expect(r.state).toBe(s);
+  });
+
+  it('is refused when the purse is short, and takes nothing', () => {
+    const s0 = rich();
+    const s = { ...s0, daoPaid: freePoints(s0) };
+    expect(freePoints(s)).toBe(0);
+    expect(retrade(s, 2, TRIOS[2][1].key, 'dao').refused).toBe('points');
+  });
+
+  it('never lets a forged count of paid points past what was earned', () => {
+    const s = rich();
+    const back = validate(JSON.parse(JSON.stringify({ ...s, daoPaid: 1e9 })), T0);
+    expect(back.daoPaid).toBe(earnedPoints(back));
+    expect(validate(JSON.parse(JSON.stringify({ ...s, daoPaid: -5 })), T0).daoPaid).toBe(0);
   });
 });

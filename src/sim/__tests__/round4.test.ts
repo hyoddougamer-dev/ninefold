@@ -8,6 +8,8 @@ import { fortuneOf } from '../fortune.ts';
 import { doorsAt, giftOf } from '../secret.ts';
 import { newState, type State } from '../state.ts';
 import { validate } from '../load.ts';
+import { freePoints, treeFull } from '../points.ts';
+import { isOpen } from '../unlocks.ts';
 
 /**
  * 四 The testers' fourth round, held where the numbers are.
@@ -78,6 +80,30 @@ describe('龕 the vault pays 道 up to its realm, and then offers the spring ins
       expect(doors[0].kind).toBe('spring');
     }
     expect(giftOf(s, shrine as never, 0).dao).toBe(0);
+  });
+
+  /**
+   * 滿 The release audit of 2026-10-16: a cultivator who bought every node had the tree
+   * finished on day 16 and was still offered shrines to the ninth realm, for points nothing
+   * would take. A finished tree is offered the room's other third door instead; a tree still
+   * growing keeps its shrine.
+   */
+  it('offers no shrine to a tree finished for good, and keeps it for one still growing', () => {
+    let full = at({ realm: 8, metPoints: 200, runStep: 2 });
+    for (let guard = 0; guard < 400; guard++) {
+      const n = ALL_NODES.find((x) => canUnlock(x.key, full.unlocked, freePoints(full), isOpen(8, 'keystones'), capstonesOpen(8)));
+      if (!n) break;
+      full = { ...full, unlocked: [...full.unlocked, n.key] };
+    }
+    expect(treeFull(full, false)).toBe(true);
+    const growing = { ...full, unlocked: full.unlocked.slice(0, -1) };
+    expect(treeFull(growing, false)).toBe(false);
+    const shrines = (s: State) => Array.from({ length: 40 }, (_, n) => doorsAt({ ...s, runs: n }, 2))
+      .filter((doors) => doors.some((d) => d.kind === 'shrine')).length;
+    expect(shrines(growing)).toBeGreaterThan(0);
+    expect(shrines(full)).toBe(0);
+    // And the room still has its third door: the seed draws another in the shrine's place.
+    for (let n = 0; n < 40; n++) expect(doorsAt({ ...full, runs: n }, 2).length).toBeGreaterThanOrEqual(2);
   });
 
   it('reads an old save with no count as none paid, and caps a forged count at the realm', () => {

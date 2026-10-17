@@ -38,9 +38,10 @@ export function earnedPoints(s: State): number {
     daoPoints(s.awakened) + Math.max(0, s.metPoints) + demonPoints(s));
 }
 
+/** What is earned and not spent: on nodes, and 改 on card trades (daoPaid). */
 export function freePoints(s: State): number {
   return daoFree(layersOpened(s), wardensDown(s), s.unlocked, filledRealms(s),
-    daoPoints(s.awakened) + Math.max(0, s.metPoints) + demonPoints(s));
+    daoPoints(s.awakened) + Math.max(0, s.metPoints) + demonPoints(s)) - Math.max(0, s.daoPaid ?? 0);
 }
 
 /**

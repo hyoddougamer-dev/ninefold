@@ -20,6 +20,7 @@ import {
 import type { State } from './state.ts';
 import { classSpring } from './schools.ts';
 import { platformOpen, standingTier } from './platform.ts';
+import { treeFull } from './points.ts';
 
 /**
  * 秘境 Walking the seven rooms.
@@ -159,6 +160,13 @@ export function trailOpen(s: State): boolean {
  * the realm's 道 share lasts, so 道 arrives exactly as often as it did. Otherwise, from the
  * third room on, it is drawn from 爐 a piece of gear, 匣 a craftsman's box and 跡 a trail,
  * seeded by the save like every other door. A first room past a spent shrine has two.
+ *
+ * 滿 And never to a tree that is finished for good: a point nothing will ever take is not
+ * a door worth a room. Measured on a cultivator who buys every node (tools/habits.ts): the
+ * tree was finished on day 16, and the vault went on offering shrines until the ninth realm,
+ * where they held forty-one points with nothing to spend them on. The room's share goes to
+ * whichever third door the seed draws instead. A tree still saving for its next node, or
+ * waiting on a gate that has not opened, is not finished, and its shrine stays.
  */
 export function doorsAt(s: State, step: number): readonly Room[] {
   // 關 A gate is one beast and one question: go on, or walk out with what you have.
@@ -181,7 +189,7 @@ function thirdAt(s: State, step: number): Room | null {
   const first = allowed[seed % allowed.length];
   const rest = allowed.filter((k) => k !== first);
   const second = rest[(seed >>> 8) % rest.length];
-  const shrineLeft = SHRINE_DAO_PER_REALM * Math.min(9, s.realm) - (s.vaultDao ?? 0) > 0;
+  const shrineLeft = SHRINE_DAO_PER_REALM * Math.min(9, s.realm) - (s.vaultDao ?? 0) > 0 && !treeFull(s, false);
   if ((first === 'shrine' || second === 'shrine') && shrineLeft) return { kind: 'shrine' };
   if (step < 2) return null;
   // 匣 A box is offered only when the pouch can keep at least half of what it holds: a box

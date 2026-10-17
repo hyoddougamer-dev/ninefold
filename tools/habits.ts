@@ -833,6 +833,10 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher, start?: State, ga
      * qi), and otherwise the room's share drunk in the first and third reward rooms and
      * burned in the second and fourth, drunk whenever the burner is full. Never the box or
      * the trail over the qi. A gate is always tried: losing costs nothing.
+     *
+     * 龕 "Whenever one is offered" is no longer blind: the vault offers no shrine to a tree
+     * finished for good (sim/secret.ts thirdAt), which only 'buys every node' ever reaches.
+     * Until the audit of 2026-10-16 it went on taking, a room at a time, points it could never spend.
      */
     if (canEnter(s)) {
       s = enterSecret(s);

@@ -170,6 +170,18 @@ export const DRIVE_OLD = 0.25;
 export const RETRADE_DAYS = 0.5;
 
 /**
+ * 道 The same trade paid in 道 points instead: this many for each card back, so the newest
+ * card costs one and the ninth realm's first card nine. Only a tree finished for good may pay
+ * this way (sim/retrade.ts), because only there is a point worth nothing else.
+ *
+ * 量 Why points, and why it cannot touch the qi rate: no card raises the rate (above), and a
+ * point is finite, so the most a trade paid in points can ever buy is the card a qi trade
+ * would have bought anyway. Measured on 'buys every node' (tools/habits.ts), the tree is
+ * finished on day 16 and 32 points are held at the ninth realm with nothing to spend them on.
+ */
+export const RETRADE_DAO = 1;
+
+/**
  * 舊 What an old beast pays, as a share of what this realm's weakest pays.
  *
  * Measured, before this existed: the frog of the first realm paid **2 材** and the frog

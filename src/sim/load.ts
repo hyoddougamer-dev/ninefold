@@ -26,6 +26,7 @@ import { validateSequence, validateStance } from './arts.ts';
 import { NO_PILLS, brewed as validBrewed } from './furnace.ts';
 import { clampRefine, refineCeiling } from './refine.ts';
 import { isOpen } from './unlocks.ts';
+import { earnedPoints } from './points.ts';
 import { WEEK, periodOf, weekOf } from './week.ts';
 
 import { MEET_POINT_CEILING, validRoad } from '../data/meetings.ts';
@@ -587,6 +588,9 @@ export function validate(raw: unknown, now: number): State {
     qi: Math.min(out.qi, qiCeiling),
     materials: Math.min(out.materials, matCeiling),
     refined: cappedRefined,
+    // 改 What card trades paid in 道 can never pass what was earned: a forged count past it
+    // would leave the purse below nothing, which the server reads as a forged tree.
+    daoPaid: clamp(Math.floor(num(o.daoPaid, 0)), 0, Math.max(0, earnedPoints(out))),
   };
 }
 

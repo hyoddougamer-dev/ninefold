@@ -1636,6 +1636,13 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .cardbook .cb-alt .cb-icon { width: 32px; height: 32px; }
 .cardbook .cb-alt em { display: block; font-style: normal; font-size: 11.5px; color: var(--cinnabar); margin-top: 3px; }
 .cardbook .cb-alt .act { grid-column: 1 / -1; margin: 0; }
+/* 道 A finished tree pays in points or in qi: the line says why, the switch says which. */
+.cardbook .cb-dao { margin-top: -4px; color: var(--faint); line-height: 1.45; }
+.cardbook .cb-pay { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.cardbook .cb-pay button { min-width: 0; padding: 7px 8px; border-radius: 999px; border: 1px solid var(--line); background: none;
+                           color: var(--faint); font: inherit; font-size: 12px; cursor: pointer; white-space: nowrap; }
+.cardbook .cb-pay button[data-on="true"] { color: var(--gold); border-color: rgba(212,175,86,.55); background: rgba(212,175,86,.08); }
+.cardbook .cb-pay button:disabled { opacity: .45; cursor: default; }
 
 /* 轉世 Rebirth. A .help sheet for its frame; everything inside starts rb-, and the two
    lines it puts on 修 are rebirthline and lifewears, which no other screen uses. */

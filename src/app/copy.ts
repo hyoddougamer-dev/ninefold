@@ -1528,15 +1528,25 @@ export const AWAKEN = {
     change: 'Change',
     keep: 'Keep it',
     cost: (days: string, qi: string) => `${days} of your qi · ${qi}`,
+    /**
+     * 道 A finished tree may pay in the 道 points nothing else takes (RETRADE_DAO). The line
+     * says why the second price is there, and the switch says which one a tap pays.
+     */
+    costDao: (points: number) =>
+      `or ${points} 道 ${points === 1 ? 'point' : 'points'}: your technique tree is finished, so spare points can pay instead.`,
+    payQi: 'Pay in qi',
+    payDao: 'Pay in points',
     trade: 'Trade for this',
     sure: (qi: string) => `Tap again to pay ${qi} qi`,
+    sureDao: (points: number) => `Tap again to pay ${points} 道 ${points === 1 ? 'point' : 'points'}`,
     traded: (name: string) => `${name} is yours now`,
     why: {
       qi: 'Not enough qi in the bar yet.',
       dao: 'Its 道 points are already spent in the tree. Take a node back first.',
       chest: 'Its chest places are full. Make room in the chest first.',
       card: 'That card cannot be taken here.',
-    } as Record<'qi' | 'dao' | 'chest' | 'card', string>,
+      points: 'Not enough spare 道 points.',
+    } as Record<'qi' | 'dao' | 'chest' | 'card' | 'points', string>,
     close: 'Close',
   },
   /** 修 The card the home screen keeps up until the choice is made. */
@@ -2320,7 +2330,7 @@ export const DAO = {
    * 滿 Nothing left to buy. A greedy cultivator fills the tree around the sixth realm and
    * the points keep coming; they are kept, and said to be kept.
    */
-  full: 'Every node you can take is yours. Spare points are kept.',
+  full: 'Every node you can take is yours. Spare points are kept, and can pay to trade an Enlightenment (悟道) card.',
   /** 滿 Every node this realm lets you buy is yours, and a keystone or capstone is still to open. */
   fullForNow: 'Every node open to you is yours. Spare points wait for what opens next.',
   /** 滿 Said beside a 道 reward when the tree has nothing left to take: a card, a demon, a Bestiary page. */
