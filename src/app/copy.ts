@@ -1310,6 +1310,11 @@ export const DRIVE = {
   /** 時 The price, in the unit it is charged in: minutes of the cultivator's own gathering. */
   price: 'Each kill costs fifteen seconds of your own gathering.',
   priceOld: 'A beast from an earlier realm pays a quarter of what yours do, so each kill of it costs a quarter of that.',
+  /**
+   * 雷池 At the summit the bar is the thunder pool, so a drive is paid out of the qi that calls
+   * the next Dragon. Said before the tap, the way the crossing's own price is (crossPrice).
+   */
+  summit: 'At the summit this qi comes out of 雷池 the thunder pool.',
   /** Under the number on each size: what it costs in qi, said as time. */
   cost: (time: string) => `qi \u00b7 ${time}`,
   never: 'Not now',
