@@ -27,6 +27,14 @@ describe('長 paceGrowing', () => {
     }
   });
 
+  it('reads the ninth realm too, where the summit rung never ends the realm', () => {
+    const s = mid(9, 46);
+    const held = pace(s).realmSeconds;
+    const grown = paceGrowing(s);
+    expect(grown).not.toBeNull();
+    expect(grown!).toBeLessThan(held * 0.9);
+  });
+
   it('changes nothing in the save it reads', () => {
     const s = mid(4, 14);
     const copy = structuredClone(s);

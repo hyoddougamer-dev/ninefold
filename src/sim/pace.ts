@@ -1,6 +1,6 @@
 import { LAYERS, LAYERS_PER_REALM, realmCost } from './balance.ts';
 import { layerCostFactor } from './dao.ts';
-import { advance, gathering, layerCost } from './time.ts';
+import { advance, gathering, ladderDone, layerCost } from './time.ts';
 import { buyAll, type State } from './state.ts';
 
 /**
@@ -85,11 +85,13 @@ const GROW_LOOK = 6 * 3600;        // how often the imagined cultivator comes ba
 const GROW_HORIZON = 120 * 86_400; // past this the estimate is not worth a line
 
 export function paceGrowing(s: State): number | null {
-  if (pace(s).realmLeft <= 0) return null;
+  if (pace(s).realmLeft <= 0 || ladderDone(s)) return null;
   let state = s;
   for (let t = 0; t < GROW_HORIZON; t += GROW_LOOK) {
     state = buyAll(state).state;
-    if (pace(state).realmLeft <= 0 || state.realm !== s.realm) return t;
+    // 頂 In the ninth realm the summit rung costs for ever, so the realm never reads as left:
+    // the climb is done when the ladder is.
+    if (pace(state).realmLeft <= 0 || state.realm !== s.realm || ladderDone(state)) return t;
     state = advance(state, state.at + GROW_LOOK);
   }
   return null;
