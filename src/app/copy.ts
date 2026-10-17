@@ -710,9 +710,16 @@ export const REALMCARD = {
   paceNext: (han: string, name: string, times: string) =>
     `${han} ${name} asks for about ${times} times this realm.`,
   paceAt: (time: string) => `about ${time} at the rate you gather at now`,
+  /**
+   * 長 The range, when buying upgrades on the way shortens the climb by a tenth or more: the
+   * long end holds the rate where it is, the short end buys every upgrade as it comes (paceGrowing).
+   */
+  paceRange: (fast: string, slow: string) =>
+    `about ${fast} if you buy every upgrade as soon as you can afford it, or ${slow} if your rate stays where it is now.`,
   paceNote: 'Counted at your standing rate, so 入定 sitting with it gets you there sooner. '
     + 'Every level and every layer makes the rate higher, so the real wait is shorter '
     + 'than the number above.',
+  paceNoteRange: 'Counted at your standing rate, so 入定 sitting with it gets you there sooner.',
   nextHead: 'What the next one is worth',
   opens: (list: string) => `Opens ${list}.`,
   opensNothing: 'Opens no new system. It is the top of the climb.',
