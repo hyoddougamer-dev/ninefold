@@ -77,5 +77,7 @@ describe('圖鑑 finishing a realm of the bestiary', () => {
     console.log('');
     expect(rows.find((r) => r.name === 'never fights')!.filled).toBe(0);
     expect(rows.find((r) => r.name === 'active')!.filled).toBeGreaterThan(0);
-  }, 120_000);
+  // 貪 Ten habits since 'buys every node' joined them (2026-10-17): the walk took 167 s on a
+  // loaded machine, past the old two minutes, with nothing wrong in it.
+  }, 300_000);
 });

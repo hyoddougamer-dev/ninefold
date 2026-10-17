@@ -103,6 +103,21 @@ describe('勤 what being there buys you', () => {
     expect(hourly.arrival[8]).toBeLessThan(active.arrival[8]);
     // But not so much sooner that the game belongs to whoever has the most free time.
     expect(hourly.arrival[8]).toBeGreaterThan(casual.arrival[8] / 3);
+
+    /**
+     * 貪 The active cultivator again, buying every node the points reach. Every other row
+     * walks one branch and stops, which no player who reads the tree does (the release
+     * audit of 2026-10-16), so this is the row to read the climb's real pace against.
+     * Measured 2026-10-17: the ninth realm on day 41.7 against 49.5, the summit on 47.8
+     * against 57.8, 25 nodes against 9.
+     */
+    const greedy = who('buys every node');
+    console.log(`  貪 buys every node: realm 9 on day ${greedy.arrival[8]?.toFixed(1)} against ${active.arrival[8]?.toFixed(1)}, `
+      + `${greedy.state.unlocked.length} nodes against ${active.state.unlocked.length}\n`);
+    expect(greedy.state.unlocked.length).toBeGreaterThan(active.state.unlocked.length);
+    expect(greedy.arrival[8]).toBeLessThan(active.arrival[8]);
+    // Sooner, and by days rather than weeks: the tree is worth about a sixth of the climb.
+    expect(greedy.arrival[8]).toBeGreaterThan(active.arrival[8] * 0.75);
   });
 
   /**
@@ -289,7 +304,10 @@ describe('勤 what being there buys you', () => {
       + `+${((r.more - 1) * 100).toFixed(2)}% of the rate`).join('\n') + '\n');
     for (const r of rows) {
       expect(r.realm).toBe(9);
-      expect(r.more).toBeGreaterThan(1.005);
+      // 貪 Who buys the whole tree carries more of its rate, so the knee's room above it is
+      // smaller: a tenth more reads +0.50% (0.4999% measured on 2026-10-17), against 0.58%
+      // to 0.81% for everyone who walks one branch. Pinned at its own number, not the others'.
+      expect(r.more).toBeGreaterThan(r.name === 'buys every node' ? 1.0045 : 1.005);
     }
   });
 

@@ -182,6 +182,11 @@ export interface Habit {
   readonly who: string;
   /** 道 The branch they walk, bought the moment the points allow. */
   readonly branch?: Path;
+  /**
+   * 貪 Whether, once their branch takes nothing more, they buy whatever else in the tree
+   * the points reach. Every other habit stops at its branch.
+   */
+  readonly greedy?: boolean;
 }
 
 /**
@@ -229,6 +234,13 @@ export const HABITS: readonly Habit[] = [
   { name: 'walks 神', gear: true, checks: 6, minutes: 10, hunts: 6, tower: true, cards: 'dao',
     furnace: true, build: true, branch: 'spirit',
     who: 'The active cultivator again, walking 神 the Spirit instead of 劍 the Sword.' },
+  // 貪 The same cultivator as `active` again, buying every node the points reach once the
+  // Sword has nothing left to sell: the release audit of 2026-10-16 found every habit here
+  // walking one branch, so none of them ever filled the tree, and none ever saw the 道 a
+  // full tree goes on being paid. Read by name, like every other row.
+  { name: 'buys every node', gear: true, checks: 6, minutes: 10, hunts: 6, tower: true,
+    furnace: true, build: true, branch: 'sword', greedy: true,
+    who: 'The active cultivator, buying every node of the tree the points reach, Sword first.' },
   // 業 The same cultivator as `active` again, with the workshop never idle and the best
   // elixir and sigil carried into every warden and demon: what the crafts are worth.
   { name: 'crafts it all', gear: true, checks: 6, minutes: 10, hunts: 6, tower: true,
@@ -536,14 +548,16 @@ function wears(s: State, item: Item, worn: Item, build: School | Pair | undefine
  * have. The points still accrue from the first realm and still wait, which is the rule;
  * what waits with them now is the spending.
  */
-function spendTree(s: State, branch: Path | undefined): State {
+function spendTree(s: State, branch: Path | undefined, greedy = false): State {
   if (!branch || !isOpen(s.realm, 'tree')) return s;
   let out = s;
   for (let guard = 0; guard < 200; guard++) {
     const free = freePoints(out);
-    const want = ALL_NODES
-      .filter((n) => n.key === 'root' || n.path === branch)
-      .find((n) => canUnlock(n.key, out.unlocked, free, isOpen(out.realm, 'keystones'), capstonesOpen(out.realm)));
+    const can = (n: (typeof ALL_NODES)[number]) =>
+      canUnlock(n.key, out.unlocked, free, isOpen(out.realm, 'keystones'), capstonesOpen(out.realm));
+    // 貪 Their own branch first, and then, for the greedy, anything the points reach.
+    const want = ALL_NODES.filter((n) => n.key === 'root' || n.path === branch).find(can)
+      ?? (greedy ? ALL_NODES.find(can) : undefined);
     if (!want) break;
     out = { ...out, unlocked: [...out.unlocked, want.key] };
   }
@@ -634,7 +648,7 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher, start?: State, ga
     // 封 Qi into the bar of a sealed gate, and lesser pills, before the tree takes the qi.
     if (h.paysSeal !== undefined) s = payGate(s, h.paysSeal);
 
-    s = spendTree(s, h.branch);
+    s = spendTree(s, h.branch, h.greedy);
 
     // 緣 The person on the road. Every cultivator who opens the game meets them, so the
     // harness answers too: the qi, material, 道 and gear they give used to be missing from

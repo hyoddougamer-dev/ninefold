@@ -129,6 +129,7 @@ const HABIT_PT: Record<string, string> = {
   'every hour': 'de hora a hora',
   'drives it all': 'usa o 圍 em tudo',
   'walks 神': 'segue o 神',
+  'buys every node': 'compra a árvore toda',
 };
 
 const TEST_DIRS = ['src/sim/__tests__', 'src/app/__tests__'];
@@ -3602,6 +3603,15 @@ const page = `<meta charset="utf-8">
     <p class="t">And the bottom row is the other half: playing every waking hour is worth
       about <b>twice</b> the speed of playing casually, not twenty times. The game is not
       supposed to belong to whoever has the most free time.</p>
+    <p class="t">貪 <em>buys every node</em> is the active cultivator again, buying whatever the
+      tree sells once the Sword has nothing left. Until the release audit of 2026-10-16 every
+      row here walked one branch and stopped, which no player who reads the tree does, so
+      none of them ever finished the tree or saw what a finished tree is paid. This one
+      reaches the ninth realm on day ${runNamed('buys every node').arrival[8]?.toFixed(1) ?? '·'}
+      against the active cultivator's ${runNamed('active').arrival[8]?.toFixed(1) ?? '·'}, with
+      ${runNamed('buys every node').state.unlocked.length} nodes against
+      ${runNamed('active').state.unlocked.length}. That gap is the tree's honest worth, and it
+      is the first number anyone tuning the climb should read beside the active row.</p>
     <div class="warn"><b>器 Gear was the widest hole the game ever had.</b> The 氣 axis on a
       piece is a qi-rate multiplier with no cap, earned by hunting: exactly the
       <em>playing more finishes sooner</em> trap the whole economy was built to avoid. With
