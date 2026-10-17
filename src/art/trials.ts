@@ -44,8 +44,10 @@ export function tower(best: number, pulse = 0): string {
   const top = colourAt(Math.max(1, best + 1));
   const breath = 1 + Math.sin(pulse * Math.PI * 2) * 0.01;
 
-  const ground = H - 12;
+  const ground = H - (hidden > 0 ? 18 : 12);
   // The box never grows: the tiers thin out as they stack, which also reads as distance.
+  // 底 The floors no longer drawn are counted in the ground band under the lowest roof, where
+  // they are: written over the top tier, "+27 floors below" read as floors above the climb.
   const tierH = Math.min(19, (ground - 26) / (shown + 1));
   let out = '';
 
@@ -105,11 +107,11 @@ export function tower(best: number, pulse = 0): string {
     </defs>
     <rect width="${W}" height="${H}" fill="url(#tsky)"/>
     <circle cx="${W / 2}" cy="${(ty + 8).toFixed(1)}" r="${(52 * breath).toFixed(1)}" fill="url(#tglow)"/>
-    ${hidden > 0 ? `<text x="${W / 2}" y="${(ty - 7).toFixed(1)}" text-anchor="middle" font-family="Rajdhani,sans-serif" font-weight="700" font-size="11" fill="${top}" opacity=".7">+${hidden * FLOORS_PER_REALM} floors below</text>` : ''}
     ${ghosts}
     <g transform="translate(0 0)">${out}</g>
     <rect y="${ground}" width="${W}" height="${H - ground}" fill="#0D0B08"/>
     <rect y="${ground - 1}" width="${W}" height="1" fill="${colourAt(1)}" opacity=".35"/>
+    ${hidden > 0 ? `<text x="${W / 2}" y="${(ground + 13).toFixed(1)}" text-anchor="middle" font-family="Rajdhani,sans-serif" font-weight="700" font-size="11" letter-spacing=".04em" fill="${colourAt(1)}" opacity=".85">+${hidden * FLOORS_PER_REALM} floors below</text>` : ''}
   </svg>`;
 }
 

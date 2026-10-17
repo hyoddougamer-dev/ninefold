@@ -12,6 +12,7 @@ import { duration, num } from '../../sim/format.ts';
 import { icon } from '../../art/icon.ts';
 import { Svg } from './Svg.tsx';
 import { rate, type State } from '../../sim/state.ts';
+import { ladderDone } from '../../sim/time.ts';
 import { DRIVE, HUNT, PILE, QOL } from '../copy.ts';
 import { DrivePile } from './DrivePile.tsx';
 import { RealmTag } from './RealmTag.tsx';
@@ -139,6 +140,8 @@ export function Drive({ state, beast, seed, onTake, onSettle, onGame, onClose }:
       </div>
       <p className="faint blurb">{DRIVE.what}</p>
       <p className="faint blurb">{beast.realm < state.realm ? DRIVE.priceOld : DRIVE.price}</p>
+      {/* 雷池 At the summit the qi in hand is the pool that calls the next Dragon. */}
+      {ladderDone(state) && <p className="faint blurb">{DRIVE.summit}</p>}
 
       <div className="sizes">
         {DRIVE_SIZES.map((n) => {

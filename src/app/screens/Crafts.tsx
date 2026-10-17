@@ -17,7 +17,7 @@ import {
   CRAFT_ARRAY_DEPTH_EVERY, CRAFT_ARRAY_DEPTH_STEPS, CRAFT_ARRAY_DEPTH_TOP, CRAFT_FEED_LEVEL, CRAFT_TOOL_STEP,
   CRAFT_ARRAY_SLOTS, CRAFT_SEEK_MAX,
 } from '../../sim/balance.ts';
-import { BREAKTHROUGH_TIERS, TOOL_METALS } from '../../data/crafts.ts';
+import { BREAKTHROUGH_TIERS, PILL_RULE, TOOL_METALS } from '../../data/crafts.ts';
 import { REALM_SETS } from '../../data/gear.ts';
 import { duration, num } from '../../sim/format.ts';
 import { sealDays, sealLeft, wardenStands, type State } from '../../sim/state.ts';
@@ -331,6 +331,8 @@ export function Crafts({ state, onTask: setTaskTo, onCarry, onUse, onPlace, onGo
       ))}
 
       {!open && <p className="faint cpreview" style={{ margin: '0 0 8px', fontSize: 12 }}>{CRAFTS.preview(info.name)}</p>}
+      {/* 一 What every Breakthrough Pill does, once, over a list that holds any of them. */}
+      {list.some(isPill) && <p className="faint cpillrule">{PILL_RULE}</p>}
       {open && skill === 'forge' && shown === 'Hundredfold' && !needle && onOrder
         ? <Hundred state={state} onOrder={onOrder} onFind={goTo} />
         : (
@@ -686,6 +688,9 @@ function Named({ k, onGo }: { k: string; onGo: (key: string) => void }) {
   );
 }
 
+/** 破境丹 A Breakthrough Pill recipe, whose rule is said once over the list rather than on its row. */
+const isPill = (r: Recipe) => r.skill === 'alchemy' && r.group === 'Breakthrough';
+
 /** A recipe: what it makes, what it needs against what is held, how long, what it pays. */
 function Row({ state, r, on, lit, onStart, onGo, looks }: {
   state: State; r: Recipe; on: boolean; lit: boolean; onStart: () => void; onGo: (key: string) => void;
@@ -726,7 +731,8 @@ function Row({ state, r, on, lit, onStart, onGo, looks }: {
           </span>
         )}
         {r.does && <i className="cr-does">{r.does}</i>}
-        {r.makes.kind === 'item' && ITEM_BY_KEY[r.makes.item]?.kind === 'array'
+        {isPill(r) ? <i className="cr-does">{CRAFTS.pillRow(r.realm)}</i>
+          : r.makes.kind === 'item' && ITEM_BY_KEY[r.makes.item]?.kind === 'array'
           ? <Depth state={state} k={r.makes.item} />
           : r.makes.kind === 'item' && ITEM_BY_KEY[r.makes.item]?.does && !r.does && (
             <i className="cr-does">{ITEM_BY_KEY[r.makes.item].does}</i>

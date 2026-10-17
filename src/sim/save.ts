@@ -8,7 +8,7 @@ import { LAYERS_PER_REALM } from './balance.ts';
 import { isSealed, open, seal } from './seal.ts';
 import { progressOf } from './echo.ts';
 import { withPackedPile } from './pilepack.ts';
-import { retires } from './season.ts';
+import { SEASON_DAY, retires } from './season.ts';
 import { validFarewell, type Farewell } from './load.ts';
 
 export type { Farewell } from './load.ts';
@@ -454,7 +454,7 @@ export function untouched(s: State): boolean {
 }
 
 /** 季 Why a closed-test copy is refused after the switch, in words the player can act on. */
-export const CLOSED_TEST_REFUSED = 'That save is from the closed test, which ended on Monday 26 October. It cannot be loaded in Season 0.';
+export const CLOSED_TEST_REFUSED = `That save is from the closed test, which ended on ${SEASON_DAY}. It cannot be loaded in Season 0.`;
 
 export function importSave(text: string, now: number): Imported {
   let parsed: unknown;

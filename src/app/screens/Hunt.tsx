@@ -223,13 +223,15 @@ export function Hunt({ state, onFight, onDrive, onPile, onAuto, onSecret, onKey 
         ))}
         {/* 通 The record pays twice and only said so once. A cultivator with a mastered
             beast was being given power by a page that never mentioned power. */}
+        {/* 窄 On a phone the two fold to one short row (theme.css), so the first beast is on
+            the first screen at 320 rather than thirty pixels of it (audit, 2026-10-16). */}
         <span className="pay">
           <b className="mono">×{recordMaterial(state.killed).toFixed(2)}</b>
-          <i>{HUNT.paysMaterial}</i>
+          <i><small className="pl-long">{HUNT.paysMaterial}</small><small className="pl-short">{HUNT.paysMaterialShort}</small></i>
         </span>
         <span className="pay">
           <b className="mono">×{recordPower(state.killed).toFixed(2)}</b>
-          <i>{HUNT.paysPower}</i>
+          <i><small className="pl-long">{HUNT.paysPower}</small><small className="pl-short">{HUNT.paysPowerShort}</small></i>
         </span>
       </div>}
 

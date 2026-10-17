@@ -628,6 +628,27 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .tally i { font-style: normal; display: block; font-size: 9px; letter-spacing: .1em;
            text-transform: uppercase; color: var(--faint); }
 .tally .pay b { color: var(--gold); font-size: 15px; }
+/* 窄 狩 On a phone the record is one screen's worth less tall: "7/36" on one line (the count's
+   own `i` was falling to the block rule above it), and the two payoffs folded to one short row
+   each, figure and word side by side. Scoped to the hunt: .tally is not the drive sheet's. */
+.sheet[data-screen='hunt'] .tally .pay small { font-size: inherit; }
+.sheet[data-screen='hunt'] .tally .pay .pl-short { display: none; }
+@media (max-width: 420px) {
+  .sheet[data-screen='hunt'] .tally { gap: 6px; margin-top: 8px; }
+  .sheet[data-screen='hunt'] .tally span { padding: 5px 4px 4px; }
+  .sheet[data-screen='hunt'] .tally em i { display: inline; letter-spacing: 0; }
+  /* The mark and its count side by side ("見 7/36"), its word under them. */
+  .sheet[data-screen='hunt'] .tally span:not(.pay) > b,
+  .sheet[data-screen='hunt'] .tally span:not(.pay) > em { display: inline; margin: 0 2px; vertical-align: baseline; }
+  .sheet[data-screen='hunt'] .tally .pay { display: flex; align-items: baseline; justify-content: center; gap: 6px; padding: 5px 6px; }
+  .sheet[data-screen='hunt'] .tally .pay b { display: inline; font-size: 14px; }
+  .sheet[data-screen='hunt'] .tally .pay > i { display: inline; font-size: 10px; letter-spacing: .06em; }
+  .sheet[data-screen='hunt'] .tally .pay .pl-long { display: none; }
+  .sheet[data-screen='hunt'] .tally .pay .pl-short { display: inline; }
+  /* The quarry's band and the list's heading a little closer, as the record is. */
+  .sheet[data-screen='hunt'] .weekband:not([data-folded]) { padding: 8px 11px; margin-top: 10px; }
+  .sheet[data-screen='hunt'] .huntrow { margin-top: 18px; }
+}
 
 .card3 .marks { justify-content: center; }
 
@@ -689,6 +710,13 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
                  padding: 8px 12px; cursor: pointer; font-weight: 600; }
 @keyframes arrive { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .notice { animation: none; } }
+/* 窄 At 320 the button beside the words left them a column of 140px and the card ran to twelve
+   lines over the screen. Below about 360px it goes under them, on the right, as a reply would. */
+@media (max-width: 359px) {
+  .notice { flex-wrap: wrap; row-gap: 8px; }
+  .notice > span { flex: 1 1 calc(100% - 64px); min-width: 0; }
+  .notice button { margin-left: auto; }
+}
 /* 版 On a PC the card sits over the stage, clear of the rail, and no wider than it reads:
    left and right with a max width and auto margins centre it without a transform. */
 @media (min-width: 1100px) {
@@ -3521,6 +3549,18 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .crafts .cscene { width: 92px; height: 92px; border-radius: 8px; overflow: hidden; background: #d8c49a;
                   box-shadow: 0 0 0 1px var(--gild-strong), 0 4px 14px rgba(0, 0, 0, .35); }
 .crafts .cscene img { display: block; width: 100%; height: 100%; object-fit: cover; }
+/* 窄 On a phone the painting sits in the corner and the words run round it and on under it at
+   the card's full width: beside a fixed column they were a strip a third of the screen wide
+   next to an empty one (audit, 2026-10-16). The rank line and all below it start clear. */
+@media (max-width: 419px) {
+  .crafts .cphead { display: block; }
+  .crafts .cphead::after { content: ''; display: block; clear: both; }
+  .crafts .cscene { float: left; width: 76px; height: 76px; margin: 2px 12px 6px 0; }
+  .crafts .cphead .crank { clear: left; padding-top: 6px; }
+}
+/* 一 The Breakthrough Pills' one rule, over their four recipes. */
+.crafts .cpillrule { margin: 0 0 10px; font-size: 12px; line-height: 1.5; padding: 9px 11px;
+                     border-left: 2px solid var(--gild-strong); background: rgba(20, 17, 13, .45); border-radius: 0 8px 8px 0; }
 /* 總 The top line: where you are, and the one number the workshop adds up to. */
 .crafts .crank { display: flex; align-items: baseline; gap: 6px; }
 .crafts .crank .clevel { margin-left: auto; color: var(--gold); font-size: 13px; }
@@ -4167,6 +4207,9 @@ nav.tabs .tabkey { display: none; }
 .platcard .plwho i { display: block; font-style: normal; font-size: 12px; line-height: 1.5; color: var(--faint); margin-top: 2px; }
 .platcard .plwho em { display: block; font-style: normal; font-size: 12px; color: var(--gold); margin-top: 3px; }
 .platcard .plodds { text-align: right; min-width: 64px; }
+/* 誠 The words under the figure wrap in a column of their own ("your build, not your power"
+   is five words), so a long label never takes the name's width or runs off the card. */
+.platcard .plodds { max-width: 116px; }
 .platcard .plodds b { display: block; font-size: 18px; line-height: 1.2; }
 .platcard .plodds i { display: block; font-style: normal; font-size: 9.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--faint); }
 .platcard .plodds .plnow { color: var(--cinnabar); }
@@ -4189,7 +4232,7 @@ nav.tabs .tabkey { display: none; }
    a line, and the two buttons stand one above the other. */
 @media (max-width: 360px) {
   .platcard .plrow { grid-template-columns: auto minmax(0, 1fr); }
-  .platcard .plodds { grid-column: 2; text-align: left; min-width: 0; display: flex; flex-wrap: wrap;
+  .platcard .plodds { grid-column: 2; text-align: left; min-width: 0; max-width: none; display: flex; flex-wrap: wrap;
     align-items: baseline; gap: 2px 8px; }
   .platcard .plodds b { display: inline; font-size: 16px; }
   .platcard .plodds i { display: inline; }

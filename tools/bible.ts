@@ -89,6 +89,7 @@ import { portrait } from '../src/art/aura.ts';
 import { arenaScene } from '../src/art/scene.ts';
 import { gearTile } from '../src/art/gear.ts';
 import { chamber } from '../src/art/secret.ts';
+import { tower as towerArt } from '../src/art/trials.ts';
 import * as QS_VAULT from '../src/sim/secret.ts';
 import * as QS_PLATFORM from '../src/sim/platform.ts';
 import {
@@ -967,6 +968,17 @@ const MOCK_LADDER = (() => {
   </div>`;
 })();
 
+// 塔 The tower drawing at three heights, with the game's own art function: under nine seals,
+// and past them, where the floors no longer drawn are counted in the ground band.
+// Each drawing's gradient ids are made its own, or the second and third would paint in the first's.
+const MOCK_TOWER = `<div class="mk tw-three">${[40, 113, 182].map((best, i) =>
+  `<figure><span class="tw-pic">${towerArt(best).replace(/\b(tsky|tglow)\b/g, `$1${i}`)}</span><figcaption>floor ${best}</figcaption></figure>`).join('')}
+  <p class="cap">Drawn by <code>tower()</code> in <code>art/trials.ts</code>. Past nine 塔印 seals the
+    drawing stops adding roofs, and the label counting the ones it left out was written above the
+    tier being fought, where "+27 floors below" read as floors above the climb. It now sits in the
+    ground band under the lowest roof, where those floors are, and the band is a little taller to
+    hold it. Under nine seals nothing changed.</p></div>`;
+
 // 指 The ring and the arrow, over a real upgrade box.
 const MOCK_COACH = `<div class="mk coach">
   <span class="arrow"><svg viewBox="0 0 24 24" width="26" height="26"><path d="M12 3 L12 19 M5.5 12.5 L12 19.5 L18.5 12.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
@@ -1795,6 +1807,12 @@ const page = `<meta charset="utf-8">
   #cores td.hot { color:var(--cinnabar); font-family:Rajdhani,sans-serif; font-weight:700; }
   #mockups .mk.two { background:none; border:0; padding:0; display:grid; gap:10px; }
   @media(min-width:640px){ #mockups .mk.two { grid-template-columns:1fr 1fr; } }
+  /* 塔 Three towers abreast, each its own frame. */
+  #mockups .mk.tw-three { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:10px; }
+  #mockups .mk.tw-three figure { margin:0; min-width:0; }
+  #mockups .mk.tw-three .tw-pic { display:block; aspect-ratio:200 / 160; border-radius:8px; overflow:hidden; border:1px solid var(--line); }
+  #mockups .mk.tw-three figcaption { margin-top:4px; font-size:12px; color:var(--faint); text-align:center; }
+  #mockups .mk.tw-three .cap { grid-column:1 / -1; }
 
   /* 位 The sect rank: its own block, every class prefixed sk-, nothing shared with the game. */
   #mockups .mk.sect .sk-two { display:grid; gap:14px; }
@@ -2514,6 +2532,11 @@ const page = `<meta charset="utf-8">
       rise and the Cliff carving that came in the same sync arrive as one card, kept in the save
       under one key however many ranks and gates it has shown.</p>
     ${MOCK_SECT}
+
+    <h3>塔 The floors below</h3>
+    <p class="t">The tower is drawn one roof to a seal, and past nine it keeps nine and counts the
+      rest. The count is under the ground line now, beneath the roofs it stands for.</p>
+    ${MOCK_TOWER}
   </section>
 
   <section class="sec" id="newplayer">

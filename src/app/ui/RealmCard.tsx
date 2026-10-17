@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { LAYERS_PER_REALM } from '../../sim/balance.ts';
 import { plateOf } from '../../data/bestiary.ts';
 import { Plate } from './Plate.tsx';
@@ -10,7 +11,7 @@ import { portraitLayers } from '../../art/aura.ts';
 import { Svg } from './Svg.tsx';
 import { REALMCARD } from '../copy.ts';
 import { arriving } from '../../sim/arriving.ts';
-import { pace } from '../../sim/pace.ts';
+import { pace, paceGrowing } from '../../sim/pace.ts';
 import { duration, num } from '../../sim/format.ts';
 
 /**
@@ -42,6 +43,14 @@ export function RealmCard({ state, onClose }: { state: State; onClose: () => voi
   const sky = pictureOf('realm', String(state.realm));
   const soon = arriving(state.realm, state.layer);
   const p = pace(state);
+  // 長 The climb with the upgrades bought on the way, played on a copy of the save. Read again
+  // when the rung, an upgrade or the hour changes, not on every tick of the clock: the long
+  // end moves with the qi in hand, and a short end read a layer ago would fall behind it.
+  const hour = Math.floor(state.at / 3600);
+  const bought = Object.values(state.levels).join(',');
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const grown = useMemo(() => paceGrowing(state), [state.realm, state.layer, hour, bought]);
+  const ranged = grown !== null && grown < p.realmSeconds * 0.9;
 
   return (
     <div className="realmcard">
@@ -127,11 +136,13 @@ export function RealmCard({ state, onClose }: { state: State; onClose: () => voi
           <i>{REALMCARD.paceRealm}</i>
         </span>
       </div>
-      <p className="faint">{REALMCARD.paceAt(duration(p.realmSeconds))}</p>
+      <p className="faint">{ranged
+        ? REALMCARD.paceRange(duration(grown), duration(p.realmSeconds))
+        : REALMCARD.paceAt(duration(p.realmSeconds))}</p>
       {next && p.times !== null && (
         <p className="faint">{REALMCARD.paceNext(next.han, next.name, p.times.toFixed(0))}</p>
       )}
-      <p className="faint small">{REALMCARD.paceNote}</p>
+      <p className="faint small">{ranged ? REALMCARD.paceNoteRange : REALMCARD.paceNote}</p>
 
       {next && (
         <>

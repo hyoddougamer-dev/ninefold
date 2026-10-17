@@ -22,6 +22,7 @@
 
 import { ART_BEND, BOTTLENECK_LOOSEN, REALM_WALL, CRAFT_KIT, CRAFT_QUALITY_MULT, MELT_CAP, MELT_FILL, CRAFT_FEED_LEVEL, CRAFT_MARKS, CRAFT_MARK_FASTER, CRAFT_MARK_SUB, CRAFT_MARK_TWICE, CRAFT_MASTERY_BAND, CRAFT_MASTERY_SPEED, FIND_TOP, FUSE_BEND, FUSE_TOP, LUCK_BEND, OPENING_PURSE, QI_KNEE_FIRST, QI_KNEE_GROWTH, QI_ROOF_FIRST, QI_ROOF_TOP, SUNDER_BEND, UPGRADE_NUMBERS, VARIANCE, LUCK_ROLL_TOP, PILL_BANE_FLOOR, DRAGON_KIT_SHARE, BREAKTHROUGH_LEVEL, LINEAGE_LAYER } from '../sim/balance.ts';
 import { duration, pct as percent } from '../sim/format.ts';
+import { SEASON_DATE, SEASON_DAY, SEASON_UTC } from '../sim/season.ts';
 
 /** 瓶頸 The days a fresh eighth-realm wall takes to loosen: see wallDays in sim/crafts.ts. */
 const EIGHTH_WALL = Math.log(REALM_WALL[7]) / -Math.log(1 - BOTTLENECK_LOOSEN);
@@ -234,7 +235,7 @@ export const RANKS = {
    * closed test runs (acceptsEverything, supabase/functions/sync/core.ts), so the line above would
    * be untrue under every board for the closed test's last days.
    */
-  fairTest: 'Your save is sealed on this device. Until Season 0 begins (Monday 26 October, 00:00 UTC) these boards show every save while we test, even one the server\'s check would refuse. From then every climb is checked against real time, and a save changed by hand still plays but is never ranked.',
+  fairTest: `Your save is sealed on this device. Until Season 0 begins (${SEASON_UTC}) these boards show every save while we test, even one the server's check would refuse. From then every climb is checked against real time, and a save changed by hand still plays but is never ranked.`,
   /** 改 Only on a phone whose save was changed outside the game. Nothing is taken away. */
   edited: 'This save was changed outside the game. It still plays here, but the boards only ever count what the server can verify.',
   /**
@@ -713,9 +714,16 @@ export const REALMCARD = {
   paceNext: (han: string, name: string, times: string) =>
     `${han} ${name} asks for about ${times} times this realm.`,
   paceAt: (time: string) => `about ${time} at the rate you gather at now`,
+  /**
+   * 長 The range, when buying upgrades on the way shortens the climb by a tenth or more: the
+   * long end holds the rate where it is, the short end buys every upgrade as it comes (paceGrowing).
+   */
+  paceRange: (fast: string, slow: string) =>
+    `about ${fast} if you buy every upgrade as soon as you can afford it, or ${slow} if your rate stays where it is now.`,
   paceNote: 'Counted at your standing rate, so 入定 sitting with it gets you there sooner. '
     + 'Every level and every layer makes the rate higher, so the real wait is shorter '
     + 'than the number above.',
+  paceNoteRange: 'Counted at your standing rate, so 入定 sitting with it gets you there sooner.',
   nextHead: 'What the next one is worth',
   opens: (list: string) => `Opens ${list}.`,
   opensNothing: 'Opens no new system. It is the top of the climb.',
@@ -1245,6 +1253,9 @@ export const HUNT = {
   hideFinished: 'Fold them away',
   paysMaterial: '材 material, from the record',
   paysPower: '力 power, from the record',
+  /** 窄 The same two on a phone, where the record folds to one row under its three marks. */
+  paysMaterialShort: '材 material',
+  paysPowerShort: '力 power',
 
   /**
    * 錄 The record. Old beasts have to be worth killing, or the screen is one button.
@@ -1310,6 +1321,11 @@ export const DRIVE = {
   /** 時 The price, in the unit it is charged in: minutes of the cultivator's own gathering. */
   price: 'Each kill costs fifteen seconds of your own gathering.',
   priceOld: 'A beast from an earlier realm pays a quarter of what yours do, so each kill of it costs a quarter of that.',
+  /**
+   * 雷池 At the summit the bar is the thunder pool, so a drive is paid out of the qi that calls
+   * the next Dragon. Said before the tap, the way the crossing's own price is (crossPrice).
+   */
+  summit: 'At the summit this qi comes out of 雷池 the thunder pool.',
   /** Under the number on each size: what it costs in qi, said as time. */
   cost: (time: string) => `qi \u00b7 ${time}`,
   never: 'Not now',
@@ -1987,7 +2003,12 @@ export const PLATFORM = {
   inStance: (name: string) => `in ${name}`,
   asYouStand: (pct: string) => `${pct} as you stand`,
   odds: 'odds',
-  toReach: 'to reach',
+  /**
+   * 誠 Under the ×N of a challenger nothing in hand can beat. It stands at a share of your own
+   * power, so "to reach" read as a number to climb toward, and climbing changes nothing: the
+   * build is what reaches it (audit, 2026-10-16). The tower's label is a different claim.
+   */
+  toReach: 'your build, not your power',
   standIn: (name: string) => `Stand in ${name}`,
   challenge: 'Challenge',
   trail: '跡 You hold a trail from the secret realm: this challenger begins a tenth down.',
@@ -2411,7 +2432,7 @@ export const NOTICE = {
   lastWeek: {
     title: 'The closed test ends this week',
     text: (local: string) =>
-      `The closed test ends on ${local} (Monday 26 October, 00:00 UTC). Season 0 then begins for everyone `
+      `The closed test ends on ${local} (${SEASON_UTC}). Season 0 then begins for everyone `
       + 'from the first realm, and no progress carries over. Join 榜 Ranks once before then (a guest only '
       + 'needs a name) and your name carries 先行 Forerunner, for good.',
   },
@@ -2435,7 +2456,7 @@ export const NOTICE = {
       + 'falls off beasts. Until you have some, this realm\'s warden will not fall.',
   },
   platform: {
-    title: '擂台 Three challengers a week',
+    title: 'The Platform: three challengers a week',
     text: 'On 塔 Trials. They stand against your own power, so the build wins them, not the number. '
       + 'A win pays a fixed sum of qi, the same for everyone in your realm and class; a loss costs nothing, and the dice are set for the week.',
   },
@@ -2571,7 +2592,7 @@ export const SEASON = {
   /** The theme, English first and the characters alongside. */
   name: 'The Founding',
   han: '開山',
-  over: 'Season 0 · Monday 26 October',
+  over: `Season 0 · ${SEASON_DAY}`,
   line: 'The closed test is over, and its progress ends with it.',
   says: 'Everyone starts again from the first realm, and so do you.',
   /** 印 Lettered beside the seal, which carries 九境 alone. */
@@ -2594,7 +2615,7 @@ export const SEASON = {
   /** 先行 Only when the signed-in server says so (my_standing().forerunner). */
   forerunner: 'Your name now carries 先行 Forerunner on every board, for good. It changes nothing in the numbers.',
   /** 先行 Signed out: the device cannot know, so it only points the way. */
-  signedOut: 'Joined Ranks before 26 October? Sign in, and your Forerunner mark is waiting.',
+  signedOut: `Joined Ranks before ${SEASON_DATE}? Sign in, and your Forerunner mark is waiting.`,
   cliff: 'The first 81 through each gate are carved on 題名崖 the Cliff of Names.',
   begin: 'Begin Season 0',
   /**
@@ -2608,7 +2629,7 @@ export const SEASON = {
   nameLater: 'Or later, in Rankings.',
   /** 榜 Under the Rankings title, from the switch on. */
   ranksTag: 'Season 0 · The Founding',
-  ranksSince: 'Since Monday 26 October. Everyone started equal.',
+  ranksSince: `Since ${SEASON_DAY}. Everyone started equal.`,
 };
 
 /**
@@ -2865,6 +2886,8 @@ export const CRAFTS = {
   newHere: (realm: number, names: readonly string[]) => `New in realm ${realm}: ${names.join(', ')}.`,
   shapesHere: (n: number) => `${n} shapes of this realm's gear`,
   breakthroughHere: 'This realm\u2019s Breakthrough Pill, carried into its warden, breaks the gate\u2019s 封 seal at once.',
+  /** 一 Under each Breakthrough Pill recipe, with what every one of them does said once above the list. */
+  pillRow: (realm: number) => `For the realm ${realm} gate.`,
   noTool: (tool: string) => `No ${tool.toLowerCase()} yet. The forge makes one.`,
   why: {
     level: (n: number) => `Level ${n}`,
