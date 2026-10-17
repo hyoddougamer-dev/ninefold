@@ -1520,7 +1520,7 @@ export const AWAKEN = {
    */
   hand: {
     title: 'Your Enlightenment cards',
-    blurb: 'Every card you have taken, oldest first. Any of them can be traded for one of the other two it came with. It costs your own qi: half a day of gathering for the newest card, and half a day more for each card further back.',
+    blurb: 'Every card you have taken, oldest first. Any of them can be traded for one of the other two it came with. It costs your own qi: half a day of gathering for the newest card, and half a day more for each card further back. Once your technique tree is finished, it can cost spare 道 points instead, one for each card back.',
     none: 'No cards yet. The first one comes with the second realm.',
     line: (n: number) => (n === 1 ? '悟道 Enlightenment · your card · change it' : `悟道 Enlightenment · your ${n} cards · change one`),
     fromRealm: (han: string, name: string) => `From ${han} ${name}`,

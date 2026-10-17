@@ -2777,10 +2777,11 @@ const page = `<meta charset="utf-8">
       an upgrade that can be afforded. A tap is one separate action, so twenty beasts
       within reach is one kind and twenty taps. Kinds are the number that matters, because
       twenty of the same button is one decision made twenty times. A thin visit is two
-      kinds or fewer: open the app, press the one thing, close it. A safe beast to hunt and
-      a cave bed to replant are there on nearly every visit whatever else is happening, so
-      two stricter counts leave them out: a lean visit is thin once they are not counted,
-      and a bare visit has nothing else on it at all. 塔 The tower
+      kinds or fewer: open the app, press the one thing, close it. Some kinds are there on
+      nearly every visit whatever else is happening: a safe beast to hunt, a cave bed to
+      replant, and for the active cultivator a beast to drive, a node to learn and a piece
+      to wear (every kind a walk offers on 95% of its visits). Two stricter counts leave them
+      out: a lean visit has at most one other kind, and a bare visit has nothing else at all. 塔 The tower
       is counted only once it has opened; until the release audit of 2026-10-16 its first
       floor was counted as something to do in the four realms before it stands.</p>
     <table>
@@ -2791,12 +2792,12 @@ const page = `<meta charset="utf-8">
           <th style="text-align:right">quiet</th></tr>
       ${busyRows}
     </table>
-    <div class="rule"><b>Yes, and it is not close.</b> The active cultivator has
+    <div class="rule"><b>Yes, though a share of visits are routine.</b> The active cultivator has
       ${ACTIVE_BUSY.mean.toFixed(1)} kinds of thing to do and ${ACTIVE_BUSY.taps.toFixed(0)}
       separate actions waiting on an average visit, and
       ${((ACTIVE_BUSY.thin.length / ACTIVE_BUSY.visits.length) * 100).toFixed(0)}% of visits
-      are thin. With the hunt and the cave left out,
-      ${((ACTIVE_BUSY.lean.length / ACTIVE_BUSY.visits.length) * 100).toFixed(0)}% are thin and
+      are thin. With the near-always kinds left out,
+      ${((ACTIVE_BUSY.lean.length / ACTIVE_BUSY.visits.length) * 100).toFixed(0)}% are lean and
       ${((ACTIVE_BUSY.bare.length / ACTIVE_BUSY.visits.length) * 100).toFixed(0)}% offer nothing
       else at all.</div>
     <p class="t">The honest half of the answer was the last column. The first reading of
@@ -4332,8 +4333,7 @@ const page = `<meta charset="utf-8">
       both down on a realm's first day, and the active cultivator met them on days 4, 5, 9, 9,
       13, 13, 22, 22 and 34. Held for the layer, it meets them on days 3.7, 5.3, 8.2, 9.5,
       14.7, 18.2, 24.8, 29.3 and 36.0, and the road's people climb the layers the same way,
-      one every ${MEET_LAYERS} layers. It arrives at the summit on the same day
-      as one who never shuts the door: nine points of the tree is a keepsake, not a
+      one every ${MEET_LAYERS} layers. Nine points of the tree is a keepsake, not a
       shortcut. The server counts one demon a night since the last sync, with one already
       waiting allowed for, and a count that went down is another run.</p>
     <p class="t">序 Adding it found a fault in the endgame harness. On one class's run the

@@ -165,11 +165,21 @@ export function arrivals(visits: readonly Visit[]): { day: number; what: string 
 }
 
 /**
- * 空 The two kinds that are open on nearly every visit whatever else is happening: a safe beast
- * to hunt and a cave bed to replant. A visit that offers those and nothing else is counted
- * apart as `bare`, because "two kinds" flatters it.
+ * 空 The kinds that are open on nearly every visit whatever else is happening: a safe beast
+ * to hunt and a cave bed to replant, and whatever else a walk offers on ALWAYS_SHARE of its
+ * visits or more (for the active cultivator, driving a beast, learning a node and wearing what
+ * fell, review of 2026-10-17). A visit that offers those and nothing else is counted apart as
+ * `bare`, because "two kinds" flatters it.
  */
 export const ALWAYS: readonly string[] = ['hunt a beast', 'work the cave'];
+export const ALWAYS_SHARE = 0.95;
+
+/** The kinds a walk offers on ALWAYS_SHARE of its visits or more, with the two that always are. */
+export function alwaysOf(visits: readonly { open: readonly string[] }[]): readonly string[] {
+  const kinds = new Set(visits.flatMap((v) => v.open));
+  const often = [...kinds].filter((k) => visits.filter((v) => v.open.includes(k)).length >= visits.length * ALWAYS_SHARE);
+  return [...new Set([...ALWAYS, ...often])];
+}
 
 /**
  * 底 Fewer visits than this and the walk reached nothing: a habit that stopped on day three
@@ -182,9 +192,10 @@ export function report(name: string, maxDays = 120) {
   if (visits.length < BUSY_FLOOR) throw new Error(`忙 ${name} walked ${visits.length} visits, under the floor of ${BUSY_FLOOR}`);
   const days = Math.max(...visits.map((v) => v.day));
   const thin = visits.filter((v) => v.kinds <= 2);
-  // 薄 Thin again with the hunt and the cave taken out, and bare: nothing else at all.
-  const lean = visits.filter((v) => v.open.filter((k) => !ALWAYS.includes(k)).length <= 2);
-  const bare = visits.filter((v) => v.open.every((k) => ALWAYS.includes(k)));
+  // 薄 Thin again with the near-always kinds taken out, and bare: nothing else at all.
+  const always = alwaysOf(visits);
+  const lean = visits.filter((v) => v.open.filter((k) => !always.includes(k)).length <= 1);
+  const bare = visits.filter((v) => v.open.every((k) => always.includes(k)));
   const mean = visits.reduce((n, v) => n + v.kinds, 0) / visits.length;
   const taps = visits.reduce((n, v) => n + v.taps, 0) / visits.length;
   const arrived = arrivals(visits);
@@ -195,7 +206,7 @@ export function report(name: string, maxDays = 120) {
     if (gap > quiet) { quiet = gap; quietAt = arrived[i - 1].day; }
   }
   const last = arrived[arrived.length - 1];
-  return { name, visits, days, thin, lean, bare, mean, taps, arrived, quiet, quietAt, tail: days - (last?.day ?? 0) };
+  return { name, visits, days, thin, lean, bare, always, mean, taps, arrived, quiet, quietAt, tail: days - (last?.day ?? 0) };
 }
 
 if (process.argv[1]?.endsWith('busy.ts')) {
@@ -207,9 +218,10 @@ if (process.argv[1]?.endsWith('busy.ts')) {
     console.log(`  ${' '.repeat(12)} ${r.mean.toFixed(1)} kinds and ${r.taps.toFixed(0)} taps on an average visit`);
     console.log(`  ${' '.repeat(12)} ${r.thin.length} thin visits (2 kinds or fewer), ` +
       `${((r.thin.length / r.visits.length) * 100).toFixed(0)}%`);
-    console.log(`  ${' '.repeat(12)} ${r.lean.length} thin once the hunt and the cave are not counted, ` +
+    console.log(`  ${' '.repeat(12)} near-always: ${r.always.join(', ')}`);
+    console.log(`  ${' '.repeat(12)} ${r.lean.length} with at most one other kind, ` +
       `${((r.lean.length / r.visits.length) * 100).toFixed(0)}%`);
-    console.log(`  ${' '.repeat(12)} ${r.bare.length} bare visits (nothing but the hunt and the cave), ` +
+    console.log(`  ${' '.repeat(12)} ${r.bare.length} bare visits (nothing but the near-always kinds), ` +
       `${((r.bare.length / r.visits.length) * 100).toFixed(0)}%`);
     console.log(`  ${' '.repeat(12)} longest quiet stretch ${r.quiet.toFixed(1)} days, from day ${r.quietAt.toFixed(0)}\n`);
   }
