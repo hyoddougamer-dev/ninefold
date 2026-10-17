@@ -1242,6 +1242,9 @@ export const HUNT = {
   hideFinished: 'Fold them away',
   paysMaterial: '材 material, from the record',
   paysPower: '力 power, from the record',
+  /** 窄 The same two on a phone, where the record folds to one row under its three marks. */
+  paysMaterialShort: '材 material',
+  paysPowerShort: '力 power',
 
   /**
    * 錄 The record. Old beasts have to be worth killing, or the screen is one button.

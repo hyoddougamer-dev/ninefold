@@ -628,6 +628,27 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .tally i { font-style: normal; display: block; font-size: 9px; letter-spacing: .1em;
            text-transform: uppercase; color: var(--faint); }
 .tally .pay b { color: var(--gold); font-size: 15px; }
+/* 窄 狩 On a phone the record is one screen's worth less tall: "7/36" on one line (the count's
+   own `i` was falling to the block rule above it), and the two payoffs folded to one short row
+   each, figure and word side by side. Scoped to the hunt: .tally is not the drive sheet's. */
+.sheet[data-screen='hunt'] .tally .pay small { font-size: inherit; }
+.sheet[data-screen='hunt'] .tally .pay .pl-short { display: none; }
+@media (max-width: 420px) {
+  .sheet[data-screen='hunt'] .tally { gap: 6px; margin-top: 8px; }
+  .sheet[data-screen='hunt'] .tally span { padding: 5px 4px 4px; }
+  .sheet[data-screen='hunt'] .tally em i { display: inline; letter-spacing: 0; }
+  /* The mark and its count side by side ("見 7/36"), its word under them. */
+  .sheet[data-screen='hunt'] .tally span:not(.pay) > b,
+  .sheet[data-screen='hunt'] .tally span:not(.pay) > em { display: inline; margin: 0 2px; vertical-align: baseline; }
+  .sheet[data-screen='hunt'] .tally .pay { display: flex; align-items: baseline; justify-content: center; gap: 6px; padding: 5px 6px; }
+  .sheet[data-screen='hunt'] .tally .pay b { display: inline; font-size: 14px; }
+  .sheet[data-screen='hunt'] .tally .pay > i { display: inline; font-size: 10px; letter-spacing: .06em; }
+  .sheet[data-screen='hunt'] .tally .pay .pl-long { display: none; }
+  .sheet[data-screen='hunt'] .tally .pay .pl-short { display: inline; }
+  /* The quarry's band and the list's heading a little closer, as the record is. */
+  .sheet[data-screen='hunt'] .weekband:not([data-folded]) { padding: 8px 11px; margin-top: 10px; }
+  .sheet[data-screen='hunt'] .huntrow { margin-top: 18px; }
+}
 
 .card3 .marks { justify-content: center; }
 
