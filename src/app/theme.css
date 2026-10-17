@@ -4200,6 +4200,9 @@ nav.tabs .tabkey { display: none; }
 .platcard .plwho i { display: block; font-style: normal; font-size: 12px; line-height: 1.5; color: var(--faint); margin-top: 2px; }
 .platcard .plwho em { display: block; font-style: normal; font-size: 12px; color: var(--gold); margin-top: 3px; }
 .platcard .plodds { text-align: right; min-width: 64px; }
+/* 誠 The words under the figure wrap in a column of their own ("your build, not your power"
+   is five words), so a long label never takes the name's width or runs off the card. */
+.platcard .plodds { max-width: 116px; }
 .platcard .plodds b { display: block; font-size: 18px; line-height: 1.2; }
 .platcard .plodds i { display: block; font-style: normal; font-size: 9.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--faint); }
 .platcard .plodds .plnow { color: var(--cinnabar); }
@@ -4222,7 +4225,7 @@ nav.tabs .tabkey { display: none; }
    a line, and the two buttons stand one above the other. */
 @media (max-width: 360px) {
   .platcard .plrow { grid-template-columns: auto minmax(0, 1fr); }
-  .platcard .plodds { grid-column: 2; text-align: left; min-width: 0; display: flex; flex-wrap: wrap;
+  .platcard .plodds { grid-column: 2; text-align: left; min-width: 0; max-width: none; display: flex; flex-wrap: wrap;
     align-items: baseline; gap: 2px 8px; }
   .platcard .plodds b { display: inline; font-size: 16px; }
   .platcard .plodds i { display: inline; }

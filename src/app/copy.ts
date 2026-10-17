@@ -1989,7 +1989,12 @@ export const PLATFORM = {
   inStance: (name: string) => `in ${name}`,
   asYouStand: (pct: string) => `${pct} as you stand`,
   odds: 'odds',
-  toReach: 'to reach',
+  /**
+   * 誠 Under the ×N of a challenger nothing in hand can beat. It stands at a share of your own
+   * power, so "to reach" read as a number to climb toward, and climbing changes nothing: the
+   * build is what reaches it (audit, 2026-10-16). The tower's label is a different claim.
+   */
+  toReach: 'your build, not your power',
   standIn: (name: string) => `Stand in ${name}`,
   challenge: 'Challenge',
   trail: '跡 You hold a trail from the secret realm: this challenger begins a tenth down.',
