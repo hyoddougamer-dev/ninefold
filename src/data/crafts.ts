@@ -503,15 +503,22 @@ export const breakthroughKey = (tier: number) => `breakthrough${tier}`;
 export { BREAKTHROUGH_LEVEL };
 /** The share of its wall's days a pill breaks at a rank's multiplier: see pillShare in sim/crafts.ts. */
 const pillTakes = (mult: number) => pct(Number((1 - (1 - CRAFT_KIT.pill) ** mult).toFixed(2)));
+/**
+ * 一 What every Breakthrough Pill does, said once. Each pill's own sheet says it after the realm
+ * it is made for, and 業 the workshop says it once above the four recipes instead of under every
+ * one of them: four copies of the same sixty words was the whole of the list at 320 (audit,
+ * 2026-10-16).
+ */
+export const PILL_RULE = `Carried into the warden of the realm it is made for, a Breakthrough Pill breaks the gate’s 封 seal at once, and ${pillTakes(1)} of the days its 瓶頸 bottleneck `
+  + `takes to loosen with it (${pillTakes(TOP_MULT)} at ${RARITY_INFO.heaven.name} rank), on top of your elixir and sigil. `
+  + `At a gate above that realm it cannot be carried to break the seal, but eaten from the gate’s card it fills part of the seal’s bar (×${CRAFT_KIT.fade} as much for each realm above), and the wall takes ×${CRAFT_KIT.fade} as much. A win spends it, a loss keeps it.`;
 for (const tier of BREAKTHROUGH_TIERS) {
   const set = REALM_SETS[tier - 1];
   const key = breakthroughKey(tier);
   const han = `${set.han}破境丹`;
   const name = `${set.word} Breakthrough Pill`;
   item({ key, han, name, kind: 'elixir', realm: tier, icon: 'beams-aura', graded: true,
-    does: `Carried into your realm’s warden, it breaks the gate’s 封 seal at once, and ${pillTakes(1)} of the days its 瓶頸 bottleneck `
-      + `takes to loosen with it (${pillTakes(TOP_MULT)} at ${RARITY_INFO.heaven.name} rank), on top of your elixir and sigil. `
-      + `Made for realm ${tier}: at a gate above it, it cannot be carried to break the seal, but eaten from the gate’s card it fills part of the seal’s bar (×${CRAFT_KIT.fade} as much for each realm above), and the wall takes ×${CRAFT_KIT.fade} as much. A win spends it, a loss keeps it.` });
+    does: `Made for realm ${tier}. ${PILL_RULE}` });
   recipe(heavy({ key: `alchemy:${key}`, skill: 'alchemy', group: 'Breakthrough', han, name,
     level: BREAKTHROUGH_LEVEL[tier], realm: tier, seconds: CRAFT_SECONDS.alchemy,
     needs: [[TIER_HERB[tier - 2], 2], ['cinnabar', 1]],

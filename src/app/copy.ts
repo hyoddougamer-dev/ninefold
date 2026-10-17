@@ -2837,6 +2837,8 @@ export const CRAFTS = {
   newHere: (realm: number, names: readonly string[]) => `New in realm ${realm}: ${names.join(', ')}.`,
   shapesHere: (n: number) => `${n} shapes of this realm's gear`,
   breakthroughHere: 'This realm\u2019s Breakthrough Pill, carried into its warden, breaks the gate\u2019s 封 seal at once.',
+  /** 一 Under each Breakthrough Pill recipe, with what every one of them does said once above the list. */
+  pillRow: (realm: number) => `For the realm ${realm} gate.`,
   noTool: (tool: string) => `No ${tool.toLowerCase()} yet. The forge makes one.`,
   why: {
     level: (n: number) => `Level ${n}`,
