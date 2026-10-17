@@ -751,6 +751,8 @@ const busyRows = BUSY.map((b) => `<tr>
   <td class="n">${b.mean.toFixed(1)}</td>
   <td class="n">${b.taps.toFixed(0)}</td>
   <td class="n">${((b.thin.length / b.visits.length) * 100).toFixed(0)}%</td>
+  <td class="n">${((b.lean.length / b.visits.length) * 100).toFixed(0)}%</td>
+  <td class="n">${((b.bare.length / b.visits.length) * 100).toFixed(0)}%</td>
   <td class="n">${b.quiet.toFixed(0)}d</td>
 </tr>`).join('');
 
@@ -2775,18 +2777,28 @@ const page = `<meta charset="utf-8">
       an upgrade that can be afforded. A tap is one separate action, so twenty beasts
       within reach is one kind and twenty taps. Kinds are the number that matters, because
       twenty of the same button is one decision made twenty times. A thin visit is two
-      kinds or fewer: open the app, press the one thing, close it.</p>
+      kinds or fewer: open the app, press the one thing, close it. A safe beast to hunt and
+      a cave bed to replant are there on nearly every visit whatever else is happening, so
+      two stricter counts leave them out: a lean visit is thin once they are not counted,
+      and a bare visit has nothing else on it at all. 塔 The tower
+      is counted only once it has opened; until the release audit of 2026-10-16 its first
+      floor was counted as something to do in the four realms before it stands.</p>
     <table>
       <tr><th>how they play</th><th style="text-align:right">visits</th>
           <th style="text-align:right">kinds</th><th style="text-align:right">taps</th>
-          <th style="text-align:right">thin</th><th style="text-align:right">quiet</th></tr>
+          <th style="text-align:right">thin</th><th style="text-align:right">lean</th>
+          <th style="text-align:right">bare</th>
+          <th style="text-align:right">quiet</th></tr>
       ${busyRows}
     </table>
     <div class="rule"><b>Yes, and it is not close.</b> The active cultivator has
       ${ACTIVE_BUSY.mean.toFixed(1)} kinds of thing to do and ${ACTIVE_BUSY.taps.toFixed(0)}
       separate actions waiting on an average visit, and
       ${((ACTIVE_BUSY.thin.length / ACTIVE_BUSY.visits.length) * 100).toFixed(0)}% of visits
-      are thin. Nothing in the first two months is a screen with one button on it.</div>
+      are thin. With the hunt and the cave left out,
+      ${((ACTIVE_BUSY.lean.length / ACTIVE_BUSY.visits.length) * 100).toFixed(0)}% are thin and
+      ${((ACTIVE_BUSY.bare.length / ACTIVE_BUSY.visits.length) * 100).toFixed(0)}% offer nothing
+      else at all.</div>
     <p class="t">The honest half of the answer was the last column. The first reading of
       it said <b>the problem is not how much there is to do, it is that nothing new
       arrives after the third week</b>, and it was right. Four things have changed it

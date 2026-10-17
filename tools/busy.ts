@@ -19,6 +19,10 @@
  *   kinds   how many systems have something to do right now, of ${KINDS} that exist.
  *   taps    how many distinct actions, counting each beast and each upgrade.
  *   thin    a visit with two kinds or fewer: open the app, press the one thing, close it.
+ *   lean    thin, with the hunt and the cave not counted.
+ *   bare    a visit with nothing on it but the hunt and the cave. Both are open on nearly
+ *           every visit of the climb (a safe beast at 98% and a bed to replant), so a visit
+ *           can read as two kinds and still hold nothing a player would come back for.
  *   quiet   the longest run of days in which nothing new arrived at all.
  */
 import {
@@ -70,7 +74,11 @@ export const KINDS: readonly Kind[] = [
   { han: '守', name: 'fight the warden', taps: (s) => (canFightWarden(s) && odds(s, wardenOf(s.realm)) > 0.2 ? 1 : 0) },
   { han: '突破', name: 'break through', taps: (s) => (canBreakThrough(s) ? 1 : 0) },
   { han: '凝丹', name: 'condense a core', taps: (s) => (canCondense(s) ? 1 : 0) },
-  { han: '塔', name: 'climb a floor', taps: (s) => (odds(s, floorBeast(standingFloor(s)), floorPower(standingFloor(s))) > 0.6 ? 1 : 0) },
+  // 開 Only once the tower stands: it opens at the fifth realm, and the first floor of a tower
+  // nobody can enter was counted as something to do on every visit of the first four realms
+  // (the release audit of 2026-10-16).
+  { han: '塔', name: 'climb a floor', taps: (s) => (isOpen(s.realm, 'tower')
+      && odds(s, floorBeast(standingFloor(s)), floorPower(standingFloor(s))) > 0.6 ? 1 : 0) },
   { han: '爐', name: 'brew a pill', taps: (s) => LINES.filter((l) => canBrew(s, l)).length },
   { han: '煉器', name: 'refine a piece', taps: (s) => SLOTS.filter((x) => s.worn[x] && canRefine(s, x) && (refinePrice(s, x) ?? Infinity) <= s.materials).length },
   { han: '道', name: 'learn a node', taps: (s) => (isOpen(s.realm, 'tree')
@@ -156,10 +164,27 @@ export function arrivals(visits: readonly Visit[]): { day: number; what: string 
   return out;
 }
 
+/**
+ * 空 The two kinds that are open on nearly every visit whatever else is happening: a safe beast
+ * to hunt and a cave bed to replant. A visit that offers those and nothing else is counted
+ * apart as `bare`, because "two kinds" flatters it.
+ */
+export const ALWAYS: readonly string[] = ['hunt a beast', 'work the cave'];
+
+/**
+ * 底 Fewer visits than this and the walk reached nothing: a habit that stopped on day three
+ * prints a table of zeros and a tick. Every habit read here climbs for weeks.
+ */
+export const BUSY_FLOOR = 60;
+
 export function report(name: string, maxDays = 120) {
   const visits = watchHabit(name, maxDays);
+  if (visits.length < BUSY_FLOOR) throw new Error(`忙 ${name} walked ${visits.length} visits, under the floor of ${BUSY_FLOOR}`);
   const days = Math.max(...visits.map((v) => v.day));
   const thin = visits.filter((v) => v.kinds <= 2);
+  // 薄 Thin again with the hunt and the cave taken out, and bare: nothing else at all.
+  const lean = visits.filter((v) => v.open.filter((k) => !ALWAYS.includes(k)).length <= 2);
+  const bare = visits.filter((v) => v.open.every((k) => ALWAYS.includes(k)));
   const mean = visits.reduce((n, v) => n + v.kinds, 0) / visits.length;
   const taps = visits.reduce((n, v) => n + v.taps, 0) / visits.length;
   const arrived = arrivals(visits);
@@ -170,7 +195,7 @@ export function report(name: string, maxDays = 120) {
     if (gap > quiet) { quiet = gap; quietAt = arrived[i - 1].day; }
   }
   const last = arrived[arrived.length - 1];
-  return { name, visits, days, thin, mean, taps, arrived, quiet, quietAt, tail: days - (last?.day ?? 0) };
+  return { name, visits, days, thin, lean, bare, mean, taps, arrived, quiet, quietAt, tail: days - (last?.day ?? 0) };
 }
 
 if (process.argv[1]?.endsWith('busy.ts')) {
@@ -182,6 +207,10 @@ if (process.argv[1]?.endsWith('busy.ts')) {
     console.log(`  ${' '.repeat(12)} ${r.mean.toFixed(1)} kinds and ${r.taps.toFixed(0)} taps on an average visit`);
     console.log(`  ${' '.repeat(12)} ${r.thin.length} thin visits (2 kinds or fewer), ` +
       `${((r.thin.length / r.visits.length) * 100).toFixed(0)}%`);
+    console.log(`  ${' '.repeat(12)} ${r.lean.length} thin once the hunt and the cave are not counted, ` +
+      `${((r.lean.length / r.visits.length) * 100).toFixed(0)}%`);
+    console.log(`  ${' '.repeat(12)} ${r.bare.length} bare visits (nothing but the hunt and the cave), ` +
+      `${((r.bare.length / r.visits.length) * 100).toFixed(0)}%`);
     console.log(`  ${' '.repeat(12)} longest quiet stretch ${r.quiet.toFixed(1)} days, from day ${r.quietAt.toFixed(0)}\n`);
   }
 
