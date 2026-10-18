@@ -2267,6 +2267,9 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
          color: var(--faint); line-height: 1.55; }
 .way em { display: block; font-style: normal; margin-top: 7px; font-size: 12px;
           color: var(--gold); }
+/* 關 升 The risen last gate's line, in gold: it stands on the walker's own power. */
+.way i.risengate { color: var(--gold); border-left: 2px solid color-mix(in srgb, var(--gold) 60%, transparent);
+                   padding-left: 8px; margin-top: 6px; }
 
 /* 記 The running total, while the run is still being walked. */
 .secret .sofar { display: flex; align-items: baseline; justify-content: space-between;
@@ -2969,6 +2972,24 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
         border-radius: 8px; padding: 1px 7px; }
 .beast .bname .etag b { font-size: 12.5px; font-weight: 400; color: var(--cinnabar); line-height: 1.5; }
 .beast .bname .etag i { display: inline; font-style: normal; font-size: 10px; letter-spacing: .04em; color: var(--faint); }
+/* 升 The risen elite (sim/risen.ts): its chip in gold beside the elite's cinnabar one, its two
+   figures stacked on the right (carried over bare), and the lines under the row in words.
+   Hunt row only: .risenodds, .brisen and .rtagrisen are drawn nowhere else. */
+.beast .bname .etag.rtagrisen { border-color: color-mix(in srgb, var(--gold) 60%, transparent);
+        background: color-mix(in srgb, var(--gold) 12%, transparent); }
+.beast .bname .etag.rtagrisen b { color: var(--gold); }
+.beast .odds.risenodds { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.beast .odds.risenodds > span { line-height: 1.05; }
+.beast .odds.risenodds > span.bare { font-size: 13px; opacity: .85; }
+.beast .brisen { flex: 1 0 100%; display: flex; flex-direction: column; gap: 3px; margin-top: 2px;
+        border-left: 2px solid color-mix(in srgb, var(--gold) 60%, transparent); padding-left: 8px; }
+.beast .brisen i { font-style: normal; font-size: 11.5px; line-height: 1.4; color: var(--faint); }
+.beast .brisen i:first-child { color: var(--text); }
+/* 精血 A recipe short of its realm's blood, in the workshop list. */
+.crow .cr-blood b.cjk { color: var(--cinnabar); font-weight: 400; margin-right: 3px; }
+/* 精血 The blood chip in the verdict, in cinnabar: it is the elite's own. */
+.gain.blood { color: var(--cinnabar); background: color-mix(in srgb, var(--cinnabar) 12%, transparent);
+              border-color: color-mix(in srgb, var(--cinnabar) 45%, transparent); }
 /* 瓶頸 The bottleneck line on the warden's card. */
 .c-side .card .bneck { border-left: 2px solid color-mix(in srgb, var(--cinnabar) 60%, transparent); padding-left: 9px; }
 /* 封 The seal line under it, in gold while it holds and quiet once it is broken or served,
@@ -3459,6 +3480,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
   .beast:has(.bleaves) .bname > .etag,
   .beast:has(.bleaves) .bname > .marks { grid-column: 2 / -1; justify-self: start; }
   .beast:has(.bleaves) > .bleaves,
+  .beast:has(.bleaves) > .brisen,
   .beast:has(.bleaves) > .bfate { grid-column: 1 / -1; }
   .beast:has(.bleaves) > .bfate { padding-left: 0; }
 }

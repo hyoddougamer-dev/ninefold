@@ -11,7 +11,7 @@ import { plateOf } from '../../data/bestiary.ts';
 import { realm as realmOf } from '../../data/realms.ts';
 import type { Beast } from '../../data/bestiary.ts';
 import { type Outcome } from '../../sim/combat.ts';
-import { DEMON_DAO, DEMON_LATE_LAYER, HEALTH_PER_POWER, PILL_POWER } from '../../sim/balance.ts';
+import { DEMON_DAO, DEMON_LATE_LAYER, ELITE_PARTS, HEALTH_PER_POWER, PILL_POWER } from '../../sim/balance.ts';
 import { num } from '../../sim/format.ts';
 import { portraitLayers } from '../../art/aura.ts';
 import { arenaScene } from '../../art/scene.ts';
@@ -21,11 +21,13 @@ import { blowLine, verdictLine } from './blows.ts';
 import { Svg } from './Svg.tsx';
 import { Plate } from './Plate.tsx';
 import { pictureOf } from '../../data/pictures.ts';
-import { ARENA, CRAFTS, PLATFORM, SECLUSION, UNIT, meltPays } from '../copy.ts';
+import { ARENA, CRAFTS, PLATFORM, RISEN, SECLUSION, UNIT, meltPays } from '../copy.ts';
+import { essenceFrom } from '../../sim/risen.ts';
+import { pouchRoom } from '../../sim/crafts.ts';
 import {
   PLATFORM_EDGE, answerOf, edgeLabel, beatenNow, challengerOf, challengerPays, temperOf, type Tier,
 } from '../../sim/platform.ts';
-import { ITEM_BY_KEY, splitKey } from '../../data/crafts.ts';
+import { ITEM_BY_KEY, partKey, splitKey } from '../../data/crafts.ts';
 import { tookPart, type Used } from '../../sim/crafts.ts';
 import { burst, float } from '../juice.ts';
 import { floorMaterial, lootTaken } from '../../sim/trials.ts';
@@ -89,6 +91,8 @@ export interface Battle {
   readonly sought?: boolean;
   /** 續 This fight, among the ones the arena shows without closing (Again, the auto-hunt). */
   readonly id?: number;
+  /** 升 A risen elite, on the day's dice: no Again after a loss, never Auto. */
+  readonly risen?: boolean;
 }
 
 export type Striker = 'player' | 'beast';
@@ -429,6 +433,8 @@ export function Arena({ battle, state, pulse, onClose, onAgain, onSkip, overflow
               : [spentNames && CRAFTS.kitSpent(spentNames), unneeded && CRAFTS.kitUnneeded(unneeded)].filter(Boolean).join(' ')}</p>
           )}
           {battle.sought && !outcome.won && <p className="kitline"><b className="cjk">尋</b> {CRAFTS.seekKept}</p>}
+          {/* 升 A risen elite lost: why there is no Again, and what makes it a different fight. */}
+          {battle.risen && !outcome.won && <p className="kitline risenlost"><b className="cjk">升</b> {RISEN.lost}</p>}
           {short !== null && (short.technique > 0 || short.cores > 0) && (
             <p className="kitline dragonshort"><b className="cjk">劫</b> {ARENA.dragonOpen(
               ARENA.openLevels(short.technique, short.cores), short.pills, bodyPill.name, bodyPill.han)}</p>
@@ -485,6 +491,16 @@ export function Arena({ battle, state, pulse, onClose, onAgain, onSkip, overflow
               {(battle.qi ?? 0) + bounty + weekly > 0 && (
                 <span className="gain qi" style={{ animationDelay: '.4s' }}>
                   +{num((battle.qi ?? 0) + bounty + weekly)} <b>qi</b>
+                </span>
+              )}
+              {/* 精血 An elite's blood, and 解 a risen one's part, read before the kill is written. */}
+              {worldly && essenceFrom(beast) > 0 && (
+                <span className="gain blood" style={{ animationDelay: '.5s' }}>{RISEN.blood(essenceFrom(beast))}</span>
+              )}
+              {battle.risen && pouchRoom(state, partKey(beast.key)) > 0 && (
+                <span className="gain" style={{ animationDelay: '.6s' }}>
+                  {RISEN.part(num(Math.min(ELITE_PARTS, pouchRoom(state, partKey(beast.key)))),
+                    ITEM_BY_KEY[partKey(beast.key)]?.name ?? beast.name)}
                 </span>
               )}
             </div>

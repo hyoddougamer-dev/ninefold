@@ -20,6 +20,7 @@ import { MARKS } from '../sim/balance.ts';
 import { haptics } from './haptics.ts';
 import { sfx } from './sound.ts';
 import { isOpen } from '../sim/unlocks.ts';
+import { eliteSeed, risenElite } from '../sim/risen.ts';
 
 /**
  * 擊 The least time between two fights starting, in the app. The ranked server allows one
@@ -89,6 +90,9 @@ export function useFight(
       const drops = !demon && !platform && floor === undefined && isOpen(state.realm, 'gear');
       const plain = drops ? dropFor(state, beast, seed ^ 0x9e3779b9, fortuneOf(state), state.layer) : null;
       const sought = drops && !plain && !beast.warden && state.crafts.seek > 0;
+      // 升 A risen elite is fought on the day's dice (sim/risen.ts): the same body meets the
+      // same fight until a win, a new day, or something it carries or holds changes.
+      const risen = !platform && !demon && floor === undefined && risenElite(state, beast);
       return {
         id: seed,
         beast,
@@ -102,7 +106,9 @@ export function useFight(
         // has it begin hurt: the same body meets the same fight all week.
         outcome: platform
           ? fight(state, beast, challengerSeed(state, challenger), standing, challengerKit(state, carried.kit))
+          : risen ? fight(state, beast, eliteSeed(state, beast), undefined, carried.kit)
           : fight(state, beast, seed, standing, carried.kit),
+        risen: risen || undefined,
         beat: 0,
         over: false,
         // A tower floor pays in materials, not in gear. Gear comes from the world.
@@ -232,8 +238,10 @@ export function useFight(
    * fight would be rolled on the old one. So it is remembered, and started by the effect
    * below once the kill is in the state.
    */
+  // 升 And never after a risen elite was lost: the dice are set for the day, so Again would be
+  // the same fight. After a win the wins have moved, and so have the dice.
   const canAgain = !!battle && !battle.demon && battle.floor === undefined && battle.challenger === undefined
-    && !(battle.beast.warden && battle.outcome.won);
+    && !(battle.beast.warden && battle.outcome.won) && !(battle.risen && !battle.outcome.won);
   // 續 The verdict stays up until the pace allows the next fight, and the next fight
   // starts before the browser paints (a layout effect), so going again never flashes
   // the hunt list between two fights.
@@ -312,9 +320,10 @@ export function useFight(
    * rekaris, on the Discord: keep it as a reward for having learned a beast. Ten and not
    * a hundred, so the first-realm hunt is not a hundred clicks again.
    */
-  const autoLeft = battle ? Math.max(0, MARKS[1] - ((state.killed[battle.beast.key] ?? 0) + 1)) : 0;
+  // 升 Never on a risen elite, whatever its count: each of its fights is a day's dice.
+  const autoLeft = battle && !battle.risen ? Math.max(0, MARKS[1] - ((state.killed[battle.beast.key] ?? 0) + 1)) : 0;
   const startAuto = useCallback(() => {
-    if (!battle || !canAgain || !battle.outcome.won || autoLeft > 0) return;
+    if (!battle || !canAgain || !battle.outcome.won || autoLeft > 0 || battle.risen) return;
     setAuto({ beast: battle.beast, kills: 1, from: state.materials });
     fightAgain();
   }, [battle, canAgain, fightAgain, state.materials, autoLeft]);
@@ -336,7 +345,7 @@ export function useFight(
    * fighting one by hand to reach a verdict. Three taps become one.
    */
   const autoFrom = useCallback((beast: Beast) => {
-    if (battle || auto || beast.warden || (state.killed[beast.key] ?? 0) < MARKS[1]) return;
+    if (battle || auto || beast.warden || risenElite(state, beast) || (state.killed[beast.key] ?? 0) < MARKS[1]) return;
     setAuto({ beast, kills: 0, from: state.materials });
     startFight(beast);
   }, [battle, auto, state.killed, state.materials, startFight]);

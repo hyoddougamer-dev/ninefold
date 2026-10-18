@@ -4,7 +4,10 @@ import { BEASTS, comingIn, huntable, plateOf } from '../../data/bestiary.ts';
 import { realm as realmOf } from '../../data/realms.ts';
 import { RealmTag } from '../ui/RealmTag.tsx';
 import { beastPower, effectiveBeastPower, isElite, lootFrom, oddsRaw } from '../../sim/combat.ts';
-import { ELITE_LOOT, ODDS_CEILING, ODDS_FLOOR } from '../../sim/balance.ts';
+import { ELITE_ESSENCE, ELITE_LOOT, ODDS_CEILING, ODDS_FLOOR } from '../../sim/balance.ts';
+import { risenElite } from '../../sim/risen.ts';
+import { eliteOdds } from '../../sim/elite.ts';
+import { ITEM_BY_KEY, partKey } from '../../data/crafts.ts';
 import { power, type State } from '../../sim/state.ts';
 import { lootTaken } from '../../sim/trials.ts';
 import {
@@ -16,7 +19,7 @@ import { Term } from '../ui/Term.tsx';
 import { schoolSays } from '../classes.ts';
 import { Door } from '../ui/Secret.tsx';
 import { isOpen } from '../../sim/unlocks.ts';
-import { HUNT, PILE, QOL, UNIT } from '../copy.ts';
+import { HUNT, PILE, QOL, RISEN, UNIT } from '../copy.ts';
 import { Bestiary } from './Bestiary.tsx';
 import { DriveTag } from '../ui/Drive.tsx';
 import { canDrive } from '../../sim/hunt.ts';
@@ -173,6 +176,12 @@ export function Hunt({ state, onFight, onDrive, onPile, onAuto, onSecret, onKey 
   const raws = useMemo(() => new Map(sorted.map((b) => [b.key, oddsRaw(state, b)])),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [sorted, ...fightDeps(state)]);
+  // 升 The risen elite's two figures, bare and with what is carried, read once like the rest.
+  const risen = useMemo(() => {
+    const b = sorted.find((x) => risenElite(state, x));
+    return b ? { key: b.key, ...eliteOdds(state, b) } : null;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sorted, state.crafts.carry, state.crafts.pouch, ...fightDeps(state)]);
   const beatable = sorted.filter((b) => (raws.get(b.key) ?? 0) > 0).length;
   const done = folds ? shown.filter(finished) : [];
   const list = showDone ? [...open, ...done] : open;
@@ -287,6 +296,10 @@ export function Hunt({ state, onFight, onDrive, onPile, onAuto, onSecret, onKey 
            */
           const raw = raws.get(b.key) ?? oddsRaw(state, b);
           const c = Math.max(ODDS_FLOOR, Math.min(ODDS_CEILING, raw));
+          // 升 A risen elite always says its odds, bare and carried, and never "×N stronger".
+          const up = risen && risen.key === b.key ? risen : null;
+          const toneOf = (x: number) => (x > 0.66 ? 'var(--jade)' : x > 0.33 ? 'var(--gold)' : 'var(--cinnabar)');
+          const partName = ITEM_BY_KEY[partKey(b.key)]?.name ?? b.name;
           const gap = effectiveBeastPower(state, b) / Math.max(1e-9, power(state));
           const tone = raw <= 0 ? 'var(--faint)'
             : c > 0.66 ? 'var(--jade)' : c > 0.33 ? 'var(--gold)' : 'var(--cinnabar)';
@@ -318,6 +331,11 @@ export function Hunt({ state, onFight, onDrive, onPile, onAuto, onSecret, onKey 
                   <span className="etag"><b className="cjk">{HUNT.elite(ELITE_LOOT).han}</b>
                     <i>{HUNT.elite(ELITE_LOOT).name} · {HUNT.elite(ELITE_LOOT).note}</i></span>
                 )}
+                {/* 升 And a risen one says what it stands on, and that its dice are the day's. */}
+                {up && (
+                  <span className="etag rtagrisen"><b className="cjk">{RISEN.han}</b>
+                    <i>{RISEN.name} · {RISEN.note} · {RISEN.today}</i></span>
+                )}
                 {/* 註 The pips are the characters, so they are the tappable ones. A
                     second copy of 見 in the sentence beside them was the screen naming
                     the same thing twice on the same line. */}
@@ -339,10 +357,17 @@ export function Hunt({ state, onFight, onDrive, onPile, onAuto, onSecret, onKey 
                   </i>
                 </span>
               </span>
+              {up ? (
+                <span className="odds risenodds" data-risen>
+                  <span style={{ color: toneOf(up.carried) }}>{Math.round(up.carried * 100)}%<em>{up.carries ? RISEN.carried : RISEN.oddsLabel}</em></span>
+                  {up.carries && <span className="bare" style={{ color: toneOf(up.bare) }}>{Math.round(up.bare * 100)}%<em>{RISEN.bare}</em></span>}
+                </span>
+              ) : (
               <span className="odds" style={{ color: tone }}>
                 {raw > 0 ? `${Math.round(c * 100)}%` : `×${gap < 10 ? gap.toFixed(1) : Math.round(gap)}`}
                 <em>{raw > 0 ? HUNT.odds : HUNT.toReach}</em>
               </span>
+              )}
               {/* 圍 Ten wins earn the right to stop tapping. The tag sits inside the
                   row but swallows its own click, so the row still fights once. */}
               {/* 自 Auto on the row, by the same rule as the verdict's: Known, never a warden.
@@ -359,6 +384,13 @@ export function Hunt({ state, onFight, onDrive, onPile, onAuto, onSecret, onKey 
                       <b className="cjk">自</b><i>{QOL.hunt.auto}</i>
                     </span>
                   )}
+                </span>
+              )}
+              {/* 升 Under a risen row, across its width: the odds in words, the day's dice, what a win leaves. */}
+              {up && (
+                <span className="brisen">
+                  <i>{RISEN.odds(Math.round(up.bare * 100), Math.round(up.carried * 100), up.carries)} {RISEN.dice}</i>
+                  <i>{RISEN.leaves(ELITE_ESSENCE, partName)} {RISEN.never}</i>
                 </span>
               )}
               {/* 行 Under the row, across its whole width: the name column is too narrow at

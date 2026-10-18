@@ -1,10 +1,9 @@
-import { kitFor } from '../../sim/crafts.ts';
 import { ITEM_BY_KEY, REALM_KEY } from '../../data/crafts.ts';
 import {
   ROOM_INFO, doorIn, doorsAt, giftOf, incenseLeft, isGate, leave, roomsFor, canUseKey,
-  shareAt, springNow, type BoxHolds, type Gift,
+  shareAt, springNow, gateOdds, gatePower, gateRisen, type BoxHolds, type Gift,
 } from '../../sim/secret.ts';
-import { effectiveBeastPower, odds } from '../../sim/combat.ts';
+import { gateEdge } from '../../sim/risen.ts';
 import { rate } from '../../sim/time.ts';
 import { INCENSE_BONUS, KEY_SPRING, SPRING_FILL, SPRING_HOLD } from '../../sim/balance.ts';
 import { duration, num } from '../../sim/format.ts';
@@ -143,7 +142,9 @@ export function Secret({ state, onOpen, onLeave }: {
         {doors.map((room) => {
           const gift = giftOf(state, room, step);
           const info = ROOM_INFO[room.kind];
-          const chance = gift.fight ? Math.round(odds(state, gift.fight, undefined, kitFor(state, gift.fight, 'vault').kit) * 100) : 0;
+          // 關 The odds the roll is made against, the risen gate's lift included (gateOdds).
+          const chance = gift.fight ? Math.round(gateOdds(state, step, gift.fight) * 100) : 0;
+          const risenGate = !!gift.fight && gateRisen(state, step);
           const line = giftLine(state, room.kind, gift);
           const tag = SECRET.tags[room.kind];
           return (
@@ -156,8 +157,9 @@ export function Secret({ state, onOpen, onLeave }: {
                   {tag && <span className="waytag">{tag}</span>}
                 </b>
                 <i>{gift.fight
-                  ? SECRET.beast(num(effectiveBeastPower(state, gift.fight)), chance, gift.fight.realm > state.realm)
+                  ? SECRET.beast(num(gatePower(state, step, gift.fight)), chance, gift.fight.realm > state.realm)
                   : info.says}</i>
+                {risenGate && <i className="risengate">{SECRET.risenGate(Number(gateEdge(state.realm).toFixed(2)).toString())}</i>}
                 {line && <em className="mono">{line}</em>}
                 {/* 期 And on the door itself, where the doubled number is already being
                     quoted: giftOf applies the blessing, so the line above is the truth

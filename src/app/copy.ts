@@ -1203,6 +1203,37 @@ export const GUIDE = {
   },
 };
 
+/**
+ * 升 The risen elite, on 狩 the hunt row and in 鬥 the arena's verdict (sim/risen.ts). From the
+ * fifth realm the elite of the realm a cultivator stands in is measured against their own
+ * power, its dice are set for the day, and it is never driven or put on Auto while it stands
+ * risen. The row always quotes odds, bare and with what is carried, never "×N stronger".
+ */
+export const RISEN = {
+  han: '升',
+  name: 'Risen',
+  /** The tag beside 霸 Elite on the row. */
+  note: 'measured against your own power',
+  /** The two figures on the right of the row. */
+  bare: 'bare',
+  carried: 'carried',
+  today: 'set for today',
+  /** Under the row, across its width. */
+  odds: (bare: number, carried: number, carries: boolean) => (carries
+    ? `${bare}% bare, ${carried}% with what you carry.`
+    : `${bare}% bare. Carry an elixir or a sigil from the workshop to raise it.`),
+  dice: 'The dice are set for today: a win, a new day, or a change of stance, arts or what you carry is a new fight.',
+  leaves: (blood: number, part: string) => `Each win leaves ${blood} 精血 Essence Blood and its ${part} for the workshop.`,
+  never: 'Never driven or put on Auto while it stands risen. Leave the realm and it goes back to its wall.',
+  /** 鬥 A risen elite lost: why Again is not offered, and what changes the fight. */
+  lost: 'The dice are set for today, so pressed again as you are it is the same fight. Change your stance, your arts or what you carry, or come back tomorrow. The loss cost nothing.',
+  /** 鬥 A risen elite won: the blood and the part, as chips. */
+  blood: (n: number) => `+${n} 精血 Essence Blood`,
+  part: (n: string, name: string) => `+${n} ${name}`,
+  /** 狩 The odds column's label on a risen row, which is never "stronger". */
+  oddsLabel: 'today',
+};
+
 export const HUNT = {
   /**
    * 境 The realm a beast belongs to, as a small mark beside its name. razielmorgenstern, on the
@@ -1901,6 +1932,8 @@ export const SECRET = {
    */
   beast: (power: string, pct: number, above: boolean) =>
     `力 ${power}, ${above ? 'a realm above you' : 'the strongest thing this realm has'}. ${pct}% to put it down.`,
+  /** 關 The last gate from the fifth realm, which stands at least at the walker's own fight. */
+  risenGate: (edge: string) => `升 Risen: the last gate never stands below ×${edge} your own power, so it stays a real fight. What you carry counts here.`,
   apiece: 'a piece of gear',
   law: 'Take one and the room is spent. Everything you take is yours the moment you take it, and the rooms you do not reach stay in the spring for next time. A beast that puts you down ends the run and takes nothing back.',
   out: 'Walk out and keep everything',
@@ -3105,6 +3138,10 @@ export const WORKSHOP_FIX = {
   gatherNote: (name: string) => `This changes the task. Set ${name} again once there is enough.`,
   hunt: 'Hunt for 材 material',
   huntBeast: (beast: string) => `Hunt the ${beast}`,
+  /** 精血 A recipe short of Essence Blood points to the hunt for the realm's elite. */
+  huntElite: (beast: string) => `Win against the ${beast}`,
+  eliteNote: (beast: string, realm: number, n: number) =>
+    `精血 Essence Blood comes from realm ${realm}'s elite, the ${beast}: ${n} for every one felled.`,
   room: 'Make room in the chest',
   again: (name: string) => `Make ${name} again`,
   goTo: (name: string) => `Find ${name}`,

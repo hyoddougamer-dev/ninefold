@@ -1,4 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
+import { essenceRealm } from '../../sim/risen.ts';
+import { eliteOf } from '../../sim/elite.ts';
+import { ELITE_ESSENCE } from '../../sim/balance.ts';
 import {
   ITEM_BY_KEY, RECIPES, RECIPE_BY_KEY, SKILLS, SKILL_BY_KEY, XP_TABLE, arrayDoes, rankOf, splitKey,
   type Recipe, type SkillKey,
@@ -542,6 +545,13 @@ function fixFor(state: State, r: Recipe | null, act: {
   const missing = needsOf(state, r).find(([k, n]) => held(state, k) < n)?.[0];
   if (!missing) return null;
   if (missing === 'mat') return act.onGo ? { han: '狩', label: WORKSHOP_FIX.hunt, run: () => act.onGo!('hunt') } : null;
+  // 精血 Blood is never made: it is the realm's elite felled, so the way to it is the hunt.
+  const blood = essenceRealm(missing);
+  if (blood !== null) {
+    const elite = eliteOf(blood);
+    return act.onGo && elite ? { han: '狩', label: WORKSHOP_FIX.huntElite(elite.name),
+      note: WORKSHOP_FIX.eliteNote(elite.name, blood, ELITE_ESSENCE), run: () => act.onGo!('hunt') } : null;
+  }
   const maker = makerOf(splitKey(missing).key);
   if (!maker) return null;
   if (blocked(state, maker) === null) {
@@ -730,6 +740,11 @@ function Row({ state, r, on, lit, onStart, onGo, looks }: {
             ))}
           </span>
         )}
+        {/* 精血 A recipe short of its realm's blood says where blood comes from: the elite. */}
+        {needsOf(state, r).some(([k, n]) => essenceRealm(k) !== null && held(state, k) < n) && (() => {
+          const elite = eliteOf(r.realm);
+          return elite ? <i className="cr-does cr-blood"><b className="cjk">精血</b> {WORKSHOP_FIX.eliteNote(elite.name, r.realm, ELITE_ESSENCE)}</i> : null;
+        })()}
         {r.does && <i className="cr-does">{r.does}</i>}
         {isPill(r) ? <i className="cr-does">{CRAFTS.pillRow(r.realm)}</i>
           : r.makes.kind === 'item' && ITEM_BY_KEY[r.makes.item]?.kind === 'array'
