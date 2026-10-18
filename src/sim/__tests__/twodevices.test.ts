@@ -16,6 +16,9 @@ import type { State } from '../state.ts';
  * (2026-10-05) moved a few kills and seed 17 came to answer every meeting as 991 did, so
  * the test reached nothing. The second device is played on three seeds now, and the floor
  * below says at least one of them has to meet the case.
+ * 升 And it happened again with the risen elite (2026-10-18): 17, 7 and 29 (and 1234, 5555,
+ * 7777, 31337, 42, 2026) all came to answer every meeting as 991 does, with no strike among
+ * them. Of eighteen more seeds read, ten met the case; 11 and 13 join the three.
  */
 describe('二機 two devices on one run', () => {
   const h = HABITS.find((x) => x.name === 'active')!;
@@ -25,7 +28,7 @@ describe('二機 two devices on one run', () => {
     return out;
   };
   const a = run(991);
-  const others = [17, 7, 29].map(run);
+  const others = [17, 7, 29, 11, 13].map(run);
 
   it('are refused in turn as not progress, and never struck', () => {
     let road = 0;
