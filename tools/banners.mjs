@@ -79,6 +79,7 @@ export const BANNERS = [
   { key: 's0-founding', seal: '開', over: '告 Announcement · Season 0', title: 'The Founding', sub: 'Everyone starts again. The first names are carved for ever.', bg: 'realm/1', fig: 'self/woman-1' },
   { key: 'update-2026-10-19', seal: '開', over: '筆 Dev log · The trailer', title: 'The Founding: Trailer', sub: 'The seal falls once, and the Cliff waits', bg: 'realm/9', fig: 'cut/dragon' },
   { key: 'update-2026-10-23', seal: '崖', over: '筆 Dev log · The server', title: 'Ready to Carve', sub: 'Every gate passed is recorded from the first second', bg: 'realm/7', fig: 'cut/direwolf' },
+  { key: 'update-2026-10-28', seal: '升', over: '筆 Dev log · Update', title: 'The Risen Elite', sub: 'Your own power, and Essence Blood', bg: 'realm/5', fig: 'cut/lizard' },
   { key: 's0-reminder', seal: '開', over: '告 Announcement · Tonight', title: 'Season 0 Begins Tonight', sub: 'At 00:00 UTC. Last call to join Ranks as a Forerunner', bg: 'realm/2', fig: 'self/woman-2' },
   { key: 's0-open', seal: '開', over: '告 Announcement · Season 0', title: 'Season 0 Is Open', sub: 'Everyone in the first realm, at the same second', bg: 'realm/1', fig: 'self/man-1' },
   { key: 'g-cliff', seal: '崖', over: '書 Guide · Season 0', title: 'The Cliff of Names', sub: 'The first 81 through each gate, carved for ever', bg: 'realm/3', fig: 'self/man-3' },

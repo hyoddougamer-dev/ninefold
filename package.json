@@ -53,7 +53,8 @@
     "itch": "node tools/itch.mjs",
     "sounds": "node tools/sounds.mjs",
     "freeclimb": "tsx tools/freeclimb.ts",
-    "hundredfold": "tsx tools/hundredfold.ts"
+    "hundredfold": "tsx tools/hundredfold.ts",
+    "elite": "tsx tools/elite.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.2",
