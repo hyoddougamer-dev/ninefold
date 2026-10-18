@@ -50,12 +50,12 @@ const timed = (r: Recipe): KitWork => ({
 
 /** Every pill and sigil, and how long one takes. */
 export function kitWork(): KitWork[] {
-  return RECIPES.filter((r) => r.skill === 'alchemy' || r.skill === 'sigil').map(timed);
+  return RECIPES.filter((r) => (r.skill === 'alchemy' || r.skill === 'sigil') && r.makes.kind !== 'legend').map(timed);
 }
 
 /** 陣 Every array, and how long one copy takes (CRAFT_ARRAY_WORK, 2026-10-05). */
 export function arrayWork(): KitWork[] {
-  return RECIPES.filter((r) => r.skill === 'array').map(timed);
+  return RECIPES.filter((r) => r.skill === 'array' && r.makes.kind !== 'legend').map(timed);
 }
 
 if (process.argv[1]?.endsWith('kitwork.ts')) {

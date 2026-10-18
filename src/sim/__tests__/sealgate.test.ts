@@ -702,7 +702,13 @@ describe('量 what the seal costs each way of playing (tools/seal.ts)', () => {
       expect(crafted.realm9).toBeDefined();
       expect(crafted.sealed.reduce((a, b) => a + b, 0), name).toBe(0);
       expect(plain.sealed.reduce((a, b) => a + b, 0), name).toBeGreaterThanOrEqual(3);
-      expect(plain.realm9! - crafted.realm9!, name).toBeGreaterThan(1);
+      // 擊 Half a day, not one, since 2026-10-18: a win over the realm's elite at a standing
+      // gate counts as time waited (sim/legend.ts), so the active cultivator who skips the
+      // workshop now waits 3.3 days at the sealed gates instead of 5.8 and reaches realm 9 on
+      // day 48.2 instead of 49.5, while the crafter's pill still opens every gate at once (47.2
+      // both before and after). The pill's lead fell from 2.3 days to 1.0; casual, who cannot
+      // yet beat the elites at those gates, is where it was (65.7 and 62.0, a lead of 3.7).
+      expect(plain.realm9! - crafted.realm9!, name).toBeGreaterThan(0.5);
     }
   }, 120_000);
 });

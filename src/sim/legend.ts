@@ -20,7 +20,7 @@
  * and costs nothing.
  */
 import {
-  GATE_STRIKE_ELITE, GATE_STRIKE_GATE, GATE_STRIKE_SHARE, LEGEND_FIGHT_SHARE, LEGEND_MASTERED, LEGEND_POWER,
+  GATE_STRIKE_ELITE, GATE_STRIKE_SHARE, LEGEND_FIGHT_SHARE, LEGEND_MASTERED, LEGEND_POWER,
   LEGEND_SOUL_EVERY, LEGEND_SPEED, LEGEND_STRIKE_ELITE, LEGEND_STRIKE_GATE,
 } from './balance.ts';
 import {
@@ -140,13 +140,20 @@ export function gateStrikeRoom(s: State, sealDays: number, wallDays: number): nu
 }
 
 /**
- * 擊 A hard win, wherever it was won: the work on the anvil struck, and the gate, if a warden
- * stands at it, counted as waited. `gate` is the room the gate has (gateStrikeRoom), 0 when
- * no warden stands. A loss never calls this: losing costs nothing and strikes nothing.
+ * 擊 A hard win, wherever it was won: the work on the anvil struck, and, for a win over the
+ * realm's elite while its warden stands, the gate counted as waited. `gateRoom` is the room
+ * the gate has (gateStrikeRoom), 0 when no warden stands. A loss never calls this: losing
+ * costs nothing and strikes nothing.
+ *
+ * 守 A gate in the secret realm strikes the work and never the realm's gate: the secret realm
+ * is walked by everyone, the cultivator who never taps a beast included (tools/habits.ts), and
+ * counted at the gate it carried them to the ninth realm nine days sooner (121 to 112 at seed
+ * 991, measured 2026-10-18), which is the wall between waiting and playing (players.test)
+ * coming down for somebody who did not play. The elite is a hunt; the secret realm is a walk.
  */
 export function hardWin(s: State, kind: 'elite' | 'gate', gateRoom: number): State {
   let out = strikeLegend(s, kind === 'elite' ? LEGEND_STRIKE_ELITE : LEGEND_STRIKE_GATE);
-  const add = Math.min(gateRoom, kind === 'elite' ? GATE_STRIKE_ELITE : GATE_STRIKE_GATE);
+  const add = kind === 'elite' ? Math.min(gateRoom, GATE_STRIKE_ELITE) : 0;
   if (add > 0) out = { ...out, gateStruck: Math.max(0, out.gateStruck ?? 0) + add };
   return out;
 }

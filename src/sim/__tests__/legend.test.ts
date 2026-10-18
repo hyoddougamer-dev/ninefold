@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  GATE_STRIKE_ELITE, GATE_STRIKE_GATE, GATE_STRIKE_SHARE, LAYERS_PER_REALM, LEGEND_DAYS, LEGEND_FIGHT_SHARE, LEGEND_LEVEL,
+  GATE_STRIKE_ELITE, GATE_STRIKE_SHARE, LAYERS_PER_REALM, LEGEND_DAYS, LEGEND_FIGHT_SHARE, LEGEND_LEVEL,
   LEGEND_MASTERED, LEGEND_POWER, LEGEND_SOUL_EVERY, LEGEND_SPEED, LEGEND_STRIKE_ELITE, LEGEND_STRIKE_GATE, CRAFT_WORK_HOURS,
 } from '../balance.ts';
 import {
@@ -173,7 +173,8 @@ describe('擊 hard wins', () => {
     expect(sealLeft(won)).toBeCloseTo(sealDays(7) - GATE_STRIKE_ELITE / DAY, 9);
     expect(bottleneck(won, BEASTS.find((b) => b.warden && b.realm === 7)!))
       .toBeLessThan(bottleneck(gate, BEASTS.find((b) => b.warden && b.realm === 7)!));
-    expect(hardWin(gate, 'gate', gateRoom(gate)).gateStruck).toBe(GATE_STRIKE_GATE);
+    // A gate in the secret realm strikes the work, and never the realm's gate: see hardWin.
+    expect(hardWin(gate, 'gate', gateRoom(gate)).gateStruck).toBe(0);
     let s = gate;
     for (let i = 0; i < 2000; i++) s = takeKill(s, elite(7));
     const most = GATE_STRIKE_SHARE * Math.max(sealDays(7), wallDays(7)) * DAY;

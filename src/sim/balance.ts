@@ -2932,11 +2932,12 @@ export const LEGEND_SOUL_EVERY = 100;
 
 /**
  * 擊 And the gates (封 the seal, 瓶頸 the bottleneck), which wait only to slow: while one's
- * realm's warden stands, every hard win (the same two: the realm's elite, a vault gate) counts
- * as GATE_STRIKE_ELITE or GATE_STRIKE_GATE seconds waited, for the seal's bar and the wall's
- * loosening alike, up to GATE_STRIKE_SHARE of the longer of the two. Time still fills both
- * exactly as before, so whoever only waits passes when they always did.
+ * realm's warden stands, every win over that realm's elite counts as GATE_STRIKE_ELITE seconds
+ * waited, for the seal's bar and the wall's loosening alike, up to GATE_STRIKE_SHARE of each.
+ * Time still fills both exactly as before, so whoever only waits passes when they always did.
+ * A gate in the secret realm strikes a legendary work and never the realm's gate: everybody
+ * walks the secret realm, the cultivator who never fights included (see hardWin in
+ * sim/legend.ts for the measurement that settled it).
  */
 export const GATE_STRIKE_ELITE = 30 * 60;
-export const GATE_STRIKE_GATE = 60 * 60;
 export const GATE_STRIKE_SHARE = 0.5;

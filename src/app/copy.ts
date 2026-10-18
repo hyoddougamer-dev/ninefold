@@ -20,7 +20,7 @@
  *   5. **Numbers with the unit the screen shows.** 道 costs 道, qi is qi a second.
  */
 
-import { ART_BEND, BOTTLENECK_LOOSEN, REALM_WALL, CRAFT_KIT, CRAFT_QUALITY_MULT, MELT_CAP, MELT_FILL, CRAFT_FEED_LEVEL, CRAFT_MARKS, CRAFT_MARK_FASTER, CRAFT_MARK_SUB, CRAFT_MARK_TWICE, CRAFT_MASTERY_BAND, CRAFT_MASTERY_SPEED, FIND_TOP, FUSE_BEND, FUSE_TOP, LUCK_BEND, OPENING_PURSE, QI_KNEE_FIRST, QI_KNEE_GROWTH, QI_ROOF_FIRST, QI_ROOF_TOP, SUNDER_BEND, UPGRADE_NUMBERS, VARIANCE, LUCK_ROLL_TOP, PILL_BANE_FLOOR, DRAGON_KIT_SHARE, BREAKTHROUGH_LEVEL, LINEAGE_LAYER, LEGEND_STRIKE_ELITE, LEGEND_STRIKE_GATE, LEGEND_FIGHT_SHARE, LEGEND_SOUL_EVERY, GATE_STRIKE_ELITE, GATE_STRIKE_GATE } from '../sim/balance.ts';
+import { ART_BEND, BOTTLENECK_LOOSEN, REALM_WALL, CRAFT_KIT, CRAFT_QUALITY_MULT, MELT_CAP, MELT_FILL, CRAFT_FEED_LEVEL, CRAFT_MARKS, CRAFT_MARK_FASTER, CRAFT_MARK_SUB, CRAFT_MARK_TWICE, CRAFT_MASTERY_BAND, CRAFT_MASTERY_SPEED, FIND_TOP, FUSE_BEND, FUSE_TOP, LUCK_BEND, OPENING_PURSE, QI_KNEE_FIRST, QI_KNEE_GROWTH, QI_ROOF_FIRST, QI_ROOF_TOP, SUNDER_BEND, UPGRADE_NUMBERS, VARIANCE, LUCK_ROLL_TOP, PILL_BANE_FLOOR, DRAGON_KIT_SHARE, BREAKTHROUGH_LEVEL, LINEAGE_LAYER, LEGEND_STRIKE_ELITE, LEGEND_STRIKE_GATE, LEGEND_FIGHT_SHARE, LEGEND_SOUL_EVERY, GATE_STRIKE_ELITE } from '../sim/balance.ts';
 import { duration, pct as percent } from '../sim/format.ts';
 import { SEASON_DATE, SEASON_DAY, SEASON_UTC } from '../sim/season.ts';
 
@@ -3385,7 +3385,7 @@ export const ASCENT = {
   group: 'Legendary',
   /** Said once over the Legendary list, as the Breakthrough Pills' rule is. */
   rule: `A legendary work is the top of its craft, and it is made once. Begun, everything it asks for goes onto the anvil, and from then it forges for days of the workshop’s own time, kept to the second however long you are away. `
-    + `Every win over the elite of the realm you stand in strikes ${ascentTime(LEGEND_STRIKE_ELITE)} off it, and every gate beaten in the vault ${ascentTime(LEGEND_STRIKE_GATE)}, up to ${Math.round(LEGEND_FIGHT_SHARE * 100)}% of the forging. Fighting finishes it sooner; waiting still finishes it.`,
+    + `Every win over the elite of the realm you stand in strikes ${ascentTime(LEGEND_STRIKE_ELITE)} off it, and every gate beaten in 秘境 the secret realm ${ascentTime(LEGEND_STRIKE_GATE)}, up to ${Math.round(LEGEND_FIGHT_SHARE * 100)}% of the forging. Fighting finishes it sooner; waiting still finishes it.`,
   /** 精魄 Where a soul comes from. */
   soulRule: `One win in ${LEGEND_SOUL_EVERY} over the elite of the realm you stand in leaves 精魄 an Elite Soul.`,
   /** The next goal, on every craft's panel. */
@@ -3402,7 +3402,7 @@ export const ASCENT = {
   /** On the task card and the list while a work is on the anvil. */
   forging: (left: string) => `${left} of forging left.`,
   struck: (off: string, most: string) => `Hard wins have struck ${off} off it, of ${most} at most.`,
-  strikeHint: 'Beat your realm’s elite or a vault gate to strike it shorter.',
+  strikeHint: 'Beat your realm’s elite or a gate in the secret realm to strike it shorter.',
   paused: 'It waits on the anvil while the workshop makes something else. Nothing is lost.',
   begin: 'Begin',
   resume: 'Forge',
@@ -3418,7 +3418,7 @@ export const ASCENT = {
   hardSoul: `a soul 1 time in ${LEGEND_SOUL_EVERY}`,
   /** 擊 At the warden's gate: what the wins have counted, and the most each wait takes from them. */
   gateStrike: (counted: number, seal: number, wall: number, elite: string) =>
-    `擊 Hard wins have counted ${ascentTime(counted)} as waited here. Each win over the ${elite} counts ${ascentTime(GATE_STRIKE_ELITE)}, each vault gate ${ascentTime(GATE_STRIKE_GATE)}, `
+    `擊 Hard wins have counted ${ascentTime(counted)} as waited here. Each win over the ${elite} counts ${ascentTime(GATE_STRIKE_ELITE)}, `
     + (seal > 0 ? `up to ${ascentTime(seal)} off the seal and ${ascentTime(wall)} off the bottleneck.` : `up to ${ascentTime(wall)} off the bottleneck.`),
   gateStrikeFull: '擊 Hard wins have counted all they may at this gate. Time does the rest.',
 };

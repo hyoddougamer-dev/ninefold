@@ -71,9 +71,14 @@ describe('留 hold the layer: off for everyone until it is turned on', () => {
     // road and the door, never the hold, and 875e601, the tree before it, still gives the old
     // digits (active on day 47.667, drives it all 48.5); these are the same habits on this tree
     // with the toggle off. Off still means off: the toggle is false through every walk below.
+    // 擊 Taken a fifth time on 2026-10-18, when a win over the realm's elite while its warden
+    // stands began to count as time waited at the gate (GATE_STRIKE_ELITE, sim/legend.ts): the
+    // hard wins touch the seal and the wall, never the hold, and 3e92b8e, the tree before them,
+    // still gives the old digits (active 49.5, drives it all 49.5, read again in the scratchpad
+    // copy of 3e92b8e on the same day); these are the same habits with the toggle off.
     const was: Record<string, { arrival: number[]; fights: number; power: number }> = {
-      active: { arrival: [0, 0.5, 1, 3.333, 7.667, 14.333, 24.5, 35.667, 49.5], fights: 3931, power: 60968266000 },
-      'drives it all': { arrival: [0, 0.5, 1.167, 3.5, 7.833, 14, 24.167, 35.833, 49.5], fights: 29413, power: 61713545000 },
+      active: { arrival: [0, 0.5, 1, 3.333, 7.667, 14, 24.167, 36.333, 48.167], fights: 3909, power: 64694055000 },
+      'drives it all': { arrival: [0, 0.5, 1.167, 3.5, 7.833, 13.667, 24.167, 35.333, 48.5], fights: 27144, power: 73028813000 },
     };
     for (const [name, want] of Object.entries(was)) {
       const run = play(HABITS.find((h) => h.name === name)!, 120);

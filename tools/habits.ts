@@ -11,14 +11,14 @@ import { FORGED, NOT_USED, feedShare, kitFor, pillHeld, soulLocked, spendKit, un
 import { NO_KIT } from '../src/sim/kit.ts';
 import { carryBest, craftVisit, forgeKeep, forgeVisit, toLearn } from './crafter.ts';
 import { fuseIn, stash } from '../src/sim/stash.ts';
-import { LAYERS, focusAt, ladderBetween } from '../src/sim/balance.ts';
+import { GATE_STRIKE_ELITE, GATE_STRIKE_SHARE, LAYERS, focusAt, ladderBetween } from '../src/sim/balance.ts';
 import {
   atCap, atCeiling, breakThrough, buyAll, canBreakThrough, canBuy, canCondense,
-  canFightWarden, condense, canPaySeal, feedSeal, paySeal, sealPrice,
+  canFightWarden, condense, canPaySeal, feedSeal, paySeal, sealDays, sealPrice,
   newState, power, upgradeCost, wardenStands, type State,
 } from '../src/sim/state.ts';
 import { advance, canOpenLayer, layersOpened, openLayer, rate } from '../src/sim/time.ts';
-import { fight, odds, quarryPaid, takeKill } from '../src/sim/combat.ts';
+import { fight, gateRoom, odds, quarryPaid, takeKill } from '../src/sim/combat.ts';
 import { quarryOf, quarryOwed } from '../src/sim/week.ts';
 import { DRIVE_SIZES, canDrive, drive, driveCost, driveMax } from '../src/sim/hunt.ts';
 import { huntable, wardenOf } from '../src/data/bestiary.ts';
@@ -68,15 +68,25 @@ const DAY = 86_400;
  * 封 One visit's worth of paying a sealed gate: qi into the bar while it is allowed and the
  * purse can pay (at `scale` times the real price), then every lesser pill held.
  */
-export function payGate(s: State, scale: number): State {
+export function payGate(s: State, scale: number, hunts = 0): State {
   // Somebody holding the pill made for this gate carries it instead: it breaks the whole bar for nothing.
   const own = pillHeld(s) > 0 || unsealCarried(s) > 0;
+  // 擊 And somebody who will beat the realm's elite on this visit leaves to those wins the part
+  // of the seal they fill for nothing (sim/legend.ts), and pays for the rest: the card says what
+  // one win counts. Measured 2026-10-18: paying the whole bar first left the active payer at
+  // day 49.0 against 48.2 waiting, the qi spent on hours the hunt then filled anyway.
+  const elite = huntable(s.realm, s.layer).find((b) => hardBeast(s, b));
+  const coming = hunts > 0 && elite && odds(s, elite) > 0.7
+    ? Math.min(gateRoom(s), GATE_STRIKE_SHARE * sealDays(s.realm) * DAY - (s.gateStruck ?? 0), hunts * GATE_STRIKE_ELITE) : 0;
+  const struck = s.gateStruck;
+  if (coming > 0) s = { ...s, gateStruck: Math.max(0, struck ?? 0) + coming };
   for (let i = 0; i < 40 && !own && canPaySeal(s) && s.qi >= sealPrice(s) * scale; i++) {
     const owed = sealPrice(s);
     const next = paySeal(s);
     // A price off the real one is the real one paid and the difference handed back, or taken.
     s = { ...next, qi: Math.max(0, next.qi + owed * (1 - scale)) };
   }
+  if (coming > 0) s = { ...s, gateStruck: struck };
   for (const key of Object.keys(s.crafts.pouch)) {
     while (feedShare(key, s.realm) > 0 && (s.crafts.pouch[key] ?? 0) > 0) {
       const next = feedSeal(s, key);
@@ -674,7 +684,7 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher, start?: State, ga
     watch?.((t - T0) / DAY, s);
 
     // 封 Qi into the bar of a sealed gate, and lesser pills, before the tree takes the qi.
-    if (h.paysSeal !== undefined) s = payGate(s, h.paysSeal);
+    if (h.paysSeal !== undefined) s = payGate(s, h.paysSeal, h.hunts);
 
     s = spendTree(s, h.branch, h.greedy);
 
