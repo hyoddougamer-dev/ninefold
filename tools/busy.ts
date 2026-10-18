@@ -50,7 +50,9 @@ import { playEndgame } from './endgame.ts';
 
 /** 悟道 One card at each heaven, which is what the nine of them now owe. */
 const CARDS_PER_HEAVEN = 1;
-import { HABITS, play } from './habits.ts';
+import { ELITE_WILLING, HABITS, play } from './habits.ts';
+import { eliteKit, risenNow } from '../src/sim/elite.ts';
+import { risenElite } from '../src/sim/risen.ts';
 
 /** 事 One system, and what it has to offer right now. */
 export interface Kind {
@@ -69,8 +71,17 @@ export interface Kind {
  */
 export const KINDS: readonly Kind[] = [
   { han: '修', name: 'buy an upgrade', taps: (s) => UPGRADES.filter((u) => canBuy(s, u)).length },
-  { han: '狩', name: 'hunt a beast', taps: (s) => huntable(s.realm, s.layer).filter((b) => odds(s, b) > 0.6).length },
+  { han: '狩', name: 'hunt a beast', taps: (s) => huntable(s.realm, s.layer).filter((b) => !risenElite(s, b) && odds(s, b) > 0.6).length },
   { han: '圍', name: 'drive a beast', taps: (s) => (huntable(s.realm, s.layer).some((b) => canDrive(s, b)) ? DRIVE_SIZES.length : 0) },
+  /**
+   * 升 The risen elite, from the fifth realm: something to try whenever its odds with what is
+   * carried are worth a tap (ELITE_WILLING, the habits' own rule). It is never counted under
+   * 狩, which counts only the beasts a cultivator would call safe.
+   */
+  { han: '升', name: 'try an elite', taps: (s) => {
+      const b = risenNow(s);
+      return b && odds(s, b, undefined, eliteKit(s, b).kit) >= ELITE_WILLING ? 1 : 0;
+    } },
   { han: '守', name: 'fight the warden', taps: (s) => (canFightWarden(s) && odds(s, wardenOf(s.realm)) > 0.2 ? 1 : 0) },
   { han: '突破', name: 'break through', taps: (s) => (canBreakThrough(s) ? 1 : 0) },
   { han: '凝丹', name: 'condense a core', taps: (s) => (canCondense(s) ? 1 : 0) },
