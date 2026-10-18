@@ -79,7 +79,7 @@ export function useFight(
       const standing = platform ? challengerPower(state, challenger)
         : demon ? demonPower(state) : floor === undefined ? undefined : floorPower(floor);
       // 業 What is carried goes into a warden, a heart demon or a challenger, and into a floor
-      // when the climber has chosen it on the tower's card. Never a common.
+      // when the climber has chosen it on the tower's card, 升 and into a risen elite. Never a common.
       const where = kitWhere(state, beast, standing);
       const carried = where === 'tower'
         ? kitFor(state, beast, towerKit ? 'tower' : null)

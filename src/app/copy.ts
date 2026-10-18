@@ -1078,7 +1078,7 @@ export const KEY = {
   craftTotal: 'Your seven craft levels added up: 7 when every craft is new, 693 when all seven stand at 99. Every level in any craft adds one, so it grows with whatever you work.',
   pouch: 'Everything the workshop gathers and makes.',
   familiar: 'How many times a recipe has been made. Five marks, each one an edge on that recipe, and a recipe made 2,000 times makes its whole craft a little faster.',
-  carried: 'An elixir and a sigil taken into the next warden, heart demon or secret realm gate. Spent only on a win.',
+  carried: 'An elixir and a sigil taken into the next warden, heart demon, risen elite or secret realm gate. Spent only on a win.',
   seek: 'A Seeking Sigil or incense used: the next beast you beat by hand on the hunt that would have left nothing leaves a piece.',
   systemsBlurb: 'Nothing resets on its own, so every realm hands over something that was not there before.',
   /**
@@ -2989,7 +2989,7 @@ export const CRAFTS = {
   viewWork: 'Workshop',
   viewPouch: (n: number) => `Pouch · ${n}`,
   carryHead: '攜 Carried into the next hard fight',
-  carrySays: `An elixir and a sigil go into your next warden, heart demon, secret realm gate or Platform challenger, and up the tower when you take them on its card. At your realm’s warden each one also breaks days of its 瓶頸 bottleneck. A win spends whichever took part; a loss keeps them. ${DRAGON_KIT_SHARE > 0 ? `At the tribulation’s Dragon they count at ${oneDecimal(DRAGON_KIT_SHARE)} of their strength.` : 'Never the tribulation’s Dragon.'}`,
+  carrySays: `An elixir and a sigil go into your next warden, heart demon, risen elite, secret realm gate or Platform challenger, and up the tower when you take them on its card. At your realm’s warden each one also breaks days of its 瓶頸 bottleneck. A win spends whichever took part; a loss keeps them. ${DRAGON_KIT_SHARE > 0 ? `At the tribulation’s Dragon they count at ${oneDecimal(DRAGON_KIT_SHARE)} of their strength.` : 'Never the tribulation’s Dragon.'}`,
   carryElixir: 'Elixir',
   carrySigil: 'Sigil',
   /** 破境丹 The third hand: a Breakthrough Pill, for the realm's warden and nothing else. */

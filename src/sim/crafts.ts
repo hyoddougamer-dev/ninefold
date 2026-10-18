@@ -777,7 +777,7 @@ export function spendSeek(s: State): State {
 export type Where = 'warden' | 'demon' | 'vault' | 'platform' | 'tower' | 'dragon' | 'elite';
 
 /**
- * 戰 Which fights a kit may enter. Never a common beast on the hunt. 劫 The Dragon of the
+ * 戰 Which fights a kit may enter. Never a common beast on the hunt; 升 a risen elite, yes. 劫 The Dragon of the
  * tribulation takes it too, since 2026-10-08, at DRAGON_KIT_SHARE of its strength (see
  * thinKit). 擂 A challenger on the Platform is a hard fight like a warden:
  * what is carried changes it, which is one of the ways past a loss when the dice are set
