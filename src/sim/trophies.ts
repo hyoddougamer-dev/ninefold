@@ -86,9 +86,11 @@ export function effortOf(kills: number): number {
  * game they are always 1, and the save holds nothing that depends on them.
  */
 const SCALE = { window: 1, power: 1, material: 1 };
+let SCALE_V = 0;
 export function scaleTrophies(x: Partial<typeof SCALE>): void {
   Object.assign(SCALE, { window: 1, power: 1, material: 1 }, x);
   FOUND.clear();
+  SCALE_V++;
 }
 
 /** Where bar j begins and how long it is. */
@@ -218,9 +220,19 @@ export function bookWhole(h: Hunter): boolean {
 /** 冊 What the book adds to power, as a multiplier. Never to qi. */
 export function trophyPower(h: Hunter): number {
   if (!h.trophy && !Object.keys(h.killed).length) return 1;
+  // 算 Remembered against the very kill record it was read from, which a state only replaces
+  // when a kill is made: power() is read inside every simulated fight, and the book is the
+  // same book until then.
+  const hit = POWER.get(h.killed);
+  if (hit && hit.trophy === h.trophy && hit.startedAt === h.startedAt && hit.lives === (h.lives?.length ?? 0)
+    && hit.scale === SCALE_V) return hit.value;
   const pages = pagesHeld(h);
-  return 1 + SCALE.power * (PAGE_POWER * pages + GILT_POWER * pagesGilt(h) + (pages === 9 ? BOOK_POWER : 0));
+  const value = 1 + SCALE.power * (PAGE_POWER * pages + GILT_POWER * pagesGilt(h) + (pages === 9 ? BOOK_POWER : 0));
+  POWER.set(h.killed, { trophy: h.trophy, startedAt: h.startedAt, lives: h.lives?.length ?? 0, scale: SCALE_V, value });
+  return value;
 }
+
+const POWER = new WeakMap<object, { trophy?: Trophies; startedAt: number; lives: number; scale: number; value: number }>();
 
 /** 冊 The most the book can ever be worth, for the screen that promises it. */
 export function trophyCeiling(): number {
