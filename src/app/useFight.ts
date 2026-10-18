@@ -1,3 +1,4 @@
+import { shardOn } from '../sim/relics.ts';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react';
 import { now } from './clock.ts';
 import { stash } from '../sim/stash.ts';
@@ -113,6 +114,8 @@ export function useFight(
         //
         // 緣 A win that fills this beast's bar leaves a piece for certain: dropFor reads
         // the bar, and closeFight moves it.
+        // 神器 Whether a win here leaves a relic shard: the same roll takeKill makes at the close.
+        shard: !platform && !demon && floor === undefined && shardOn(state, state, beast) !== state ? beast.realm : undefined,
         drop: sought ? dropFor(state, beast, seed ^ 0x9e3779b9, { ...fortuneOf(state), always: true }, state.layer) : plain,
         // 造化 Creation turns the drop chance into a second piece from the same kill.
         extra: drops && !sought ? secondDropFor(state, beast, seed ^ 0x9e3779b9, fortuneOf(state), state.layer) : null,

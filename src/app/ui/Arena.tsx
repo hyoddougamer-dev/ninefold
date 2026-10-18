@@ -1,3 +1,4 @@
+import { relicOf } from '../../data/relics.ts';
 import { useEffect, useMemo } from 'react';
 import { AFFIX_INFO, RARITY_INFO, SLOT_INFO, schoolOf, templateOf, type Item } from '../../data/gear.ts';
 import { SCHOOL_INFO } from '../../data/schools.ts';
@@ -6,7 +7,7 @@ import { lifted, type Stashed } from '../../sim/stash.ts';
 import { marksUp } from '../../sim/inspect.ts';
 import { RealmTag } from './RealmTag.tsx';
 import { demonsFor, demonsNow } from '../../sim/seclusion.ts';
-import { QOL } from '../copy.ts';
+import { QOL, RELIC } from '../copy.ts';
 import { plateOf } from '../../data/bestiary.ts';
 import { realm as realmOf } from '../../data/realms.ts';
 import type { Beast } from '../../data/bestiary.ts';
@@ -89,6 +90,8 @@ export interface Battle {
   readonly sought?: boolean;
   /** 續 This fight, among the ones the arena shows without closing (Again, the auto-hunt). */
   readonly id?: number;
+  /** 神器 The realm whose relic shard a win here leaves, if it leaves one (read off the sim before the fight). */
+  readonly shard?: number;
 }
 
 export type Striker = 'player' | 'beast';
@@ -270,7 +273,7 @@ export function Arena({ battle, state, pulse, onClose, onAgain, onSkip, overflow
    * A loss stops it: the verdict stays, and the player decides.
    */
   const running = !!auto;
-  const notable = outcome.won && (!!earned || !!battle.drop || weekly > 0);
+  const notable = outcome.won && (!!earned || !!battle.drop || weekly > 0 || !!battle.shard);
   useEffect(() => {
     if (!running || over) return;
     const id = setTimeout(() => onSkip?.(), AUTO_WATCH_MS);
@@ -518,6 +521,16 @@ export function Arena({ battle, state, pulse, onClose, onAgain, onSkip, overflow
               <span>
                 <em>{ARENA.weekHead}</em>
                 <i>{ARENA.week(num(weekly))}</i>
+              </span>
+            </p>
+          )}
+          {/* 神器 A relic shard: rarer than anything else a kill leaves, so it gets its own line. */}
+          {outcome.won && battle.shard && (
+            <p className="mark" data-shard="true">
+              <b className="cjk">片</b>
+              <span>
+                <em>{RELIC.head}</em>
+                <i>{RELIC.fell(relicOf(battle.shard).shard.name, relicOf(battle.shard).name)}</i>
               </span>
             </p>
           )}

@@ -4791,3 +4791,42 @@ nav.tabs .tabkey { display: none; }
   border-radius: 99px; font-size: 12px; color: var(--rc); letter-spacing: .02em; vertical-align: top;
   border: 1px solid color-mix(in srgb, var(--rc) 50%, transparent); background: color-mix(in srgb, var(--rc) 8%, transparent); }
 .c-hero .c-rungseal { width: 20px; height: 20px; font-size: 12px; border-radius: 99px; }
+
+/* ── 神器 Relics, on the hunt (2026-10-18) ─────────────────────────────────────────────
+   Scoped under .relics; the row tag is .beast .bname .stag, beside 霸 the elite's. */
+.relics { margin: 8px 0 10px; }
+.relics .relicband { display: flex; align-items: center; gap: 12px; width: 100%; padding: 11px 13px;
+  border-radius: 11px; text-align: left; font: inherit; color: var(--text); cursor: pointer;
+  border: 1px solid color-mix(in srgb, #A077B8 55%, transparent);
+  background: color-mix(in srgb, #A077B8 8%, transparent); }
+.relics .relicband > b { flex: none; font-size: 18px; font-weight: 400; color: var(--gold); letter-spacing: .04em; }
+.relics .relicband span:not(.go) { flex: 1; min-width: 0; }
+.relics .relicband em { display: block; font-style: normal; font-size: 14px; }
+.relics .relicband i { display: block; margin-top: 2px; font-style: normal; font-size: 12px; color: var(--faint); }
+.relics .relicband .go { flex: none; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--gold); }
+.relics .reliclist { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+.relics .relicintro { margin: 0 2px 2px; font-size: 12.5px; line-height: 1.5; }
+.relics .relic { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 10px; align-items: start;
+  padding: 10px 11px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel); }
+.relics .relic[data-state="unseen"] { opacity: .62; border-style: dashed; align-items: center; }
+.relics .relic[data-state="made"] { border-color: color-mix(in srgb, var(--hue) 70%, transparent);
+  background: color-mix(in srgb, var(--hue) 10%, var(--panel)); }
+.relics .relic .rseal { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%;
+  color: var(--hue, var(--faint)); border: 1px solid color-mix(in srgb, var(--hue, #888) 55%, transparent); }
+.relics .relic .rbody { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.relics .relic .rbody > b { font-weight: 500; font-size: 14px; color: var(--text); }
+.relics .relic .rbody > b .cjk { color: var(--hue, var(--text)); }
+.relics .relic .rbody > i { font-style: normal; font-size: 12px; color: var(--faint); }
+.relics .relic .rbody .rgift { color: var(--jade); }
+.relics .relic .rbody small { font-size: 11.5px; line-height: 1.45; }
+.relics .relic .rbody .rlore { font-style: italic; }
+.relics .relic .rpips { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin-top: 2px; }
+.relics .relic .rpips i { width: 9px; height: 9px; transform: rotate(45deg); border: 1px solid var(--hue); }
+.relics .relic .rpips i[data-on="true"] { background: var(--hue); }
+.relics .relic .rpips small { flex-basis: 100%; color: var(--text); }
+.relics .relic .rmade { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--hue); padding-top: 3px; }
+.relics .relic .act.small { width: auto; margin: 0; padding: 7px 11px; font-size: 12px; white-space: nowrap; }
+.beast .bname .stag { display: inline-flex; align-items: center; margin: 4px 6px 1px 0; padding: 0 7px; border-radius: 9px;
+  font-size: 10.5px; line-height: 1.7; color: var(--gold); border: 1px solid color-mix(in srgb, var(--gold) 45%, transparent); }
+.c-side .card .gateseal .gateseal-bar i[data-kind="fight"] { background: color-mix(in srgb, var(--cinnabar) 80%, transparent); }
+.c-side .card .gatefight { margin: 7px 0 0; font-size: 11.5px; }

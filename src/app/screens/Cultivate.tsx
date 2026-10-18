@@ -1,3 +1,5 @@
+import { gateWeight, sealFought } from '../../sim/relics.ts';
+import { GATE_ELITE_WEIGHT, GATE_SEAL_MINUTES } from '../../sim/balance.ts';
 import { breachHands, breachHeld, kitFor, kitWhere, pillHeld, skillOpen, unsealCarried, wallDays } from '../../sim/crafts.ts';
 import { focusBonus } from '../../sim/dao.ts';
 import {
@@ -173,9 +175,12 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
   const sealParts = {
     qi: (state.sealPaid ?? 0) / 86_400,
     pill: (state.sealFed ?? 0) / 86_400,
+    // 鬥關 The wins at the gate, never more than what qi and pills left of the bar.
+    fight: 0,
     time: 0,
   };
-  sealParts.time = atGate ? Math.max(0, Math.min((state.at - state.gateAt) / 86_400, sealWhole - sealParts.qi - sealParts.pill)) : 0;
+  sealParts.fight = atGate ? Math.max(0, Math.min(sealFought(state), sealWhole - sealParts.qi - sealParts.pill)) : 0;
+  sealParts.time = atGate ? Math.max(0, Math.min((state.at - state.gateAt) / 86_400, sealWhole - sealParts.qi - sealParts.pill - sealParts.fight)) : 0;
   const sealTotal = sealWhole;
   const sealRoom = atGate ? sealPayRoom(state) : 0;
   const feedRoom = atGate ? sealFeedRoom(state) : 0;
@@ -584,7 +589,7 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
                     data-broken={unseal > 0}>
                     {unseal > 0
                       ? <i data-kind="pill" style={{ width: '100%' }} />
-                      : (['time', 'qi', 'pill'] as const).map((k) => (
+                      : (['time', 'fight', 'qi', 'pill'] as const).map((k) => (
                         <i key={k} data-kind={k} style={{ width: `${Math.round(sealParts[k] / sealTotal * 1000) / 10}%` }} />
                       ))}
                   </span>
@@ -592,7 +597,7 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
                 {sealDue > 0 && !unseal && (
                   <>
                     <p className="faint gateseal-legend" style={{ margin: '5px 0 0', fontSize: 11.5 }}>
-                      {CULTIVATE.sealLegend(sealParts.time, sealParts.qi, sealParts.pill)}
+                      {CULTIVATE.sealLegend(sealParts.time, sealParts.qi, sealParts.pill, sealParts.fight)}
                     </p>
                     <div className="gateseal-acts">
                       {sealRoom > 0 && (
@@ -618,6 +623,11 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
                   </>
                 )}
               </div>
+            )}
+            {atGate && (loosens > 0 || (sealDays(state.realm) > 0 && sealDue > 0 && !unseal)) && (
+              <p className="faint gatefight" style={{ margin: '-4px 0 12px', fontSize: 11.5 }}>
+                {CULTIVATE.gateFights(GATE_SEAL_MINUTES, GATE_ELITE_WEIGHT, state.gateWins ?? 0, gateWeight(state) > 1)}
+              </p>
             )}
             {standing ? (
               <button className="act" data-tone="cinnabar" data-coach="fight-warden" onClick={onFight}>

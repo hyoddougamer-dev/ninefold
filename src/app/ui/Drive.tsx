@@ -1,3 +1,4 @@
+import { relicOf } from '../../data/relics.ts';
 import { useState } from 'react';
 import { plateOf } from '../../data/bestiary.ts';
 import { Plate } from './Plate.tsx';
@@ -13,7 +14,7 @@ import { icon } from '../../art/icon.ts';
 import { Svg } from './Svg.tsx';
 import { rate, type State } from '../../sim/state.ts';
 import { ladderDone } from '../../sim/time.ts';
-import { DRIVE, HUNT, PILE, QOL } from '../copy.ts';
+import { DRIVE, HUNT, PILE, QOL, RELIC } from '../copy.ts';
 import { DrivePile } from './DrivePile.tsx';
 import { RealmTag } from './RealmTag.tsx';
 import { settleDefault, type Choice, type Plan } from '../../sim/pile.ts';
@@ -83,6 +84,19 @@ export function Drive({ state, beast, seed, onTake, onSettle, onGame, onClose }:
           <span><b className="mono">{num(done.qiSpent)}</b><i>qi spent</i></span>
           <span><b className="mono">{done.dropsRolled}</b><i>{DRIVE.fell}</i></span>
         </div>
+
+        {/* 神器 Relic shards the drive's kills left, if any. */}
+        {done.shards > 0 && (
+          <p className="mark" data-shard="true">
+            <b className="cjk">片</b>
+            <span>
+              <em>{RELIC.head}</em>
+              <i>{done.shards === 1
+                ? RELIC.fell(relicOf(beast.realm).shard.name, relicOf(beast.realm).name)
+                : RELIC.fellMany(done.shards)}</i>
+            </span>
+          </p>
+        )}
 
         {done.earned.map((m) => (
           <p key={m} className="mark">
