@@ -22,6 +22,7 @@ import { DEMON_KEY } from './seclusion.ts';
 import { hasBoon } from '../data/meetings.ts';
 import { NO_KIT, type Kit } from './kit.ts';
 import { codexFoe, codexValue } from './hundred.ts';
+import { gateOn, shardOn, wallFought } from './relics.ts';
 
 export { NO_KIT, type Kit };
 export { isElite };
@@ -109,7 +110,8 @@ export function bottleneck(s: State, b: Beast, breach = 0): number {
   if (!b.warden || b.realm >= 9 || b.realm !== s.realm) return 1;
   const wall = wallOf(b.realm);
   if (wall <= 1) return 1;
-  const days = (s.gateAt > 0 ? Math.max(0, (s.at - s.gateAt) / 86_400) : 0) + Math.max(0, breach);
+  // 鬥關 And the wins at the gate count as days too (wallFought).
+  const days = (s.gateAt > 0 ? Math.max(0, (s.at - s.gateAt) / 86_400) : 0) + Math.max(0, breach) + wallFought(s);
   return Math.max(1, wall * (1 - BOTTLENECK_LOOSEN) ** days) / wall;
 }
 
@@ -358,6 +360,12 @@ export function takeKill(s: State, b: Beast): State {
   // is the first ever. Both can land on the same kill, and should: the week pointed at
   // something the player had never been to look at, which is the best week it can have.
   const week = isQuarry(s, b) && quarryOwed(s);
+  // 神器 鬥關 A shard, if the kill leaves one, and the win counted at the gate: both read
+  // the state before the kill, so the bond bar and the count are the ones it was made at.
+  return shardOn(s, gateOn(takeKillBare(s, b, kills, week), b), b);
+}
+
+function takeKillBare(s: State, b: Beast, kills: number, week: boolean): State {
   return {
     ...s,
     wardenFell: b.warden ? true : s.wardenFell,

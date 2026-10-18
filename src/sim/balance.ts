@@ -2888,3 +2888,53 @@ export const CODEX_CAP = {
  * knife edge: a rank is a place on the climb, not a tuned number.
  */
 export const RUNG_AT: readonly number[] = [0, 9, 27, 45, 63, 81, 85, 90, 100];
+
+/**
+ * 神器 The relics: one for each realm, the realm's long goal and beyond (Bruno, 2026-10-18:
+ * "crafts almost unreachable that take enormous amounts of materials, or very rare drop
+ * items ... I do not want players time-gated just because"). See data/relics.ts and
+ * sim/relics.ts. Each asks for a handful of 片 shards and an enormous heap of 材 material, and
+ * gives power, or one thing nothing else in the game does. Never qi rate: there are nine of
+ * them and each is made once, so they are capped, but they stay off the rate all the same.
+ *
+ * - RELIC_SHARD_ODDS: the chance one kill of a realm's 精 elite leaves one of its relic's
+ *   shards (the first realm, which has no elite, reads its last common). 1 in 3,000.
+ * - RELIC_BOND_TILT: how many times likelier on the win that fills the 緣 bond bar, the win
+ *   that already promises a piece. The bar fills every eight or nine wins, so this lifts the
+ *   average about one and a half times and gives the hunt a rhythm the player can see.
+ * - RELIC_DEEP_TILT: what each of the beast's own 精 絕 deep marks adds to the chance, so the
+ *   five-thousandth kill of an elite is worth more than its first.
+ * - RELIC_SHARDS: how many shards each relic asks for. The warden's fall leaves the first,
+ *   once, so the relic is seen the day its realm is finished; the rest are the hunt.
+ * - RELIC_MATERIAL_KILLS: the 材 a relic asks for, in kills of its own elite at the elite's
+ *   plain material (loot): a heap that scales with the realm the way every price does.
+ * - RELIC_POWER: what each relic adds to power, multiplied.
+ * - RELIC_SHARD_GIFT: what a relic of the 尋 seeking kind adds to every shard chance.
+ *
+ * Measured with tools/relics.ts (see the bible's 神器 section for the table).
+ */
+export const RELIC_SHARD_ODDS = 1 / 3000;
+export const RELIC_BOND_TILT = 6;
+export const RELIC_DEEP_TILT = 0.5;
+export const RELIC_SHARDS: readonly number[] = [3, 3, 4, 4, 5, 5, 6, 6, 7];
+export const RELIC_MATERIAL_KILLS = 4000;
+export const RELIC_POWER: readonly number[] = [0.03, 0.04, 0.04, 0.05, 0.05, 0.06, 0.06, 0.07, 0.08];
+export const RELIC_SHARD_GIFT = 0.25;
+
+/**
+ * 鬥關 The gates as effort, not time (Bruno, 2026-10-18). While a realm's warden stands at
+ * its gate, every win over one of that realm's own beasts is a blow against the gate:
+ *
+ * - GATE_SEAL_MINUTES: how many minutes of the 封 seal's bar one win fills.
+ * - GATE_WALL_MINUTES: how many minutes of the 瓶頸 bottleneck's loosening one win counts.
+ * - GATE_ELITE_WEIGHT: what a win over the realm's elite counts, in wins over a common.
+ *
+ * Time still fills the bar and loosens the wall exactly as before, so the cultivator who
+ * only waits passes in SEAL_DAYS and the wall's days, unchanged; the one who fights passes
+ * sooner. A drive's kills count as the taps would have (a drive pays what the taps pay), so
+ * the gate is also something qi can buy through the hunt, at DRIVE_MINUTES a kill: a whole
+ * day of seal is 480 wins over commons, two hours of the cultivator's own gathering.
+ */
+export const GATE_SEAL_MINUTES = 3;
+export const GATE_WALL_MINUTES = 3;
+export const GATE_ELITE_WEIGHT = 10;

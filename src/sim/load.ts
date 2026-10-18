@@ -12,7 +12,10 @@ import {
   SECONDARY_SHARE, SECONDARIES, towerLoot, SET_LIMIT
 } from './balance.ts';
 
-import { BEASTS } from '../data/bestiary.ts';
+import { BEASTS, commonsOf } from '../data/bestiary.ts';
+import { shardBeast, shardWarden, shardsFor } from '../data/relics.ts';
+import { GATE_WEIGHT_MOST, type Relics } from './relics.ts';
+import { GATE_ELITE_WEIGHT, GATE_SEAL_MINUTES, GATE_WALL_MINUTES } from './balance.ts';
 import { figureOf } from '../data/figures.ts';
 import {
   AFFIXES, FUSED, RARITIES, SLOTS, TEMPLATE_BY_KEY, baseValue, roundValue, wornTotals, type Affix,
@@ -39,7 +42,7 @@ import {
   LIVES_MAX, SECLUSION, SHRINE_DAO_PER_REALM, SPRING_HOLD
 } from './balance.ts';
 import { demonsFor } from './seclusion.ts';
-import { shortestDoorGap, validCrafts } from './crafts.ts';
+import { shortestDoorGap, validCrafts, wallDays } from './crafts.ts';
 import { keptByFilter, validFilters } from './filters.ts';
 import { FORGED, HUNDRED_RANKS, ITEM_BY_KEY, RECIPE_BY_KEY, type HundredRank } from '../data/crafts.ts';
 import { backHundred, bandTop, validKept } from './hundred.ts';
@@ -90,6 +93,41 @@ function sealFills(o: Record<string, unknown>, realm: number, layer: number): { 
   const paid = clamp(num(o.sealPaid), SEAL_PAY_SHARE * days * 86_400);
   const fed = clamp(num(o.sealFed), Math.min(SEAL_PILL_SHARE * days, days - paid / 86_400) * 86_400);
   return { sealPaid: paid, sealFed: fed };
+}
+
+/**
+ * 鬥關 The weighted wins a save claims at its gate: never more than the kills of the realm's
+ * own commons could have made at the most they can count (the elite's weight, every gate
+ * relic made), and never more than fills the longer of the seal and the wall.
+ */
+function validGateWins(raw: unknown, realm: number, layer: number, fell: boolean, killed: Record<string, number>): number {
+  if (realm >= 9 || layer < LAYERS_PER_REALM - 1 || fell) return 0;
+  const n = typeof raw === 'number' && Number.isFinite(raw) ? Math.max(0, Math.floor(raw)) : 0;
+  const kills = commonsOf(realm).reduce((a, b) => a + (killed[b.key] ?? 0), 0);
+  const most = Math.ceil(Math.max(sealDays(realm), wallDays(realm)) * 1440 / Math.min(GATE_SEAL_MINUTES, GATE_WALL_MINUTES));
+  return Math.min(n, kills * GATE_ELITE_WEIGHT * GATE_WEIGHT_MOST, most);
+}
+
+/**
+ * 神器 The relics a save claims: a shard or a relic only for a realm whose warden has fallen,
+ * never more shards than the relic asks for or than the warden and the shard beast's kills
+ * could have left, and a relic made holds no shards.
+ */
+function validRelics(raw: unknown, killed: Record<string, number>): Relics {
+  const o = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>;
+  const seen = (r: number) => (killed[shardWarden(r).key] ?? 0) >= 1;
+  const madeRaw = Array.isArray(o.made) ? o.made : [];
+  const made = [...new Set(madeRaw.filter((r): r is number => Number.isInteger(r) && r >= 1 && r <= 9 && seen(r)))]
+    .filter((r) => (killed[shardBeast(r).key] ?? 0) >= shardsFor(r) - 1)
+    .sort((a, b) => a - b);
+  const shardsRaw = Array.isArray(o.shards) ? o.shards : [];
+  const shards = Array.from({ length: 9 }, (_, i) => {
+    const r = i + 1;
+    const x = shardsRaw[i];
+    if (!seen(r) || made.includes(r) || typeof x !== 'number' || !Number.isFinite(x)) return 0;
+    return Math.max(0, Math.min(Math.floor(x), shardsFor(r), 1 + (killed[shardBeast(r).key] ?? 0)));
+  });
+  return { shards, made };
 }
 
 /**
@@ -375,6 +413,10 @@ export function validate(raw: unknown, now: number): State {
     // 封 The bar's fills: only at a sealed gate, and never more than the most each can be.
     // A save from before the bar has none, and keeps having none until the game writes one.
     ...(o.sealPaid === undefined && o.sealFed === undefined ? {} : sealFills(o, realm, layer)),
+    // 鬥關 The wins at the gate: only at a gate below the summit whose warden still stands.
+    ...(o.gateWins === undefined ? {} : { gateWins: validGateWins(o.gateWins, realm, layer, o.wardenFell === true, killed) }),
+    // 神器 The relics: shards and made, each only for a realm whose warden has fallen.
+    ...(o.relics === undefined ? {} : { relics: validRelics(o.relics, killed) }),
     levels,
     killed,
     worn: Object.fromEntries(Object.entries(worn).map(([k, it]) => [k, marks(it as Item)])) as Worn,

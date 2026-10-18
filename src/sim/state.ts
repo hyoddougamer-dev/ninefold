@@ -26,6 +26,7 @@ import { NO_CRAFTS, eatPill, feedShare, unsealCarried, type Crafts } from './cra
 import { type ChestFilter } from './filters.ts';
 import { echoFactor, type Life } from './echo.ts';
 import { seasonAt } from './season.ts';
+import { NO_RELICS, relicPower, sealFought, type Relics } from './relics.ts';
 
 /** The four things qi is spent on. All of them multiply; none of them is ever lost. */
 export type Upgrade = 'technique' | 'method' | 'pills' | 'cores';
@@ -127,6 +128,15 @@ export interface State {
    */
   sealPaid?: number;
   sealFed?: number;
+  /**
+   * 鬥關 The wins over this realm's own beasts since its warden came to the gate, each
+   * weighted (an elite counts GATE_ELITE_WEIGHT, a gate relic doubles it): what fighting has
+   * done to the seal and the wall (sim/relics.ts sealFought, wallFought). 0 again the moment
+   * the gate is left. Absent in a save from before it, which reads as none.
+   */
+  gateWins?: number;
+  /** 神器 Relic shards held, by realm, and the relics made. Absent in an older save. See sim/relics.ts. */
+  relics?: Relics;
   levels: Record<Upgrade, number>;
   killed: Record<string, number>;
   /** 器 What is on the body. */
@@ -480,6 +490,7 @@ export function newState(now: number): State {
     season: seasonAt(now),
     // 囊 The purse the first minute is bought with. See OPENING_PURSE.
     realm: 1, layer: 0, qi: OPENING_PURSE, materials: 0, wardenFell: false, gateAt: 0, sealPaid: 0, sealFed: 0,
+    gateWins: 0, relics: NO_RELICS,
     levels: { technique: 0, method: 0, pills: 0, cores: 0 },
     killed: {},
     worn: {},
@@ -692,7 +703,9 @@ export function power(s: State): number {
     // 職 劍 The Sword school: the one class perk on power itself. See sim/schools.ts.
     * classPower(s)
     // 劍魂 A sword soul from the road: a keepsake, given once. See data/meetings.ts.
-    * (hasBoon(s, 'swordsoul') ? BOON_SWORDSOUL : 1);
+    * (hasBoon(s, 'swordsoul') ? BOON_SWORDSOUL : 1)
+    // 神器 The relics made, each once.
+    * relicPower(s);
 }
 
 /** The realm is full and only the warden is left? */
@@ -765,9 +778,9 @@ export function sealLeft(s: State, unseal = 0): number {
   return Math.max(0, days - waited - sealFilled(s) - Math.max(0, unseal));
 }
 
-/** 封 The days of the bar qi and lesser pills have filled at this gate so far. */
+/** 封 The days of the bar qi, lesser pills and 鬥關 the wins at the gate have filled so far. */
 export function sealFilled(s: State): number {
-  return (Math.max(0, s.sealPaid ?? 0) + Math.max(0, s.sealFed ?? 0)) / 86_400;
+  return (Math.max(0, s.sealPaid ?? 0) + Math.max(0, s.sealFed ?? 0)) / 86_400 + sealFought(s);
 }
 
 /**
@@ -887,5 +900,5 @@ export function canBreakThrough(s: State): boolean {
 export function breakThrough(s: State): State {
   if (!canBreakThrough(s)) return s;
   // 銀 The qi carries. See canBreakThrough for why it no longer burns.
-  return { ...s, realm: s.realm + 1, layer: 0, wardenFell: false, gateAt: 0, sealPaid: 0, sealFed: 0 };
+  return { ...s, realm: s.realm + 1, layer: 0, wardenFell: false, gateAt: 0, sealPaid: 0, sealFed: 0, gateWins: 0 };
 }

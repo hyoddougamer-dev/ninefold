@@ -40,6 +40,7 @@ import { rollSecondaries } from './drops.ts';
 import { limitFor, stash } from './stash.ts';
 import { NO_KIT, type Kit } from './kit.ts';
 import type { State } from './state.ts';
+import { sealFought, wallFought } from './relics.ts';
 import {
   bestHundred, codexValue, hundredKit, orderNeeds, orderRecipe, piecesMade, pieceOf, setOpen, validHundredMade, validOrder,
   type Order,
@@ -747,7 +748,7 @@ export function wallDays(realm: number): number {
  */
 export function wallDaysLeft(s: State, b: Beast, breach = 0): number {
   if (!b.warden || b.realm >= 9 || b.realm !== s.realm) return 0;
-  const days = (s.gateAt > 0 ? Math.max(0, (s.at - s.gateAt) / 86_400) : 0) + Math.max(0, breach);
+  const days = (s.gateAt > 0 ? Math.max(0, (s.at - s.gateAt) / 86_400) : 0) + Math.max(0, breach) + wallFought(s);
   return Math.max(0, wallDays(b.realm) - days);
 }
 
@@ -902,7 +903,7 @@ export function kitFor(s: State, b: Beast, where: Where | null, share = DRAGON_K
       const seal = SEAL_DAYS[b.realm - 1] ?? 0;
       // 封 Time, qi and lesser pills fill the bar too: a pill breaks only what is still unfilled.
       const waited = (s.gateAt > 0 ? Math.max(0, (s.at - s.gateAt) / 86_400) : 0)
-        + (Math.max(0, s.sealPaid ?? 0) + Math.max(0, s.sealFed ?? 0)) / 86_400;
+        + (Math.max(0, s.sealPaid ?? 0) + Math.max(0, s.sealFed ?? 0)) / 86_400 + sealFought(s);
       const breaks = it.realm >= b.realm && seal > 0 && waited < seal;
       const share = pillShare(quality ?? 0, fade(it.realm, fightRealm));
       const days = wallDaysLeft(s, b, breach) > 1e-6 ? share * wallDays(b.realm) : 0;

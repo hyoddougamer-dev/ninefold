@@ -13,6 +13,7 @@ import type { Item } from '../data/gear.ts';
 import type { Fortune } from './drops.ts';
 import { classDrive } from './schools.ts';
 import { BOON_TOKEN } from './balance.ts';
+import { gateOn, shardOn } from './relics.ts';
 import { hasBoon } from '../data/meetings.ts';
 
 /**
@@ -140,6 +141,8 @@ export interface Drive {
    * decides where they go (sim/pile.ts for the game, nothing at all for a harness).
    */
   readonly drops: readonly Item[];
+  /** 神器 How many relic shards the drive's kills left. */
+  readonly shards: number;
 }
 
 /**
@@ -165,7 +168,7 @@ export function drive(s: State, b: Beast, n: number, seed: number, fortune: Fort
    * audit of the qi.
    */
   if (!canAffordDrive(s, b, kills)) {
-    return { state: s, material: 0, qiSpent: 0, kills: 0, dropsRolled: 0, best: null, earned: [], drops: [] };
+    return { state: s, material: 0, qiSpent: 0, kills: 0, dropsRolled: 0, best: null, earned: [], drops: [], shards: 0 };
   }
   const before = s.killed[b.key] ?? 0;
 
@@ -176,6 +179,9 @@ export function drive(s: State, b: Beast, n: number, seed: number, fortune: Fort
   // 緣 The bar fills kill by kill inside a drive exactly as it would tapped, so a drive
   // of twenty crosses two full bars and both of their certain pieces are rolled.
   let bond: State = s;
+  // 神器 Shards are rolled kill by kill as the taps would roll them, on the bar and the count each is made at.
+  let shards: State = s;
+  let shardsFell = 0;
   for (let i = 0; i < kills; i++) {
     // 錄 Read at the count this kill is made at, not the count the drive began at. A
     // drive of two hundred that crosses 通 at the hundredth kill pays the mastered rate
@@ -183,6 +189,10 @@ export function drive(s: State, b: Beast, n: number, seed: number, fortune: Fort
     const now = { ...s, killed: { ...s.killed, [b.key]: before + i } };
     material += lootTaken(now, lootFrom(now, b));
     const kseed = (seed + i * 2654435761) >>> 0;
+    const at = { ...now, fate: bond.fate, relics: shards.relics };
+    const next = shardOn(at, shards, b);
+    if (next !== shards) shardsFell++;
+    shards = next;
     const item = dropFor(bond, b, kseed, fortune, s.layer);
     bond = noteFate(bond, b, item);
     // 造化 With Creation a kill can leave a second piece; it counts like any other.
@@ -203,15 +213,16 @@ export function drive(s: State, b: Beast, n: number, seed: number, fortune: Fort
   const week = isQuarry(s, b) && quarryOwed(s);
 
   return {
-    state: {
+    state: gateOn({
       ...s,
       qi: s.qi - qiSpent + (week ? quarryPaid(s, b) : 0),
       materials: s.materials + material,
       killed: { ...s.killed, [b.key]: after },
       fate: bond.fate,
       quarryWeek: week ? weekOf(s.at) : s.quarryWeek,
-    },
-    material, qiSpent, kills, dropsRolled, best, earned,
+      relics: shards.relics,
+    }, b, kills),
+    material, qiSpent, kills, dropsRolled, best, earned, shards: shardsFell,
     // 圍 Best first; a tie keeps the order the pieces fell in, so the same drive lists the same pile.
     drops: fell.map((it, i) => ({ it: lifted(s, it), i }))
       .sort((a, b) => itemWorth(b.it) - itemWorth(a.it) || a.i - b.i)
