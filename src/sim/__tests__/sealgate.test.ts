@@ -12,7 +12,7 @@ import {
   carry, carrySlot, feedShare, kitFor, pillHeld, pillShare, spendKit, unsealCarried, wallDays, wallDaysLeft, bestFeed, bestUnseal,
 } from '../crafts.ts';
 import { XP_TABLE, breakthroughKey, RECIPE_BY_KEY, ITEM_BY_KEY } from '../../data/crafts.ts';
-import { wardenOf } from '../../data/bestiary.ts';
+import { BEASTS, wardenOf } from '../../data/bestiary.ts';
 import { bottleneck } from '../combat.ts';
 import { SEAL_GRACE, SEAL_STRICT_FROM, SLACK, sealQi, sealSeconds, verify } from '../verify.ts';
 
@@ -268,7 +268,13 @@ describe('驗 the server and the seal', () => {
   it('an honest wait at a sealed gate is never suspect either', () => {
     const { before, after } = plain;
     const dt = after.at - before.at;
-    expect(sealSeconds(before, after)).toBeGreaterThan(0);
+    // 鬥關 Since 2026-10-18 the server also allows what the kills between the two saves could
+    // have filled at the gate (foughtDays), and this cultivator's hunting in the fifth realm
+    // fills all of it. With those kills taken out the seal is charged as it always was.
+    const fifth = Object.fromEntries(Object.entries(after.killed).map(([k, n]) =>
+      [k, BEASTS.find((b) => b.key === k)?.realm === 5 && !BEASTS.find((b) => b.key === k)?.warden ? before.killed[k] ?? 0 : n]));
+    expect(sealSeconds(before, { ...after, killed: fifth })).toBeGreaterThan(0);
+    expect(sealSeconds(before, after)).toBeLessThanOrEqual(sealSeconds(before, { ...after, killed: fifth }));
     expect(sealSeconds(before, after)).toBeLessThanOrEqual(dt);
     const v = verify(before, after, dt);
     expect(v.ok).toBe(true);

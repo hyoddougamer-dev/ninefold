@@ -3409,6 +3409,6 @@ export const RELIC = {
   rowTag: (have: number, need: number) => `片 ${have}/${need} shards`,
   rowLabel: (have: number, need: number, relic: string) => `Relic shards: ${have} of ${need} for the ${relic}`,
   /** 片 After a fight or a drive that left one. */
-  fell: (shard: string, relic: string) => `片 A ${shard} fell: part of the ${relic}.`,
-  fellMany: (n: number) => `片 ${n} relic ${n === 1 ? 'shard' : 'shards'} fell.`,
+  fell: (shard: string, relic: string) => `A ${shard} fell: part of the ${relic}.`,
+  fellMany: (n: number) => `${n} relic ${n === 1 ? 'shard' : 'shards'} fell.`,
 } as const;
