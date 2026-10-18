@@ -755,7 +755,9 @@ function Row({ state, r, on, lit, onStart, onGo, looks }: {
         </span>
         {lock
           ? <em className="cr-lock">{lock}</em>
-          : <button className="act small" data-on={on} onClick={onStart}>{on ? CRAFTS.stop : anvil ? ASCENT.resume : ASCENT.begin}</button>}
+          // 傳說 Begun with everything at once, so a work short of anything cannot be begun yet.
+          : <button className="act small" data-on={on} disabled={why === 'needs'} onClick={onStart}>
+            {on ? CRAFTS.stop : anvil ? ASCENT.resume : ASCENT.begin}</button>}
       </div>
     );
   }

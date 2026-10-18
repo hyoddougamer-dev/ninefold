@@ -177,7 +177,8 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
     time: 0,
   };
   // 擊 Hard wins counted as waited, then time over the rest.
-  sealParts.won = atGate ? Math.max(0, Math.min((state.gateStruck ?? 0) / 86_400, sealWhole - sealParts.qi - sealParts.pill)) : 0;
+  sealParts.won = atGate ? Math.max(0, Math.min((state.gateStruck ?? 0) / 86_400, GATE_STRIKE_SHARE * sealDays(state.realm),
+    sealWhole - sealParts.qi - sealParts.pill)) : 0;
   sealParts.time = atGate ? Math.max(0, Math.min((state.at - state.gateAt) / 86_400, sealWhole - sealParts.qi - sealParts.pill - sealParts.won)) : 0;
   // 擊 What hard wins may still count at this gate, and the elite whose wins count.
   const strikeMost = atGate ? GATE_STRIKE_SHARE * Math.max(sealDays(state.realm), wallDays(state.realm)) * 86_400 : 0;
@@ -630,8 +631,9 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
             {atGate && strikeElite && strikeMost > 0 && (sealDue > 0 || (loosens > 0 && !(wardenRaw > 0 && wardenShown >= BNECK_NO_MATCH))) && (
               <p className="gatestrike faint" style={{ margin: '-4px 0 12px', fontSize: 11.5 }}>
                 {(state.gateStruck ?? 0) >= strikeMost - 1
-                  ? ASCENT.gateStrikeFull(strikeMost)
-                  : ASCENT.gateStrike(state.gateStruck ?? 0, strikeMost, strikeElite.name)}
+                  ? ASCENT.gateStrikeFull
+                  : ASCENT.gateStrike(state.gateStruck ?? 0, GATE_STRIKE_SHARE * sealDays(state.realm) * 86_400,
+                    GATE_STRIKE_SHARE * wallDays(state.realm) * 86_400, strikeElite.name)}
               </p>
             )}
             {standing ? (

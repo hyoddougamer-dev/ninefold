@@ -358,14 +358,14 @@ export function legendTask(s: State, span: number): string | null {
     .sort((a, b) => (a.level - levelIn(s, a.skill)) - (b.level - levelIn(s, b.skill)) || a.level - b.level);
   for (const r of near) {
     const why = blocked(s, r);
-    if (why === 'level' || why === 'mastery') {
-      // The craft's best recipe that will keep running: it levels, and every make is a step to a mark.
+    // A level is left to the crafter's own levelling (the craft furthest behind first): a
+    // chaser who levelled only the nearest work's craft starved the knife that cuts the
+    // parts every work asks for, and made none in two hundred days (probe, 2026-10-18).
+    if (why === 'mastery') {
+      // The recipe nearest its last mark, so the count of mastered ones moves.
       const mine = runnable(s, span, recipesOf(r.skill).filter((x) => x.makes.kind === 'item' || x.makes.kind === 'gear'));
-      const pick = why === 'mastery'
-        // The recipe nearest its last mark, so the count of mastered ones moves.
-        ? mine.filter((x) => (s.crafts.made[x.key] ?? 0) < x.marks[x.marks.length - 1])
-          .sort((a, b) => (a.marks[a.marks.length - 1] - (s.crafts.made[a.key] ?? 0)) - (b.marks[b.marks.length - 1] - (s.crafts.made[b.key] ?? 0)))[0]
-        : best(s, mine);
+      const pick = mine.filter((x) => (s.crafts.made[x.key] ?? 0) < x.marks[x.marks.length - 1])
+        .sort((a, b) => (a.marks[a.marks.length - 1] - (s.crafts.made[a.key] ?? 0)) - (b.marks[b.marks.length - 1] - (s.crafts.made[b.key] ?? 0)))[0];
       if (pick) return pick.key;
       continue;
     }

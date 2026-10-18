@@ -2928,7 +2928,7 @@ export const LEGEND_SPEED = 0.15;
  * read off the run and the kill's count (sim/legend.ts soulOn), so a soul is the same soul on
  * every device and in every harness.
  */
-export const LEGEND_SOUL_EVERY = 25;
+export const LEGEND_SOUL_EVERY = 100;
 
 /**
  * 擊 And the gates (封 the seal, 瓶頸 the bottleneck), which wait only to slow: while one's

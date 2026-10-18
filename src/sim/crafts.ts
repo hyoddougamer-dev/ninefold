@@ -44,13 +44,17 @@ import {
   bestHundred, codexValue, hundredKit, orderNeeds, orderRecipe, piecesMade, pieceOf, setOpen, validHundredMade, validOrder,
   type Order,
 } from './hundred.ts';
-import { BOTTLENECK_LOOSEN, CODEX_CAP, CRAFT_CARRY, HUNDRED_HEAVEN_MADE, LEGEND_FIGHT_SHARE, LEGEND_MASTERED, LEGEND_SPEED, REALM_WALL, SEAL_DAYS, SEAL_PILL_SHARE } from './balance.ts';
+import { BOTTLENECK_LOOSEN, CODEX_CAP, CRAFT_CARRY, GATE_STRIKE_SHARE, HUNDRED_HEAVEN_MADE, LEGEND_FIGHT_SHARE, LEGEND_MASTERED, LEGEND_SPEED, REALM_WALL, SEAL_DAYS, SEAL_PILL_SHARE } from './balance.ts';
 import { finishLegend, isLegend, legendLeft, legendMade, legendSpeed, type LegendWork } from './legend.ts';
 import { SOUL } from '../data/crafts.ts';
 
-/** 擊 The days a gate counts as waited: state.ts gateWaited, written here because state.ts reads this file. */
-const waitedAt = (s: State) => (s.gateAt > 0
-  ? Math.max(0, (s.at - s.gateAt) / 86_400) + Math.max(0, s.gateStruck ?? 0) / 86_400 : 0);
+/**
+ * 擊 The days a gate counts as waited toward something `whole` days long: state.ts gateWaited,
+ * written here because state.ts reads this file. crafts.test holds the two to each other.
+ */
+export const waitedAt = (s: State, whole: number) => (s.gateAt > 0
+  ? Math.max(0, (s.at - s.gateAt) / 86_400)
+    + Math.min(Math.max(0, s.gateStruck ?? 0) / 86_400, GATE_STRIKE_SHARE * Math.max(0, whole)) : 0);
 
 export interface Carry {
   /** A pouch key: an elixir, with its rank. */
@@ -838,7 +842,7 @@ export function wallDays(realm: number): number {
  */
 export function wallDaysLeft(s: State, b: Beast, breach = 0): number {
   if (!b.warden || b.realm >= 9 || b.realm !== s.realm) return 0;
-  const days = waitedAt(s) + Math.max(0, breach);
+  const days = waitedAt(s, wallDays(b.realm)) + Math.max(0, breach);
   return Math.max(0, wallDays(b.realm) - days);
 }
 
@@ -992,7 +996,7 @@ export function kitFor(s: State, b: Beast, where: Where | null, share = DRAGON_K
     if (it && PILL_CARRIED.has(key)) {
       const seal = SEAL_DAYS[b.realm - 1] ?? 0;
       // 封 Time, qi and lesser pills fill the bar too: a pill breaks only what is still unfilled.
-      const waited = waitedAt(s)
+      const waited = waitedAt(s, seal)
         + (Math.max(0, s.sealPaid ?? 0) + Math.max(0, s.sealFed ?? 0)) / 86_400;
       const breaks = it.realm >= b.realm && seal > 0 && waited < seal;
       const share = pillShare(quality ?? 0, fade(it.realm, fightRealm));

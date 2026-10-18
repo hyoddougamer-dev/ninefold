@@ -666,16 +666,20 @@ export interface LegendInfo {
   readonly needs: readonly (readonly [string, number])[];
 }
 export const LEGENDS: readonly LegendInfo[] = [
+  // 鏈 Every part is cut by Rendering, at the level its beast teaches the knife: the seventh
+  // realm's warden (direwolf) at 76, its elite (wraith) at 73, the eighth realm's warden
+  // (jiao) at 87. So every work but the knife's own leans on a second craft, and the last two
+  // on a third: the loop runs through the whole workshop, not one craft.
   { skill: 'herb', han: '神農百草經', name: 'Shennong’s Herbal', icon: 'spell-book', realm: 8,
-    needs: [['beard', 15000], ['vine', 15000], ['fern', 15000], [partKey('jiao'), 30], [SOUL, 10]] },
+    needs: [['beard', 15000], ['vine', 15000], ['fern', 15000], [partKey('direwolf'), 30], [SOUL, 10]] },
   { skill: 'vein', han: '息壤', name: 'Living Soil', icon: 'crystal-shrine', realm: 8,
     needs: [['voidcrystal', 15000], ['thunderore', 15000], ['starfall', 15000], [partKey('golem'), 30], [SOUL, 10]] },
   { skill: 'render', han: '庖丁解牛圖', name: 'Cook Ding’s Chart', icon: 'scroll-unfurled', realm: 8,
-    needs: [[partKey('minotaur'), 5000], [partKey('gargoyle'), 5000], [partKey('skeleton'), 5000], [partKey('direwolf'), 30], [SOUL, 10]] },
+    needs: [[partKey('skeleton'), 5000], [partKey('wraith'), 5000], [partKey('goblin'), 5000], [partKey('direwolf'), 30], [SOUL, 10]] },
   { skill: 'alchemy', han: '八卦爐', name: 'Eight-Trigram Furnace', icon: 'cauldron', realm: 8,
-    needs: [['beard', 20000], ['cinnabar', 10000], [metalKey(8), 2000], [partKey('jiao'), 40], [SOUL, 15]] },
+    needs: [['beard', 20000], ['cinnabar', 10000], [metalKey(8), 2000], [partKey('direwolf'), 40], [SOUL, 15]] },
   { skill: 'forge', han: '干將莫邪', name: 'Ganjiang and Moye', icon: 'hook-swords', realm: 8,
-    needs: [[metalKey(8), 4000], [metalKey(7), 4000], [partKey('minotaur'), 2000], [partKey('jiao'), 40], [SOUL, 15]] },
+    needs: [[metalKey(8), 4000], [metalKey(7), 4000], [partKey('wraith'), 2000], [partKey('direwolf'), 40], [SOUL, 15]] },
   { skill: 'sigil', han: '河圖', name: 'The River Chart', icon: 'burning-book', realm: 8,
     needs: [['bark', 20000], ['cinnabar', 20000], [partKey('wraith'), 2000], [partKey('jiao'), 40], [SOUL, 20]] },
   { skill: 'array', han: '周天星斗陣', name: 'Array of the Circling Stars', icon: 'galaxy', realm: 9,

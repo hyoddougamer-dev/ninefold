@@ -5,7 +5,6 @@ import { realm as realmOf } from '../../data/realms.ts';
 import { RealmTag } from '../ui/RealmTag.tsx';
 import { beastPower, effectiveBeastPower, gateRoom, isElite, lootFrom, oddsRaw } from '../../sim/combat.ts';
 import { hardBeast } from '../../sim/legend.ts';
-import { RECIPE_BY_KEY } from '../../data/crafts.ts';
 import { ELITE_LOOT, ODDS_CEILING, ODDS_FLOOR } from '../../sim/balance.ts';
 import { power, type State } from '../../sim/state.ts';
 import { lootTaken } from '../../sim/trials.ts';
@@ -322,10 +321,10 @@ export function Hunt({ state, onFight, onDrive, onPile, onAuto, onSecret, onKey 
                 )}
                 {/* 擊 The elite of the realm one stands in is a hard win: say what it strikes. */}
                 {hardBeast(state, b) && (
-                  <em className="htag">{[ASCENT.hard,
-                    state.crafts.legend ? ASCENT.hardLegend(RECIPE_BY_KEY[state.crafts.legend.key]?.name ?? '') : null,
+                  <em className="htag">{ASCENT.hard} {[
+                    state.crafts.legend ? ASCENT.hardLegend : null,
                     gateRoom(state) > 0 ? ASCENT.hardGate : null,
-                    ASCENT.hardSoul].filter(Boolean).join(' · ')}</em>
+                    ASCENT.hardSoul].filter(Boolean).join(', ')}.</em>
                 )}
                 {/* 註 The pips are the characters, so they are the tappable ones. A
                     second copy of 見 in the sentence beside them was the screen naming

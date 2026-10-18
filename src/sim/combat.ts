@@ -112,7 +112,7 @@ export function bottleneck(s: State, b: Beast, breach = 0): number {
   const wall = wallOf(b.realm);
   if (wall <= 1) return 1;
   // 擊 Hard wins at the gate count as days waited (gateWaited).
-  const days = gateWaited(s) + Math.max(0, breach);
+  const days = gateWaited(s, wallDays(b.realm)) + Math.max(0, breach);
   return Math.max(1, wall * (1 - BOTTLENECK_LOOSEN) ** days) / wall;
 }
 

@@ -3412,13 +3412,13 @@ export const ASCENT = {
     anvil: 'Anvil busy',
   },
   /** 擊 On the hunt's elite row, for the elite of the realm one stands in. */
-  hard: '擊 Hard win',
-  hardLegend: (name: string) => `${ascentTime(LEGEND_STRIKE_ELITE)} off ${name}`,
-  hardGate: `${ascentTime(GATE_STRIKE_ELITE)} of the gate’s wait`,
-  hardSoul: `1 in ${LEGEND_SOUL_EVERY} leaves 精魄 a soul`,
-  /** 擊 At the warden's gate. */
-  gateStrike: (counted: number, most: number, elite: string) =>
-    `擊 Hard wins have counted ${ascentTime(counted)} as waited here, of ${ascentTime(most)} at most. `
-    + `Each win over the ${elite} counts ${ascentTime(GATE_STRIKE_ELITE)}, each vault gate ${ascentTime(GATE_STRIKE_GATE)}, for the seal and the bottleneck alike.`,
-  gateStrikeFull: (most: number) => `擊 Hard wins have counted all ${ascentTime(most)} they may here. Time does the rest.`,
+  hard: '擊 Hard win:',
+  hardLegend: `${ascentTime(LEGEND_STRIKE_ELITE)} off the legendary work`,
+  hardGate: `${ascentTime(GATE_STRIKE_ELITE)} off the gate`,
+  hardSoul: `a soul 1 time in ${LEGEND_SOUL_EVERY}`,
+  /** 擊 At the warden's gate: what the wins have counted, and the most each wait takes from them. */
+  gateStrike: (counted: number, seal: number, wall: number, elite: string) =>
+    `擊 Hard wins have counted ${ascentTime(counted)} as waited here. Each win over the ${elite} counts ${ascentTime(GATE_STRIKE_ELITE)}, each vault gate ${ascentTime(GATE_STRIKE_GATE)}, `
+    + (seal > 0 ? `up to ${ascentTime(seal)} off the seal and ${ascentTime(wall)} off the bottleneck.` : `up to ${ascentTime(wall)} off the bottleneck.`),
+  gateStrikeFull: '擊 Hard wins have counted all they may at this gate. Time does the rest.',
 };

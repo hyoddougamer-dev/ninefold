@@ -19,7 +19,7 @@ import { EMPTY, type Bed } from '../data/herbs.ts';
 import { NO_TAKE, type Take } from '../data/secret.ts';
 import {
   BOON_SWORDSOUL, MELT_CAP, SEAL_DAYS, SEAL_PAY_DEEP_MINUTES, SEAL_PAY_EASY_SHARE, SEAL_PAY_MINUTES, SEAL_PAY_SHARE, SEAL_PAY_STEP,
-  SEAL_PILL_SHARE
+  SEAL_PILL_SHARE, GATE_STRIKE_SHARE,
 } from './balance.ts';
 
 import { NO_CRAFTS, eatPill, feedShare, unsealCarried, type Crafts } from './crafts.ts';
@@ -488,7 +488,7 @@ export function newState(now: number): State {
     // 季 Begun before the switch is begun in the closed test, and retired with it.
     season: seasonAt(now),
     // 囊 The purse the first minute is bought with. See OPENING_PURSE.
-    realm: 1, layer: 0, qi: OPENING_PURSE, materials: 0, wardenFell: false, gateAt: 0, sealPaid: 0, sealFed: 0, gateStruck: 0,
+    realm: 1, layer: 0, qi: OPENING_PURSE, materials: 0, wardenFell: false, gateAt: 0, sealPaid: 0, sealFed: 0,
     levels: { technique: 0, method: 0, pills: 0, cores: 0 },
     killed: {},
     worn: {},
@@ -772,17 +772,19 @@ export function sealDays(realm: number): number {
 export function sealLeft(s: State, unseal = 0): number {
   const days = sealDays(s.realm);
   if (days <= 0 || s.wardenFell || !wardenStands(s) || s.gateAt <= 0) return 0;
-  return Math.max(0, days - gateWaited(s) - sealFilled(s) - Math.max(0, unseal));
+  return Math.max(0, days - gateWaited(s, days) - sealFilled(s) - Math.max(0, unseal));
 }
 
 /**
- * 擊 The days a gate counts as waited: the days since its warden came out, and what hard wins
- * have counted beside them (State.gateStruck). 0 while no warden stands. The seal's bar and
- * the wall's loosening both read it, so a win is one thing at the gate, said once.
+ * 擊 The days a gate counts as waited toward something `whole` days long (its seal, or its
+ * wall's loosening): the days since its warden came out, and what hard wins have counted
+ * beside them (State.gateStruck), up to GATE_STRIKE_SHARE of that whole. 0 while no warden
+ * stands. The seal's bar and the wall both read it, so a win is one thing at the gate, said once.
  */
-export function gateWaited(s: Pick<State, 'at' | 'gateAt' | 'gateStruck'>): number {
+export function gateWaited(s: Pick<State, 'at' | 'gateAt' | 'gateStruck'>, whole: number): number {
   if (s.gateAt <= 0) return 0;
-  return Math.max(0, (s.at - s.gateAt) / 86_400) + Math.max(0, s.gateStruck ?? 0) / 86_400;
+  const won = Math.min(Math.max(0, s.gateStruck ?? 0) / 86_400, GATE_STRIKE_SHARE * Math.max(0, whole));
+  return Math.max(0, (s.at - s.gateAt) / 86_400) + won;
 }
 
 /** 封 The days of the bar qi and lesser pills have filled at this gate so far. */
@@ -907,5 +909,5 @@ export function canBreakThrough(s: State): boolean {
 export function breakThrough(s: State): State {
   if (!canBreakThrough(s)) return s;
   // 銀 The qi carries. See canBreakThrough for why it no longer burns.
-  return { ...s, realm: s.realm + 1, layer: 0, wardenFell: false, gateAt: 0, sealPaid: 0, sealFed: 0, gateStruck: 0 };
+  return { ...s, realm: s.realm + 1, layer: 0, wardenFell: false, gateAt: 0, sealPaid: 0, sealFed: 0, ...(s.gateStruck !== undefined ? { gateStruck: 0 } : {}) };
 }

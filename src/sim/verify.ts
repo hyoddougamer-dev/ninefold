@@ -53,7 +53,7 @@ import { CAPSTONE_TIER, capstonesOpen, focusBonus } from './dao.ts';
 import { NODE_BY_KEY } from '../data/techniques.ts';
 import { freePoints } from './points.ts';
 import { driveFloor } from './hunt.ts';
-import { XP_PER_SECOND_MAX, bestFeed, carriedXp, bestKit, bestUnseal, shortestDoorGap, wallDays } from './crafts.ts';
+import { XP_PER_SECOND_MAX, bestFeed, carriedXp, bestKit, bestUnseal, shortestDoorGap } from './crafts.ts';
 import { GATE_STRIKE_SHARE, LEGEND_FIGHT_SHARE } from './balance.ts';
 import type { Kit } from './kit.ts';
 import { RECIPE_BY_KEY, SKILL_KEYS, legendKey } from '../data/crafts.ts';
@@ -418,7 +418,7 @@ export function sealSeconds(before: State, after: State): number {
     const lesser = bar ? bestFeed(after, r) : 0;
     // 擊 And the hard wins a save that counts them could have counted at the gate, at the most
     // they may (GATE_STRIKE_SHARE): the server sees the gate crossed, never the wins.
-    const struck = hasStrike(after) ? Math.min(sealDays(r), GATE_STRIKE_SHARE * Math.max(sealDays(r), wallDays(r))) : 0;
+    const struck = hasStrike(after) ? GATE_STRIKE_SHARE * sealDays(r) : 0;
     if (r === before.realm && before.wardenFell) continue;
     if (r === before.realm && wardenStands(before)) {
       // What the earlier save had already put in is inside sealLeft; allow only the rest.
