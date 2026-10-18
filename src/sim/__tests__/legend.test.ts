@@ -15,6 +15,7 @@ import { gateWaited, newState, power, sealDays, sealLeft, breakThrough, type Sta
 import { bottleneck, gateRoom, takeKill } from '../combat.ts';
 import { validate } from '../load.ts';
 import { legendSeconds, sealSeconds, verify } from '../verify.ts';
+import { HABITS, play } from '../../../tools/habits.ts';
 
 /**
  * 傳說 擊 The legendary works and the hard wins.
@@ -244,6 +245,29 @@ describe('驗 the server', () => {
     expect(quick.why).toContain('too-fast');
     expect(quick.strike).toBe(false);
   });
+
+  it('never holds the legend chaser back: every visit of a crafter who makes the works verifies', () => {
+    // The crafter of tools/habits.ts chasing the works (tools/ascent.ts chase), walked to day
+    // 135, offered to the server at every visit as verify.test does for every habit.
+    const h = HABITS.find((x) => x.name === 'crafts it all')!;
+    const shots: { day: number; s: State }[] = [];
+    const run = play({ ...h, legends: true, on: true }, 135, (day, s) => shots.push({ day, s: structuredClone(s) }));
+    // 底 A walk that made no work would pass this and measure nothing.
+    expect(run.legend.made.filter(Number.isFinite).length).toBeGreaterThanOrEqual(2);
+    let base = shots[0];
+    const held: string[] = [];
+    let lag = 0;
+    for (const shot of shots.slice(1)) {
+      const v = verify(base.s, shot.s, (shot.day - base.day) * DAY);
+      if (v.strike) held.push(`day ${shot.day.toFixed(2)}: strike ${v.why.join(',')}`);
+      if (v.suspect) held.push(`day ${shot.day.toFixed(2)}: suspect at pace ${v.pace.toFixed(2)}`);
+      if (v.ok) base = shot;
+      lag = Math.max(lag, (shot.day - base.day) * 24);
+    }
+    console.log(`    傳說 the chaser made ${run.legend.made.map((d) => (Number.isFinite(d) ? d.toFixed(0) : '-')).join(' ')}; ranking at most ${lag.toFixed(1)} h behind`);
+    expect(held.slice(0, 5)).toEqual([]);
+    expect(lag).toBeLessThanOrEqual(36);
+  }, 600_000);
 
   it('allows a gate struck short by hard wins, from a save that counts them, and only then', () => {
     const base = newState(T0 - 60 * DAY);
