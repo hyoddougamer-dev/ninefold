@@ -71,9 +71,15 @@ describe('留 hold the layer: off for everyone until it is turned on', () => {
     // road and the door, never the hold, and 875e601, the tree before it, still gives the old
     // digits (active on day 47.667, drives it all 48.5); these are the same habits on this tree
     // with the toggle off. Off still means off: the toggle is false through every walk below.
+    // 神器 鬥關 Taken a fifth time on 2026-10-18 (branch ch-relics), when wins at a gate began to
+    // fill its seal and loosen its wall, and the relics began to fall and be made. Neither
+    // touches the hold; 3e92b8e, the tree before them, still gives the old digits (active on day 49.5,
+    // drives it all 49.5, fights 3931 and 29413). The drives' fights falling to 20547 is measured,
+    // not explained: the gates open on other days, so the spare qi the drives spend moves too.
+    // Off still means off.
     const was: Record<string, { arrival: number[]; fights: number; power: number }> = {
-      active: { arrival: [0, 0.5, 1, 3.333, 7.667, 14.333, 24.5, 35.667, 49.5], fights: 3931, power: 60968266000 },
-      'drives it all': { arrival: [0, 0.5, 1.167, 3.5, 7.833, 14, 24.167, 35.833, 49.5], fights: 29413, power: 61713545000 },
+      active: { arrival: [0, 0.5, 1, 3.333, 7.667, 14, 24.167, 36.333, 48.167], fights: 3909, power: 64694055000 },
+      'drives it all': { arrival: [0, 0.5, 1.167, 3.5, 7.833, 13.5, 23.5, 35.167, 48.333], fights: 20547, power: 63864775000 },
     };
     for (const [name, want] of Object.entries(was)) {
       const run = play(HABITS.find((h) => h.name === name)!, 120);
