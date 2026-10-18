@@ -294,6 +294,12 @@ export interface State {
   /** 擂 Every challenger ever beaten. It only grows, and 驗 the server bounds it by the weeks. */
   bouts: number;
   /**
+   * 精血 Essence Blood held, by realm ("5" to "9"): what felling a realm's elite leaves
+   * (ELITE_ESSENCE), spent one a make by that realm's elixirs, sigils and Breakthrough Pills.
+   * validate() holds each realm to what its elite's kills could have left. See sim/risen.ts.
+   */
+  essence?: Readonly<Record<string, number>>;
+  /**
    * 記 What the last run gave, in total, so the end of one can say so.
    *
    * It is a record and not loot in flight: every room paid into the save the moment it
@@ -505,6 +511,7 @@ export function newState(now: number): State {
     runStep: -1, runAt: 0, runs: 0, lastRun: NO_TAKE, keyDay: 0, forkAt: 0,
     spring: 0, springAt: now, incenseUntil: 0, trail: false,
     platform: { period: -1, beaten: 0 }, bouts: 0,
+    essence: {},
     quarryWeek: -1,
     fate: {},
     crafts: { ...NO_CRAFTS, since: now },

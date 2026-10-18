@@ -1690,6 +1690,61 @@ export const ELITE_WALL: readonly number[] = [1, 3, 12, 30, 54, 84, 132, 216, 35
 export const ELITE_LOOT = 3;
 
 /**
+ * 升 The realm from which the elite rises: in the realm the cultivator stands in, its elite is
+ * no longer the fixed wall of ELITE_WALL but is measured against the cultivator's own 力, the
+ * way 擂台 the Platform's challengers are (sim/elite.ts). Below it nothing changes.
+ *
+ * Bruno (2026-10-18): *"crafts almost unreachable that take enormous amounts of materials,
+ * or very rare drop items. I want difficulty and a complete loop."* From the fifth realm the
+ * fixed wall stood at 54 to 350 times the bare reference, and the measured habits hunted it
+ * on 0% of their fights: the realm's best hunt was a row nobody could press. Risen, it is a
+ * fight every cultivator can take on the day they choose, and the build is what wins it.
+ */
+export const ELITE_RISEN_FROM = 5;
+
+/**
+ * 升 Where a risen elite stands, by realm (index realm − 1), as a multiple of the cultivator's
+ * own 力 before 破甲, 破煞, the tree and the class thin it, as a challenger's PLATFORM_EDGE is.
+ * Zero below ELITE_RISEN_FROM, where the elite keeps its wall.
+ *
+ * 量 Measured on five seeds (tools/elite.ts): bare, the active, casual and once-a-day
+ * cultivators meet it at 12 to 41%; carrying the realm's Common elixir and their best sigil,
+ * 56 to 76%, and about 98% in the ninth realm, where the sigils are strongest. Pushed a tenth
+ * each way, the odds move a few points and nothing walls.
+ */
+export const ELITE_EDGE: readonly number[] = [0, 0, 0, 0, 1.15, 1.25, 1.25, 1.25, 1.25];
+
+/**
+ * 關 The vault's last gate from ELITE_RISEN_FROM: never below the walker's own fight. It
+ * stands at the greater of its own beast and this multiple of the walker's 力 (by realm,
+ * index realm − 1), thinned as any beast is, so a cultivator who has outgrown the realm's
+ * commons still meets a real fight at the last door. Measured on five seeds: bare 7 to 34%,
+ * with the kit carried 39 to 66%.
+ */
+export const GATE_EDGE: readonly number[] = [0, 0, 0, 0, 1.2, 1.2, 1.2, 1.2, 1.2];
+
+/**
+ * 精血 What every elite felled leaves: this much of its realm's Essence Blood, by hand or by
+ * a drive (a drive pays what the taps would). Only from ELITE_RISEN_FROM.
+ */
+export const ELITE_ESSENCE = 2;
+
+/**
+ * 精血 What one make of a realm's elixir, sigil or Breakthrough Pill asks of its realm's
+ * Essence Blood, from ELITE_RISEN_FROM. The rest of the recipe is CRAFT_KIT_WORK heavy; the
+ * blood is one, so two elixirs a win.
+ */
+export const ESSENCE_NEED = 1;
+
+/**
+ * 解 What a risen elite felled leaves of itself, straight into the pouch: one make's worth
+ * of the part a heavy recipe asks for (CRAFT_KIT_WORK), as much of it as the pouch may keep.
+ * A risen elite is never Known in its own realm, so the knife could not take it apart;
+ * every win leaves enough for the next Might elixir instead.
+ */
+export const ELITE_PARTS = 180;
+
+/**
  * 初 And the first realm is spaced against the player, not against its own summit.
  *
  * Every realm is entered weak, measured, a cultivator arrives at 25%, 23%, 16%, 11%,

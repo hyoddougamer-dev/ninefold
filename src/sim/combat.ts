@@ -22,6 +22,10 @@ import { DEMON_KEY } from './seclusion.ts';
 import { hasBoon } from '../data/meetings.ts';
 import { NO_KIT, type Kit } from './kit.ts';
 import { codexFoe, codexValue } from './hundred.ts';
+import { addEssence, eliteEdge, essenceFrom, risenElite } from './risen.ts';
+import { pouchRoom } from './crafts.ts';
+import { partKey } from '../data/crafts.ts';
+import { ELITE_PARTS } from './balance.ts';
 
 export { NO_KIT, type Kit };
 export { isElite };
@@ -358,7 +362,7 @@ export function takeKill(s: State, b: Beast): State {
   // is the first ever. Both can land on the same kill, and should: the week pointed at
   // something the player had never been to look at, which is the best week it can have.
   const week = isQuarry(s, b) && quarryOwed(s);
-  return {
+  const taken: State = {
     ...s,
     wardenFell: b.warden ? true : s.wardenFell,
     // 金剛 The Vajra's first sights and quarries pay more.
@@ -367,6 +371,23 @@ export function takeKill(s: State, b: Beast): State {
     killed: { ...s.killed, [b.key]: kills + 1 },
     quarryWeek: week ? weekOf(s.at) : s.quarryWeek,
   };
+  // 精血 An elite leaves its realm's blood; 解 a risen one leaves its part as well, one heavy
+  // make's worth, as much as the pouch may keep (sim/risen.ts).
+  const blood = essenceFrom(b);
+  return blood > 0 ? eliteRemains(addEssence(taken, b.realm, blood), b, risenElite(s, b)) : taken;
+}
+
+/**
+ * 解 What a risen elite leaves of itself: ELITE_PARTS of its part, straight into the pouch, as
+ * much as the pouch may keep (pouchRoom, so validate() never trims it). Nothing for an elite
+ * that is not risen: the knife takes that one apart once it is Known, like any beast.
+ */
+export function eliteRemains(s: State, b: Beast, risen: boolean): State {
+  if (!risen) return s;
+  const key = partKey(b.key);
+  const n = Math.min(ELITE_PARTS, pouchRoom(s, key));
+  if (n <= 0) return s;
+  return { ...s, crafts: { ...s.crafts, pouch: { ...s.crafts.pouch, [key]: (s.crafts.pouch[key] ?? 0) + n } } };
 }
 
 /**
@@ -567,7 +588,9 @@ export function beatable(s: State, b: Beast, standing?: number, kit: Kit = NO_KI
  * does not end at the top.
  */
 export function effectiveBeastPower(s: State, b: Beast, standing?: number, breach = 0): number {
-  const base = standing ?? beastPower(b) * bottleneck(s, b, breach);
+  // 升 A risen elite stands on the cultivator's own power at its edge (sim/risen.ts), and is
+  // thinned below like any beast: it never loosens, so it has no bottleneck.
+  const base = standing ?? (risenElite(s, b) ? power(s) * eliteEdge(b.realm) : beastPower(b) * bottleneck(s, b, breach));
   // 心魔 The heart demon is the cultivator's own power and nothing thins it: no sunder,
   // no bane, no blood method, no class. See sim/seclusion.ts.
   // 譜 霜銀 The one exception is the Frostsilver codex, capped (CODEX_CAP.demon), as Calm

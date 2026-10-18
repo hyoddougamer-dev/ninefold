@@ -14,6 +14,7 @@ import type { Fortune } from './drops.ts';
 import { classDrive } from './schools.ts';
 import { BOON_TOKEN } from './balance.ts';
 import { hasBoon } from '../data/meetings.ts';
+import { addEssence, essenceFrom, risenElite } from './risen.ts';
 
 /**
  * 圍 The drive: one tap, many kills, paid for in qi.
@@ -65,6 +66,9 @@ export { DRIVE_SIZES };
  */
 export function canDrive(s: State, b: Beast): boolean {
   if (b.warden) return false;
+  // 升 Nor a risen elite: its dice are set for the day and each win is a fight of its own.
+  // Left behind in an earlier realm it is back at its wall, and Known it drives like any beast.
+  if (risenElite(s, b)) return false;
   return isOpen(s.realm, 'hunt') && (s.killed[b.key] ?? 0) >= MARKS[1];
 }
 
@@ -202,15 +206,17 @@ export function drive(s: State, b: Beast, n: number, seed: number, fortune: Fort
   // kill pays; driven, it paid nothing and the week still said it was owed.
   const week = isQuarry(s, b) && quarryOwed(s);
 
+  const paid: State = {
+    ...s,
+    qi: s.qi - qiSpent + (week ? quarryPaid(s, b) : 0),
+    materials: s.materials + material,
+    killed: { ...s.killed, [b.key]: after },
+    fate: bond.fate,
+    quarryWeek: week ? weekOf(s.at) : s.quarryWeek,
+  };
   return {
-    state: {
-      ...s,
-      qi: s.qi - qiSpent + (week ? quarryPaid(s, b) : 0),
-      materials: s.materials + material,
-      killed: { ...s.killed, [b.key]: after },
-      fate: bond.fate,
-      quarryWeek: week ? weekOf(s.at) : s.quarryWeek,
-    },
+    // 精血 An elite's blood, every kill of it, as the taps would have left it.
+    state: essenceFrom(b) > 0 ? addEssence(paid, b.realm, essenceFrom(b) * kills) : paid,
     material, qiSpent, kills, dropsRolled, best, earned,
     // 圍 Best first; a tie keeps the order the pieces fell in, so the same drive lists the same pile.
     drops: fell.map((it, i) => ({ it: lifted(s, it), i }))

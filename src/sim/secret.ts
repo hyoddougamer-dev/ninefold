@@ -7,7 +7,11 @@ import { KEY_SPRING } from './balance.ts';
 import { stash } from './stash.ts';
 import { commonsOf, type Beast } from '../data/bestiary.ts';
 import { REALM_KEY } from '../data/crafts.ts';
-import { beastPower, isElite, odds } from './combat.ts';
+import { beastPower, effectiveBeastPower, isElite, odds } from './combat.ts';
+import { gateEdge } from './risen.ts';
+import { power } from './state.ts';
+import type { Kit } from './kit.ts';
+import type { Carried } from './crafts.ts';
 
 import { rate } from './time.ts';
 import { rollDrop } from './drops.ts';
@@ -230,6 +234,45 @@ export function beastAt(s: State, step: number): Beast {
   return gate === 1 ? pool[0] : pool[pool.length - 1];
 }
 
+/**
+ * 關 Whether this gate is the risen one: the last gate of the path, from ELITE_RISEN_FROM. It
+ * stands at the greater of its own beast and GATE_EDGE of the walker's own 力 (sim/risen.ts),
+ * so it stays a real fight for somebody who has outgrown the realm's commons.
+ */
+export function gateRisen(s: State, step: number): boolean {
+  if (!isGate(step) || gateEdge(s.realm) <= 0) return false;
+  const rooms = roomsFor(s.realm);
+  const last = rooms % 2 === 0 ? rooms - 1 : rooms - 2;
+  return step === last;
+}
+
+/** 關 How much the risen gate stands above its own beast: 1 for any other gate, or when the beast is already stronger. */
+export function gateLift(s: State, step: number, beast: Beast): number {
+  if (!gateRisen(s, step)) return 1;
+  return Math.max(1, (power(s) * gateEdge(s.realm)) / Math.max(1e-9, beastPower(beast)));
+}
+
+/**
+ * 業 The kit a gate is fought with: what is carried into the vault, with the risen gate's
+ * lift on the other side (Kit.foe, which 古銅 the Elder Bronze codex already thins). The
+ * door's odds and the roll behind it both read this, so they are the same fight.
+ */
+export function gateKit(s: State, step: number, beast: Beast): Carried {
+  const carried = kitFor(s, beast, 'vault');
+  const lift = gateLift(s, step, beast);
+  return lift === 1 ? carried : { ...carried, kit: { ...carried.kit, foe: (carried.kit.foe ?? 1) * lift } };
+}
+
+/** 算 The odds a gate's door quotes, and the roll is made against. */
+export function gateOdds(s: State, step: number, beast: Beast, kit: Kit = gateKit(s, step, beast).kit): number {
+  return odds(s, beast, undefined, kit);
+}
+
+/** 力 What the gate's beast stands at against this walker, as its door says it. */
+export function gatePower(s: State, step: number, beast: Beast): number {
+  return effectiveBeastPower(s, beast) * gateLift(s, step, beast);
+}
+
 export function doorOpen(s: State): boolean {
   if (s.realm < OPENS_AT) return false;
   return s.at - (s.runAt || s.startedAt) >= doorGap(s);
@@ -407,13 +450,14 @@ export function open(s: State, which: 0 | 1 | 2, seed: number): State {
     const beast = gift.fight;
     // 戰 One roll, the same odds the screen would quote, and nothing is staked on it.
     // 業 What is carried goes in with the walker and is spent only if the gate falls.
-    const carried = kitFor(s, beast, 'vault');
+    // 關 The last gate from ELITE_RISEN_FROM stands at least at the walker's own fight (gateKit).
+    const carried = gateKit(s, step, beast);
     const roll = (hash(seed) % 10_000) / 10_000;
-    const won = roll < odds(s, beast, undefined, carried.kit);
+    const won = roll < gateOdds(s, step, beast, carried.kit);
     if (!won) return leave({ ...s, lastRun: { ...s.lastRun, beaten: true } });
     // 九轉 A gate is one roll, not a fight, so a Nine-Turn Pill is said to have brought the
     // walker back when the same roll would have lost without it; otherwise it stays.
-    const revived = carried.kit.revive && roll >= odds(s, beast, undefined, { ...carried.kit, revive: false });
+    const revived = carried.kit.revive && roll >= gateOdds(s, step, beast, { ...carried.kit, revive: false });
     out = { ...(carried.spends ? spendKit(out, tookPart(carried.used, revived)) : out), lastRun: { ...out.lastRun, gates: out.lastRun.gates + 1 } };
   } else {
     // 泉 The room is spent, whichever door it was.

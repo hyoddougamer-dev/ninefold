@@ -40,6 +40,7 @@ import { rollSecondaries } from './drops.ts';
 import { limitFor, stash } from './stash.ts';
 import { NO_KIT, type Kit } from './kit.ts';
 import type { State } from './state.ts';
+import { addEssence, essenceOf, essenceRealm, risenElite } from './risen.ts';
 import {
   bestHundred, codexValue, hundredKit, orderNeeds, orderRecipe, piecesMade, pieceOf, setOpen, validHundredMade, validOrder,
   type Order,
@@ -158,6 +159,9 @@ export function known(s: State, beast: string): boolean {
 
 export function held(s: State, key: string): number {
   if (key === 'mat') return s.materials;
+  // 精血 Blood is held beside the pouch, by realm.
+  const blood = essenceRealm(key);
+  if (blood !== null) return essenceOf(s, blood);
   return s.crafts.pouch[key] ?? 0;
 }
 
@@ -439,14 +443,18 @@ function makeOne(s: State, r: Recipe): State {
   const d = dice(seedOf(s, r, n));
   const pouch: Record<string, number> = { ...c.pouch };
   let materials = s.materials;
+  let blooded: State = s;
   for (const [k, m] of needsOf(s, r)) {
-    if (k === 'mat') materials -= m; else addTo(pouch, k, -m);
+    const blood = essenceRealm(k);
+    if (k === 'mat') materials -= m;
+    else if (blood !== null) blooded = addEssence(blooded, blood, -m);
+    else addTo(pouch, k, -m);
   }
   const tools = r.makes.kind === 'tool'
     ? { ...c.tools, [r.makes.skill]: Math.max(c.tools[r.makes.skill] ?? 0, r.makes.step) } : c.tools;
 
   const rank = r.graded ? pick(qualityFor(s, r), d()) : -1;
-  let out: State = { ...s, materials };
+  let out: State = { ...s, materials, essence: blooded.essence };
   if (r.makes.kind === 'item') {
     const chance = twiceOf(s, r);
     const twice = (chance > 0 && d() < chance)
@@ -766,7 +774,7 @@ export function spendSeek(s: State): State {
   return s.crafts.seek > 0 ? { ...s, crafts: { ...s.crafts, seek: s.crafts.seek - 1 } } : s;
 }
 
-export type Where = 'warden' | 'demon' | 'vault' | 'platform' | 'tower' | 'dragon';
+export type Where = 'warden' | 'demon' | 'vault' | 'platform' | 'tower' | 'dragon' | 'elite';
 
 /**
  * 戰 Which fights a kit may enter. Never a common beast on the hunt. 劫 The Dragon of the
@@ -782,6 +790,9 @@ export function kitWhere(s: State, b: Beast, standing?: number): Where | null {
   if (b.challenger !== undefined) return 'platform';
   if (standing !== undefined) return 'tower';
   if (b.warden) return b.key === 'dragon' && s.realm === 9 ? 'dragon' : 'warden';
+  // 升 A risen elite is a hard fight like a challenger: what is carried changes it, and is
+  // one of the ways past a loss when the dice are set for the day (sim/risen.ts).
+  if (risenElite(s, b)) return 'elite';
   return null;
 }
 

@@ -32,6 +32,8 @@ import {
   HUNDRED_ELITE_PARTS, HUNDRED_INGOTS, HUNDRED_LEVEL, HUNDRED_LEVEL_TOP, HUNDRED_SECONDS, HUNDRED_WARDEN_PARTS,
 } from '../sim/balance.ts';
 import { opensAt, type System } from '../sim/unlocks.ts';
+import { ELITE_ESSENCE, ELITE_RISEN_FROM, ESSENCE_NEED } from '../sim/balance.ts';
+import { essenceKey } from '../sim/risen.ts';
 
 export type SkillKey = 'herb' | 'vein' | 'render' | 'forge' | 'alchemy' | 'sigil' | 'array';
 export const SKILL_KEYS: readonly SkillKey[] = ['herb', 'vein', 'render', 'forge', 'alchemy', 'sigil', 'array'];
@@ -141,7 +143,7 @@ export function levelOf(xp: number): number {
 
 /* ── 物 Materials ─────────────────────────────────────────────────────────── */
 
-export type ItemKind = 'herb' | 'ore' | 'part' | 'metal' | 'elixir' | 'sigil' | 'array' | 'key';
+export type ItemKind = 'herb' | 'ore' | 'part' | 'metal' | 'elixir' | 'sigil' | 'array' | 'key' | 'blood';
 
 export interface CraftItem {
   readonly key: string;
@@ -220,6 +222,18 @@ for (const b of BEASTS) {
   const p = PARTS[b.key];
   if (!p) continue;
   item({ key: partKey(b.key), han: p[0], name: p[1], kind: 'part', realm: b.realm, icon: b.icon, beast: b.key });
+}
+
+/**
+ * 精血 Essence Blood, one for each realm whose elite leaves it (ELITE_RISEN_FROM on). It is
+ * never in the pouch and nothing makes it: it is held in the save beside the pouch
+ * (State.essence), and a recipe names it among its needs so the workshop says what is short.
+ */
+for (let realm = ELITE_RISEN_FROM; realm <= 9; realm++) {
+  const elite = commonsOf(realm)[commonsOf(realm).length - 1];
+  item({ key: essenceKey(realm), han: '精血', name: 'Essence Blood', kind: 'blood', realm, icon: 'fire-gem',
+    beast: elite?.key,
+    does: `Left by ${elite ? `the ${elite.name}, realm ${realm}’s elite` : `realm ${realm}’s elite`}: ${ELITE_ESSENCE} for every one felled. Realm ${realm}’s elixirs, sigils and Breakthrough Pills ask for ${ESSENCE_NEED} each.` });
 }
 
 /* ── 方 Recipes ──────────────────────────────────────────────────────────── */
@@ -664,7 +678,13 @@ export const RECIPES: readonly Recipe[] = (() => {
   // recipe pays one or two.
   return draft.map((r) => {
     const weight = r.weight ?? 1;
-    return { ...r, weight, marks: CRAFT_MARKS.map((m) => Math.max(1, Math.ceil(m / weight))),
+    // 精血 A realm's elixirs, sigils and Breakthrough Pills from ELITE_RISEN_FROM ask for its
+    // Essence Blood too: ESSENCE_NEED, last of the needs and never made heavier.
+    const made = r.makes.kind === 'item' ? items.find((x) => x.key === (r.makes as { item: string }).item) : undefined;
+    const blood = made && (made.kind === 'elixir' || made.kind === 'sigil') && made.realm >= ELITE_RISEN_FROM
+      && (r.skill === 'alchemy' || r.skill === 'sigil');
+    const needs = blood ? [...r.needs, [essenceKey(made.realm), ESSENCE_NEED] as const] : r.needs;
+    return { ...r, needs, weight, marks: CRAFT_MARKS.map((m) => Math.max(1, Math.ceil(m / weight))),
       xp: Math.max(0.1, Math.round(scale[r.skill] * r.seconds * growth(r.level) * 10) / 10) };
   });
 })();

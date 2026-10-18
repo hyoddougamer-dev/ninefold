@@ -45,6 +45,28 @@ import { FORGED, HUNDRED_RANKS, ITEM_BY_KEY, RECIPE_BY_KEY, type HundredRank } f
 import { backHundred, bandTop, validKept } from './hundred.ts';
 import { validLives } from './echo.ts';
 import { seasonOf } from './season.ts';
+import { essenceFrom } from './risen.ts';
+import { commonsOf } from '../data/bestiary.ts';
+
+/**
+ * 精血 Essence Blood as a save may hold it: whole numbers, by realm, and never more than the
+ * realm's elite felled so far could have left (ELITE_ESSENCE a kill). Derived from the kills,
+ * which validate() has already bounded, so a forged count gives nothing a kill did not.
+ */
+function validEssence(raw: unknown, killed: Readonly<Record<string, number>>): Record<string, number> {
+  const o = (raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {}) as Record<string, unknown>;
+  const out: Record<string, number> = {};
+  for (let realm = 1; realm <= 9; realm++) {
+    const commons = commonsOf(realm);
+    const elite = commons[commons.length - 1];
+    const each = elite ? essenceFrom(elite) : 0;
+    const v = o[String(realm)];
+    if (!each || typeof v !== 'number' || !Number.isFinite(v)) continue;
+    const n = Math.floor(Math.min(Math.max(0, v), each * (killed[elite.key] ?? 0)));
+    if (n > 0) out[String(realm)] = n;
+  }
+  return out;
+}
 
 /** 鎖魂 The realm a Soul-Lock Sigil can first be written in. */
 const SOUL_LOCK_REALM = RECIPE_BY_KEY['sigil:soullock'].realm;
@@ -471,6 +493,9 @@ export function validate(raw: unknown, now: number): State {
     } : { period: -1, beaten: 0 },
     bouts: realm >= PLATFORM_REALM
       ? clamp(Math.floor(num(o.bouts, 0)), 0, PLATFORM_EDGE.length * (Math.floor(elapsed / WEEK) + 9 + 1)) : 0,
+    // 精血 Never more of a realm's blood than its elite's kills could have left, and only the
+    // realms whose elite leaves any. It is spent, so it may be anything up to that.
+    essence: validEssence(o.essence, killed),
     lastRun: validTake(o.lastRun, (k) => k in TEMPLATE_BY_KEY, RARITIES, (k) => k in ITEM_BY_KEY),
     // 期 A week the cultivator has not lived through yet is not a week they took the
     // quarry's qi in, so the ceiling is this instant's own week. -1 is never, which is
