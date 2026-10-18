@@ -2921,6 +2921,8 @@ export const RUNG_AT: readonly number[] = [0, 9, 27, 45, 63, 81, 85, 90, 100];
  *   active         61.7 (3)    none
  *   every hour     25.3 (5)    60.9 (5)    87.7 (5)    122.3 (5)   146.2 (2)  none
  *   drives it all   5.9 (5)    18.4 (5)    42.1 (5)    55.2 (5)    58.3 (5)   62.6 65.3 65.9, the ninth never
+ *   crafts it all  94.2 (3)    none
+ *   runs auto       8.9 (5)    16.5 (5)    23.6 (5)    32.8 (5)    42.7 (5)   51.1 63.5 76.8 89.1, all five seeds
  *
  * Shard odds a tenth lower and higher: every hour's first five move 25 to 35 and 22 days, 61
  * to 71 and 56, 88 to 101 and 79; active's first 62 to 94 and 50. Slower, never walled. The
