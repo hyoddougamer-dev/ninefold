@@ -2915,6 +2915,8 @@ export const LEGEND_LEVEL: Readonly<Record<string, number>> = {
   herb: 80, vein: 80, render: 80, alchemy: 85, forge: 85, sigil: 88, array: 90,
 };
 export const LEGEND_MASTERED = 6;
+/** 傳說 What every work's heap of herbs, ores, ingots and parts is multiplied by (data/crafts.ts LEGENDS). Souls are not. */
+export const LEGEND_HEAP = 1;
 export const LEGEND_DAYS: Readonly<Record<string, number>> = {
   herb: 3, vein: 3, render: 3, alchemy: 4, forge: 4, sigil: 5, array: 6,
 };

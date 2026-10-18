@@ -30,7 +30,7 @@ import {
   CRAFT_HOURS_TO_CAP, CRAFT_KIT, CRAFT_KIT_WORK, CRAFT_LONG_WATCH_HOURS, CRAFT_MARKS, CRAFT_QUALITY, CRAFT_QUALITY_MULT, CRAFT_SECONDS,
   CRAFT_TOOL_STEPS, DRAGON_KIT_SHARE, BREAKTHROUGH_LEVEL,
   HUNDRED_ELITE_PARTS, HUNDRED_INGOTS, HUNDRED_LEVEL, HUNDRED_LEVEL_TOP, HUNDRED_SECONDS, HUNDRED_WARDEN_PARTS,
-  LEGEND_DAYS, LEGEND_LEVEL, LEGEND_MASTERED, LEGEND_POWER, LEGEND_SPEED,
+  LEGEND_DAYS, LEGEND_HEAP, LEGEND_LEVEL, LEGEND_MASTERED, LEGEND_POWER, LEGEND_SPEED,
 } from '../sim/balance.ts';
 import { opensAt, type System } from '../sim/unlocks.ts';
 
@@ -693,8 +693,10 @@ export const legendDoes = (skill: SkillKey) =>
 for (const l of LEGENDS) {
   const key = legendKey(l.skill);
   item({ key, han: l.han, name: l.name, kind: 'legend', realm: l.realm, icon: l.icon, does: legendDoes(l.skill) });
+  // 傳說 The heap at LEGEND_HEAP of itself; the souls as they are.
+  const needs = l.needs.map(([k, n]) => [k, k === SOUL ? n : Math.max(1, Math.round(n * LEGEND_HEAP))] as const);
   recipe({ key, skill: l.skill, group: 'Legendary', han: l.han, name: l.name, level: LEGEND_LEVEL[l.skill], realm: l.realm,
-    seconds: LEGEND_DAYS[l.skill] * 86_400, needs: l.needs, makes: { kind: 'legend', skill: l.skill }, graded: false,
+    seconds: LEGEND_DAYS[l.skill] * 86_400, needs, makes: { kind: 'legend', skill: l.skill }, graded: false,
     does: `${legendDoes(l.skill)} Asks for ${LEGEND_MASTERED} ${SKILL_BY_KEY[l.skill].name} recipes mastered.` });
 }
 
