@@ -2911,7 +2911,23 @@ export const RUNG_AT: readonly number[] = [0, 9, 27, 45, 63, 81, 85, 90, 100];
  * - RELIC_POWER: what each relic adds to power, multiplied.
  * - RELIC_SHARD_GIFT: what a relic of the 尋 seeking kind adds to every shard chance.
  *
- * Measured with tools/relics.ts (see the bible's 神器 section for the table).
+ * Measured with tools/relics.ts on 2026-10-18 (five seeds, 991 1234 5555 7777 31337, each
+ * begun on its own instant so each rolls its own shards; mean day a relic is made, on how many
+ * seeds, playing on to day 160 and going back for the relics):
+ *
+ *   habit          1           2           3           4           5          6 to 9
+ *   never fights   none, never fights; its first shard never falls
+ *   barely, once a day, casual: none by day 160 (a few kills a day; a shard is ~3,900 kills)
+ *   active         61.7 (3)    none
+ *   every hour     25.3 (5)    60.9 (5)    87.7 (5)    122.3 (5)   146.2 (2)  none
+ *   drives it all   5.9 (5)    18.4 (5)    42.1 (5)    55.2 (5)    58.3 (5)   62.6 65.3 65.9, the ninth never
+ *
+ * Shard odds a tenth lower and higher: every hour's first five move 25 to 35 and 22 days, 61
+ * to 71 and 56, 88 to 101 and 79; active's first 62 to 94 and 50. Slower, never walled. The
+ * material a tenth either way moves nothing: in every walk the shards are what binds, not 材.
+ * Where it fails: whoever drives every spare coin makes relics 4 to 8 inside the ten days
+ * after the summit (old elites are driven at DRIVE_OLD), and whoever hunts by hand a few times
+ * a day never makes one. See the report on the ch-relics branch.
  */
 export const RELIC_SHARD_ODDS = 1 / 6000;
 export const RELIC_BOND_TILT = 6;
@@ -2934,6 +2950,23 @@ export const RELIC_SHARD_GIFT = 0.25;
  * sooner. A drive's kills count as the taps would have (a drive pays what the taps pay), so
  * the gate is also something qi can buy through the hunt, at DRIVE_MINUTES a kill: a whole
  * day of seal is 480 wins over commons, two hours of the cultivator's own gathering.
+ *
+ * Measured with tools/relics.ts climb on 2026-10-18 (five seeds, the mean; before is 3e92b8e):
+ *
+ *   habit            realm 9 before → after   summit before → after   marks by day 112
+ *   never fights     118.6 → 118.6            131.8 → 131.8           0 → 0
+ *   barely fights    102.0 → 102.0            110.4 → 110.4           0 → 0
+ *   once a day        74.2 → 74.4              86.4 → 87.0            4.0 → 4.0
+ *   casual            66.9 → 66.9              77.7 → 77.7            6.8 → 6.8
+ *   active            49.2 → 48.3              57.3 → 56.9            10.2 → 10.2
+ *   every hour        31.9 → 29.9              36.6 → 35.8            13.8 → 13.8
+ *   drives it all     48.4 → 47.6              56.7 → 56.6            10.6 → 10.2
+ *   crafts it all     46.5 → 46.5              55.7 → 55.7            11.0 → 11.0
+ *
+ * The waiter is where it was, to the day. The gate minutes a tenth either way (2.7, 3.3) move
+ * no habit by more than 0.3 of a day. What it does not do: the cultivator who barely fights
+ * (two kills a day) gains nothing from it, so the gates stay time gates for exactly the
+ * players who complained least about them.
  */
 export const GATE_SEAL_MINUTES = 3;
 export const GATE_WALL_MINUTES = 3;
