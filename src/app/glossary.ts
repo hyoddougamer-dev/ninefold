@@ -10,7 +10,9 @@ import { lineMath, lineNote } from './lines.ts';
 import { FEEDER } from '../sim/crafts.ts';
 import { REALMS, realm as realmOf } from '../data/realms.ts';
 import { LINES, PILL_LINES } from '../data/alchemy.ts';
-import { AWAKEN, CAVE, CLASS, FIGURE, KEY, REBIRTH, SECRET } from './copy.ts';
+import { AWAKEN, CAVE, CLASS, FIGURE, KEY, REBIRTH, SECRET, TROPHY } from './copy.ts';
+import { GILT_POWER, PAGE_POWER } from '../sim/balance.ts';
+import { pct } from '../sim/format.ts';
 import { PAIRS, SCHOOLS, SCHOOL_INFO } from '../data/schools.ts';
 import { pairSays, schoolSays } from './classes.ts';
 
@@ -89,6 +91,9 @@ export const GROUPS: readonly Group[] = [
       ...MARK_INFO.map((m, i) => ({ han: m.han, name: m.name, note: KEY.mark(MARKS[i], m.pays) })),
       ...DEEP_INFO.map((m, i) => ({ han: m.han, name: m.name, note: KEY.deep(DEEP_MARKS[i], DEEP_MATERIAL, DEEP_DROP, DEEP_EVERYWHERE) })),
       { han: '緣', name: 'Bond', note: KEY.bond(FATE_FULL) },
+      { han: '珍', name: 'Trophy', note: TROPHY.what },
+      { han: '冊', name: 'Trophy book', note: TROPHY.pays(pct(PAGE_POWER), pct(GILT_POWER)) },
+      { han: '鎏', name: 'Gilt page', note: TROPHY.gildNeeds('a great deal of') },
     ],
   },
   {

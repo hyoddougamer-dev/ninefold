@@ -155,6 +155,8 @@ function takeOwed(s: State, lean: Lean): State {
  */
 export function playEndgame(
   marks: number, lean: Lean = 'pill', start?: State, heavier = 1, dragonKit: DragonKit = 'game',
+  /** 珍 Something the cultivator does with each day before the spending, given the day's gathering. */
+  daily?: (s: State, gathered: number, day: number) => State,
 ): Endgame {
   let s = takeOwed(start ?? arrived(), lean);
   const share = dragonKit === 'game' ? DRAGON_KIT_SHARE : dragonKit === 'off' ? 0 : dragonKit;
@@ -177,6 +179,7 @@ export function playEndgame(
       if (oddsAt(s) > WILLING && canCross({ ...s, wardenFell: true })) break;
       s = { ...s, qi: s.qi + gathering(s) * 86_400 };
       waited += 1;
+      if (daily) s = daily(s, gathering(s) * 86_400, days.reduce((a, x) => a + x, 0) + waited);
 
       // The tower, while the next floor is worth trying. Losing costs nothing, so the
       // only question is whether the build clears it.

@@ -80,11 +80,23 @@ export function effortOf(kills: number): number {
   return e;
 }
 
+/**
+ * 量 The knife-edge check's lever, for the harnesses alone (tools/trophies.ts): every bar, the
+ * book's power and the gilding's material scaled by these. The game never calls it, so in the
+ * game they are always 1, and the save holds nothing that depends on them.
+ */
+const SCALE = { window: 1, power: 1, material: 1 };
+export function scaleTrophies(x: Partial<typeof SCALE>): void {
+  Object.assign(SCALE, { window: 1, power: 1, material: 1 }, x);
+  FOUND.clear();
+}
+
 /** Where bar j begins and how long it is. */
 export function barAt(j: number): { start: number; size: number } {
   const g: number = TROPHY_GROW;
-  const size = TROPHY_WINDOW * g ** j;
-  const start = g === 1 ? TROPHY_WINDOW * j : (TROPHY_WINDOW * (g ** j - 1)) / (g - 1);
+  const w = TROPHY_WINDOW * SCALE.window;
+  const size = w * g ** j;
+  const start = g === 1 ? w * j : (w * (g ** j - 1)) / (g - 1);
   return { start, size };
 }
 
@@ -207,7 +219,7 @@ export function bookWhole(h: Hunter): boolean {
 export function trophyPower(h: Hunter): number {
   if (!h.trophy && !Object.keys(h.killed).length) return 1;
   const pages = pagesHeld(h);
-  return 1 + PAGE_POWER * pages + GILT_POWER * pagesGilt(h) + (pages === 9 ? BOOK_POWER : 0);
+  return 1 + SCALE.power * (PAGE_POWER * pages + GILT_POWER * pagesGilt(h) + (pages === 9 ? BOOK_POWER : 0));
 }
 
 /** 冊 The most the book can ever be worth, for the screen that promises it. */
@@ -264,7 +276,7 @@ export function render<S extends Hunter>(s: S, key: string): S {
 
 /** 鎏 What gilding a realm's page costs in 材 material. */
 export function giltCost(realm: number): number {
-  return GILT_MATERIAL * GILT_STEP ** (Math.max(1, Math.min(9, realm)) - 1);
+  return GILT_MATERIAL * SCALE.material * GILT_STEP ** (Math.max(1, Math.min(9, realm)) - 1);
 }
 
 /** 鎏 A whole page, not yet gilt, with a spare of each of its three. Material aside. */
