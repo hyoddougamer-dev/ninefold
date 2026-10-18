@@ -50,6 +50,8 @@ import { ARCHETYPES, RARITY_INFO, SLOTS, callingOf, schoolOf, templateOf, type I
 import { PAIRS, schoolOfAxis, type Pair, type School } from '../src/data/schools.ts';
 import { SCHOOL_WAKES } from '../src/sim/balance.ts';
 import type { Beast } from '../src/data/bestiary.ts';
+import { SKILL_KEYS } from '../src/data/crafts.ts';
+import { hardBeast, legendMade, legendsMade } from '../src/sim/legend.ts';
 
 /**
  * 承 What a worn piece is worth with its place's refining on it, for choosing the place
@@ -187,6 +189,12 @@ export interface Habit {
    * the points reach. Every other habit stops at its branch.
    */
   readonly greedy?: boolean;
+  /**
+   * 傳說 Whether a crafter chases the legendary works (tools/crafter.ts legendTask): the one on
+   * the anvil forged, the nearest walked toward. Only with `crafts`; no habit in HABITS carries
+   * it, so no curve printed before the works moves for it. tools/ascent.ts plays it.
+   */
+  readonly legends?: boolean;
 }
 
 /**
@@ -322,6 +330,17 @@ export interface Run {
   }[];
   /** 期 Every week's quarry taken: the day, the realm, what it paid on top of the kill. */
   readonly quarries: readonly { readonly day: number; readonly realm: number; readonly paid: number }[];
+  /**
+   * 傳說 擊 The day each craft's legendary work was made (NaN if never), in the order of the
+   * crafts; the day the first 精魄 Elite Soul fell; and every hard win (one's own realm's
+   * elite, a vault gate), counted where they land.
+   */
+  readonly legend: {
+    readonly made: readonly number[];
+    readonly firstSoul: number;
+    readonly eliteWins: number;
+    readonly gateWins: number;
+  };
   /** 擂 Challengers beaten, by position (first, second, third), and periods the Platform stood. */
   readonly bouts: readonly number[];
   readonly periods: number;
@@ -612,6 +631,15 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher, start?: State, ga
   const biggest = Array.from({ length: 11 }, () => ({ hours: 0, rungs: 0 }));
   const floorRung: number[] = [];
   const bouts = [0, 0, 0];
+  const legendDay: number[] = SKILL_KEYS.map(() => NaN);
+  let firstSoul = NaN;
+  let gateWins = 0;
+  let eliteWins = 0;
+  /** 擊 takeKill, with the hard wins counted as they land. */
+  const killIt = (x: State, b: Beast): State => {
+    if (hardBeast(x, b)) eliteWins++;
+    return takeKill(x, b);
+  };
   let periods = 0, lastPeriod = -1;
   const tried = new Set<string>();
   /** Qi that left the save on an action (a purchase, a pill, a drive, a price on the road). */
@@ -778,7 +806,7 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher, start?: State, ga
     if (h.hunts > 0 && quarryOwed(s)) {
       const q = quarryOf(s);
       if (q && odds(s, q) > 0.7) {
-        s = quarried(s, takeKill(s, q));
+        s = quarried(s, killIt(s, q));
         if (h.gear) s = takeDrop(s, q, ++seed, h.calling);
         fights++;
       }
@@ -794,14 +822,14 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher, start?: State, ga
     // stuck at level 1, so no warden's part and no shape of 百形 (獵王 at seed 991).
     const learn = (h.crafts || forging) && h.hunts > 0 ? toLearn(s, huntable(s.realm, s.layer).filter((x) => odds(s, x) > 0.7)) : undefined;
     if (learn) {
-      s = quarried(s, takeKill(s, learn));
+      s = quarried(s, killIt(s, learn));
       if (h.gear) s = takeDrop(s, learn, ++seed, h.calling);
       fights++;
     }
     for (let i = 0; i < h.hunts; i++) {
       const b = quarryFor(s, h.calling);
       if (!b) break;
-      s = quarried(s, takeKill(s, b));
+      s = quarried(s, killIt(s, b));
       if (h.gear) s = takeDrop(s, b, ++seed, h.calling);
       if (h.gear) s = fuseAll(s, h.calling);
       fights++;
@@ -854,6 +882,7 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher, start?: State, ga
      */
     if (canEnter(s)) {
       s = enterSecret(s);
+      const gatesAt = s.lastRun.gates;
       for (let r = 0; r < roomsFor(s.realm) + 2 && insideSecret(s); r++) {
         const step = s.runStep;
         const doors = doorsAt(s, step);
@@ -869,6 +898,7 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher, start?: State, ga
         if (drinking) led.drunk += Math.max(0, s.qi - before);
       }
       if (insideSecret(s)) s = leaveSecret(s);
+      gateWins += Math.max(0, s.lastRun.gates - gatesAt);
     }
 
     /**
@@ -892,7 +922,7 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher, start?: State, ga
     // it on something that will still be running when they are back, and wear a forged
     // piece the moment the game would mark it ▲, as with anything that falls.
     if (h.crafts || forging) {
-      s = h.crafts ? craftVisit(s, t, tick, h.calling, h.hundred ?? false) : forgeVisit(s, t, tick, h.calling!);
+      s = h.crafts ? craftVisit(s, t, tick, h.calling, h.hundred ?? false, !!h.legends) : forgeVisit(s, t, tick, h.calling!);
       for (const it of s.chest.filter((x) => x.from === FORGED)) {
         const slot = templateOf(it).slot as Slot;
         const worn = s.worn[slot];
@@ -961,6 +991,10 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher, start?: State, ga
       if (Number.isFinite(rung)) b.rungs = Math.max(b.rungs, visit / rung);
     }
 
+    // 傳說 The works made, and the first soul, read once a visit where they landed.
+    SKILL_KEYS.forEach((k, i) => { if (!Number.isFinite(legendDay[i]) && legendMade(s.crafts.made, k)) legendDay[i] = (t - T0) / DAY; });
+    if (!Number.isFinite(firstSoul) && ((s.crafts.souls ?? 0) > 0 || legendsMade(s.crafts.made) > 0)) firstSoul = (t - T0) / DAY;
+
     // 盡 The 修 screen's Buy all is this loop (buyAll); the harness has always bought every
     // box the sim will sell, 妖丹 included, so it passes that rule rather than the screen's.
     s = spend(buyAll(s, () => true).state);
@@ -993,6 +1027,7 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher, start?: State, ga
     qi: { gained: s.qi + led.ladder + led.spent, drunk: led.drunk, incense: led.incense, platform: led.platform,
       quarry: led.quarry },
     beats, quarries, bouts, periods,
+    legend: { made: legendDay, firstSoul, eliteWins, gateWins },
     tower: (() => {
       const total = s.qi + led.ladder + led.spent;
       const gained = towerBy.map((_, r) => {

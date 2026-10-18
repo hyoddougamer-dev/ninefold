@@ -2992,6 +2992,13 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .c-side .card .gateseal .gateseal-bar i[data-kind="time"] { background: color-mix(in srgb, var(--gold) 78%, transparent); }
 .c-side .card .gateseal .gateseal-bar i[data-kind="qi"] { background: color-mix(in srgb, var(--incense) 85%, transparent); }
 .c-side .card .gateseal .gateseal-bar i[data-kind="pill"] { background: color-mix(in srgb, var(--jade) 75%, transparent); }
+/* 擊 Hard wins counted as waited: a cinnabar stretch, the colour of a fight. */
+.c-side .card .gateseal .gateseal-bar i[data-kind="won"] { background: color-mix(in srgb, var(--cinnabar) 80%, transparent); }
+/* 擊 The line that says what the hard wins have counted at this gate. */
+.c-side .card .gatestrike { border-left: 2px solid color-mix(in srgb, var(--cinnabar) 45%, transparent); padding-left: 9px; }
+/* 擊 On the hunt, the hard win's chip under the elite's: what this win strikes. */
+.beast .bname .htag { display: block; margin: 3px 0 1px; font-style: normal; font-size: 10.5px; line-height: 1.4;
+        color: color-mix(in srgb, var(--cinnabar) 70%, var(--text)); }
 .c-side .card .gateseal .gateseal-acts { display: flex; flex-direction: column; gap: 6px; margin-top: 9px; }
 .c-side .card .gateseal .gateseal-acts button.act { display: flex; justify-content: space-between; align-items: center; gap: 12px;
         width: 100%; padding: 9px 12px; text-align: left; font-size: 12.5px; letter-spacing: .03em; line-height: 1.3;
@@ -3561,6 +3568,19 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 /* 一 The Breakthrough Pills' one rule, over their four recipes. */
 .crafts .cpillrule { margin: 0 0 10px; font-size: 12px; line-height: 1.5; padding: 9px 11px;
                      border-left: 2px solid var(--gild-strong); background: rgba(20, 17, 13, .45); border-radius: 0 8px 8px 0; }
+/* 傳說 The craft's long goal under its mastery, in gold with a seal; once made, quiet jade. */
+.crafts .clegendgoal { margin: 6px 0 0; font-size: 12px; line-height: 1.5; color: var(--text);
+                       border-left: 2px solid var(--gold); padding-left: 8px; }
+.crafts .clegendgoal .cjk { color: var(--gold); margin-right: 2px; }
+.crafts .clegendgoal[data-made='true'] { border-left-color: var(--jade); color: var(--faint); }
+.crafts .clegendgoal[data-made='true'] .cjk { color: var(--jade); }
+/* 傳說 A legendary work's row: a gold ring round its picture, and the anvil's bar under it. */
+.crafts .crow.clegend .cic { border-color: color-mix(in srgb, var(--gold) 70%, transparent);
+                             box-shadow: 0 0 0 1px color-mix(in srgb, var(--gold) 30%, transparent); }
+.crafts .canvil { display: block; margin-top: 2px; }
+.crafts .canvil .cprog { margin-top: 6px; }
+.crafts .canvil .cprog > i { background: var(--gold); }
+.crafts .canvil-line { display: block; font-style: normal; font-size: 11.5px; line-height: 1.45; margin-top: 4px; }
 /* 總 The top line: where you are, and the one number the workshop adds up to. */
 .crafts .crank { display: flex; align-items: baseline; gap: 6px; }
 .crafts .crank .clevel { margin-left: auto; color: var(--gold); font-size: 13px; }

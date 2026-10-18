@@ -20,7 +20,7 @@
  *   5. **Numbers with the unit the screen shows.** 道 costs 道, qi is qi a second.
  */
 
-import { ART_BEND, BOTTLENECK_LOOSEN, REALM_WALL, CRAFT_KIT, CRAFT_QUALITY_MULT, MELT_CAP, MELT_FILL, CRAFT_FEED_LEVEL, CRAFT_MARKS, CRAFT_MARK_FASTER, CRAFT_MARK_SUB, CRAFT_MARK_TWICE, CRAFT_MASTERY_BAND, CRAFT_MASTERY_SPEED, FIND_TOP, FUSE_BEND, FUSE_TOP, LUCK_BEND, OPENING_PURSE, QI_KNEE_FIRST, QI_KNEE_GROWTH, QI_ROOF_FIRST, QI_ROOF_TOP, SUNDER_BEND, UPGRADE_NUMBERS, VARIANCE, LUCK_ROLL_TOP, PILL_BANE_FLOOR, DRAGON_KIT_SHARE, BREAKTHROUGH_LEVEL, LINEAGE_LAYER } from '../sim/balance.ts';
+import { ART_BEND, BOTTLENECK_LOOSEN, REALM_WALL, CRAFT_KIT, CRAFT_QUALITY_MULT, MELT_CAP, MELT_FILL, CRAFT_FEED_LEVEL, CRAFT_MARKS, CRAFT_MARK_FASTER, CRAFT_MARK_SUB, CRAFT_MARK_TWICE, CRAFT_MASTERY_BAND, CRAFT_MASTERY_SPEED, FIND_TOP, FUSE_BEND, FUSE_TOP, LUCK_BEND, OPENING_PURSE, QI_KNEE_FIRST, QI_KNEE_GROWTH, QI_ROOF_FIRST, QI_ROOF_TOP, SUNDER_BEND, UPGRADE_NUMBERS, VARIANCE, LUCK_ROLL_TOP, PILL_BANE_FLOOR, DRAGON_KIT_SHARE, BREAKTHROUGH_LEVEL, LINEAGE_LAYER, LEGEND_STRIKE_ELITE, LEGEND_STRIKE_GATE, LEGEND_FIGHT_SHARE, LEGEND_SOUL_EVERY, GATE_STRIKE_ELITE, GATE_STRIKE_GATE } from '../sim/balance.ts';
 import { duration, pct as percent } from '../sim/format.ts';
 import { SEASON_DATE, SEASON_DAY, SEASON_UTC } from '../sim/season.ts';
 
@@ -3373,4 +3373,52 @@ export const QOL = {
     allSays: (n: number) => `${n} ${n === 1 ? 'level' : 'levels'}, cheapest first`,
     bought: (n: number) => `${n} ${n === 1 ? 'level' : 'levels'}`,
   },
+};
+
+/**
+ * 傳說 擊 The legendary works and the hard wins (sim/legend.ts), everything the player reads
+ * about them in one place. Every number is read off balance.ts, so the sentence and the rule
+ * cannot drift apart.
+ */
+const ascentTime = (s: number) => duration(Math.max(0, s));
+export const ASCENT = {
+  group: 'Legendary',
+  /** Said once over the Legendary list, as the Breakthrough Pills' rule is. */
+  rule: `A legendary work is the top of its craft, and it is made once. Begun, everything it asks for goes onto the anvil, and from then it forges for days of the workshop’s own time, kept to the second however long you are away. `
+    + `Every win over the elite of the realm you stand in strikes ${ascentTime(LEGEND_STRIKE_ELITE)} off it, and every gate beaten in the vault ${ascentTime(LEGEND_STRIKE_GATE)}, up to ${Math.round(LEGEND_FIGHT_SHARE * 100)}% of the forging. Fighting finishes it sooner; waiting still finishes it.`,
+  /** 精魄 Where a soul comes from. */
+  soulRule: `One win in ${LEGEND_SOUL_EVERY} over the elite of the realm you stand in leaves 精魄 an Elite Soul.`,
+  /** The next goal, on every craft's panel. */
+  next: (name: string) => `Next goal: ${name}.`,
+  needLevel: (have: number, need: number) => `level ${have} of ${need}`,
+  needMastered: (have: number, need: number) => `${have} of ${need} recipes mastered`,
+  needSouls: (have: number, need: number) => `${have} of ${need} Elite Souls`,
+  needThings: (n: number) => `${n} ${n === 1 ? 'material' : 'materials'} short`,
+  needReady: 'Everything it asks for is held. Begin it in the Legendary list.',
+  needRealm: (realm: number) => `reach realm ${realm}`,
+  onAnvil: (name: string) => `On the anvil: ${name}.`,
+  anvilOther: (name: string) => `${name} is on the anvil. One work at a time.`,
+  made: (name: string) => `${name} is made. This craft’s long road is walked.`,
+  /** On the task card and the list while a work is on the anvil. */
+  forging: (left: string) => `${left} of forging left.`,
+  struck: (off: string, most: string) => `Hard wins have struck ${off} off it, of ${most} at most.`,
+  strikeHint: 'Beat your realm’s elite or a vault gate to strike it shorter.',
+  paused: 'It waits on the anvil while the workshop makes something else. Nothing is lost.',
+  begin: 'Begin',
+  resume: 'Forge',
+  why: {
+    mastery: (have: number, need: number) => `${have}/${need} mastered`,
+    made: 'Made',
+    anvil: 'Anvil busy',
+  },
+  /** 擊 On the hunt's elite row, for the elite of the realm one stands in. */
+  hard: '擊 Hard win',
+  hardLegend: (name: string) => `${ascentTime(LEGEND_STRIKE_ELITE)} off ${name}`,
+  hardGate: `${ascentTime(GATE_STRIKE_ELITE)} of the gate’s wait`,
+  hardSoul: `1 in ${LEGEND_SOUL_EVERY} leaves 精魄 a soul`,
+  /** 擊 At the warden's gate. */
+  gateStrike: (counted: number, most: number, elite: string) =>
+    `擊 Hard wins have counted ${ascentTime(counted)} as waited here, of ${ascentTime(most)} at most. `
+    + `Each win over the ${elite} counts ${ascentTime(GATE_STRIKE_ELITE)}, each vault gate ${ascentTime(GATE_STRIKE_GATE)}, for the seal and the bottleneck alike.`,
+  gateStrikeFull: (most: number) => `擊 Hard wins have counted all ${ascentTime(most)} they may here. Time does the rest.`,
 };
