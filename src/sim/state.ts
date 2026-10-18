@@ -26,6 +26,7 @@ import { NO_CRAFTS, eatPill, feedShare, unsealCarried, type Crafts } from './cra
 import { type ChestFilter } from './filters.ts';
 import { echoFactor, type Life } from './echo.ts';
 import { seasonAt } from './season.ts';
+import { trophyPower, type Trophies } from './trophies.ts';
 
 /** The four things qi is spent on. All of them multiply; none of them is ever lost. */
 export type Upgrade = 'technique' | 'method' | 'pills' | 'cores';
@@ -335,6 +336,12 @@ export interface State {
    * reads the higher of this and what this life has made. See sim/hundred.ts.
    */
   codexKept: readonly number[];
+  /**
+   * 珍 What the cultivator did with the trophies their kills found: spent, made at the
+   * furnace, the pages gilt, and what the lives before kept. The trophies themselves are
+   * read off the kills (sim/trophies.ts) and never stored. Absent in an older save.
+   */
+  trophy?: Trophies;
 }
 
 /** What the marks already taken are worth. They multiply, to power and to qi alike. */
@@ -692,7 +699,9 @@ export function power(s: State): number {
     // 職 劍 The Sword school: the one class perk on power itself. See sim/schools.ts.
     * classPower(s)
     // 劍魂 A sword soul from the road: a keepsake, given once. See data/meetings.ts.
-    * (hasBoon(s, 'swordsoul') ? BOON_SWORDSOUL : 1);
+    * (hasBoon(s, 'swordsoul') ? BOON_SWORDSOUL : 1)
+    // 冊 The trophy book: each page held, each gilt, and the whole of it. See sim/trophies.ts.
+    * trophyPower(s);
 }
 
 /** The realm is full and only the warden is left? */

@@ -14,6 +14,7 @@ import type { Fortune } from './drops.ts';
 import { classDrive } from './schools.ts';
 import { BOON_TOKEN } from './balance.ts';
 import { hasBoon } from '../data/meetings.ts';
+import { found } from './trophies.ts';
 
 /**
  * 圍 The drive: one tap, many kills, paid for in qi.
@@ -140,6 +141,8 @@ export interface Drive {
    * decides where they go (sim/pile.ts for the game, nothing at all for a harness).
    */
   readonly drops: readonly Item[];
+  /** 珍 How many of this beast's trophies the drive's kills found: read off the kills, as taps would. */
+  readonly trophies: number;
 }
 
 /**
@@ -165,7 +168,7 @@ export function drive(s: State, b: Beast, n: number, seed: number, fortune: Fort
    * audit of the qi.
    */
   if (!canAffordDrive(s, b, kills)) {
-    return { state: s, material: 0, qiSpent: 0, kills: 0, dropsRolled: 0, best: null, earned: [], drops: [] };
+    return { state: s, material: 0, qiSpent: 0, kills: 0, dropsRolled: 0, best: null, earned: [], drops: [], trophies: 0 };
   }
   const before = s.killed[b.key] ?? 0;
 
@@ -212,6 +215,7 @@ export function drive(s: State, b: Beast, n: number, seed: number, fortune: Fort
       quarryWeek: week ? weekOf(s.at) : s.quarryWeek,
     },
     material, qiSpent, kills, dropsRolled, best, earned,
+    trophies: found({ ...s, killed: { ...s.killed, [b.key]: after } }, b.key) - found(s, b.key),
     // 圍 Best first; a tie keeps the order the pieces fell in, so the same drive lists the same pile.
     drops: fell.map((it, i) => ({ it: lifted(s, it), i }))
       .sort((a, b) => itemWorth(b.it) - itemWorth(a.it) || a.i - b.i)

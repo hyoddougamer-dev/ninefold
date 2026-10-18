@@ -58,6 +58,7 @@ import type { Kit } from './kit.ts';
 import { RECIPE_BY_KEY, SKILL_KEYS } from '../data/crafts.ts';
 import { floorBeast, floorPower, floorQiPay } from './tower.ts';
 import { forkTrees } from './fork.ts';
+import { NO_TROPHIES, keptCoversPages } from './trophies.ts';
 import { wearSet } from './sets.ts';
 import { pillCost } from './furnace.ts';
 import { LINES } from '../data/alchemy.ts';
@@ -521,13 +522,18 @@ export function verify(before: State, after: State, seconds: number, first = fal
     // Commons only: a warden's count is a marker the arts read, not a tally that pays.
     || BEASTS.some((b) => !b.warden && (after.killed[b.key] ?? 0) < (before.killed[b.key] ?? 0))
     // 承 The codex the lives before kept only grows, and only at a rebirth.
-    || !keptCovers(after.codexKept, before.codexKept);
+    || !keptCovers(after.codexKept, before.codexKept)
+    // 冊 And the trophy pages the lives before kept.
+    || !keptCoversPages(after.trophy?.kept, before.trophy?.kept);
   if (down) why.push('went-down');
   // 承 And a kept codex is something only a life that ended can leave: one in a first life,
   // or one that grew while the record of lives stayed what it was, was written by hand.
   // validate() already empties the first, so the server only meets it unvalidated.
   if ((after.lives?.length ?? 0) === 0 ? (after.codexKept?.length ?? 0) > 0
     : !down && !keptCovers(before.codexKept, after.codexKept)) why.push('codex');
+  // 冊 The same of the trophy pages kept: only a rebirth writes them. The trophies themselves
+  // are read off the kills, which the budget below already bounds, so they need no line here.
+  if (!down && !keptCoversPages(before.trophy?.kept, after.trophy?.kept)) why.push('codex');
 
   // 時 The budget, in seconds. What the best possible player would have needed to make
   // these gains, against the seconds that really passed.
@@ -805,7 +811,12 @@ function reborn(before: State, after: State, dt: number, first: boolean): Verdic
   // gives is capped (CODEX_CAP) and never touches the qi rate.
   const owed = codexToKeep(before);
   const kept = keptCovers(after.codexKept, owed) ? after.codexKept : owed;
-  const born = bornFrom(before, after.lives, at, kept);
+  const born0 = bornFrom(before, after.lives, at, kept);
+  // 冊 The trophy pages, read the same way: what `before` held at the least, more where the
+  // old life went on hunting after the server last saw it. Capped (trophyCeiling), never qi.
+  const pagesOwed = born0.trophy?.kept ?? [];
+  const pages = keptCoversPages(after.trophy?.kept, pagesOwed) ? (after.trophy?.kept ?? []) : pagesOwed;
+  const born = pages.length ? { ...born0, trophy: { ...NO_TROPHIES, kept: pages } } : born0;
   // 業 And the experience it was born with: CRAFT_CARRY of the old life's, which `before` may
   // not have seen the end of. The most that can have been is the share of what `before` held
   // plus every second since at the fastest a craft pays, so the new life starts from what

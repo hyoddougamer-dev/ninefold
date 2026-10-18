@@ -2888,3 +2888,45 @@ export const CODEX_CAP = {
  * knife edge: a rank is a place on the climb, not a tuned number.
  */
 export const RUNG_AT: readonly number[] = [0, 9, 27, 45, 63, 81, 85, 90, 100];
+
+/* ── 珍 Trophies and the trophy book (sim/trophies.ts, data/trophies.ts) ──────────────── */
+
+/**
+ * 珍 How much hunting one beast's first trophy is hidden in: a bar of this much effort, and
+ * the trophy falls at one seeded point inside it. So the chance is honest and visible (one
+ * in what is left of the bar, read off the hunt row), luck decides only *where* in the bar
+ * it falls, and the bar running out is the promise that it has. A kill is one effort, and a
+ * beast's own deep marks make each of its kills worth more (TROPHY_DEEP).
+ *
+ * Bruno, 2026-10-18: *"crafts almost unreachable that take enormous amounts of materials, or
+ * very rare drop items ... I do not want players time-gated just because."* A trophy is
+ * neither a wait nor a dice roll: it is kills, and nothing else moves it.
+ *
+ * 量 Chosen against the drive's price: an old beast's kill costs DRIVE_MINUTES * DRIVE_OLD
+ * of the cultivator's own gathering, so a first bar of 40,000 (about 21,500 kills once
+ * both deep marks are earned) is at most about 22 hours of a summit cultivator's qi and on
+ * average half that. Measured in tools/trophies.ts on five seeds.
+ */
+export const TROPHY_WINDOW = 40_000;
+/** 珍 Each later bar of the same beast is this many times the one before: the second trophy is twice as far. */
+export const TROPHY_GROW = 2;
+/** 珍 精 絕 What each of a beast's own deep marks adds to the effort of each of its kills. */
+export const TROPHY_DEEP: readonly number[] = [0.5, 0.5];
+/** 化 Spare trophies of one realm the furnace renders into one trophy of that realm, chosen. */
+export const TROPHY_RENDER = 3;
+/**
+ * 冊 What the trophy book pays, to power and never to qi: each realm's page (its three
+ * trophies held), each page gilt (a spare of each burned into it at the forge), and the
+ * whole book once all nine pages are there. Capped by construction: nine pages, nine gilt,
+ * one book. All of it is ×1.59.
+ */
+export const PAGE_POWER = 0.03;
+export const GILT_POWER = 0.03;
+export const BOOK_POWER = 0.05;
+/**
+ * 鎏 The 材 material gilding a page burns, by realm: GILT_MATERIAL * GILT_STEP^(realm-1).
+ * Measured against what a summit cultivator holds (about 1e11 on day 90 for the active
+ * one): the ninth page is the one that takes saving for.
+ */
+export const GILT_MATERIAL = 1e6;
+export const GILT_STEP = 6;

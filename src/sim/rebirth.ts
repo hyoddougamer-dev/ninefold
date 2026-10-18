@@ -30,6 +30,7 @@
  *
  * Pure, like the rest of sim/: a state and an instant in, a state out.
  */
+import { NO_TROPHIES, trophyToKeep } from './trophies.ts';
 import { LAYERS, LIVES_MAX, REBIRTH_MARKS } from './balance.ts';
 import { echoOf, lifeEcho, type Life } from './echo.ts';
 import { carriedXp } from './crafts.ts';
@@ -99,6 +100,8 @@ export function bornFrom(prev: State, lives: readonly Life[], now: number, kept:
     crafts: { ...fresh.crafts, xp: carriedXp(prev.crafts?.xp) },
     // 譜 The codex, for good: the best rank every set was finished at, in any life.
     codexKept: kept,
+    // 冊 And the trophy book's pages, for good, as the codex is.
+    ...(trophyToKeep(prev).length ? { trophy: { ...NO_TROPHIES, kept: trophyToKeep(prev) } } : {}),
   };
 }
 
