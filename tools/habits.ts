@@ -50,6 +50,21 @@ import { ARCHETYPES, RARITY_INFO, SLOTS, callingOf, schoolOf, templateOf, type I
 import { PAIRS, schoolOfAxis, type Pair, type School } from '../src/data/schools.ts';
 import { SCHOOL_WAKES } from '../src/sim/balance.ts';
 import type { Beast } from '../src/data/bestiary.ts';
+import { ELITE_RISEN_FROM } from '../src/sim/balance.ts';
+import { eliteFight, eliteKit, eliteOf, risenNow } from '../src/sim/elite.ts';
+import { dayOf, risenElite } from '../src/sim/risen.ts';
+import { effectiveBeastPower } from '../src/sim/combat.ts';
+import { MARKS } from '../src/sim/record.ts';
+import { tookPart } from '../src/sim/crafts.ts';
+
+/**
+ * 升 The least odds, with what is carried, at which a cultivator who fights tries the risen
+ * elite (sim/risen.ts). A loss costs nothing, so a quarter is worth a tap; the dice are set
+ * for the day, so a loss is not pressed again until something has changed.
+ */
+export const ELITE_WILLING = 0.25;
+/** 升 The risen elite left alone, for measuring what it is worth: NF_NO_ELITE=1 */
+const NO_ELITE = process.env.NF_NO_ELITE === '1';
 
 /**
  * 承 What a worn piece is worth with its place's refining on it, for choosing the place
@@ -324,6 +339,16 @@ export interface Run {
   readonly quarries: readonly { readonly day: number; readonly realm: number; readonly paid: number }[];
   /** 擂 Challengers beaten, by position (first, second, third), and periods the Platform stood. */
   readonly bouts: readonly number[];
+  /**
+   * 升 The risen elite: fights tried and won, by realm, the old elites gone back to until
+   * Known, and every beast fought by hand, by realm, so the elite's share of the hunt can be read.
+   */
+  readonly elite: {
+    readonly tries: readonly number[]; readonly wins: readonly number[];
+    readonly errands: number; readonly hunts: readonly number[];
+    /** 升 The odds, bare and with what was carried, of each first try in a realm. */
+    readonly first: readonly ({ readonly day: number; readonly bare: number; readonly carried: number } | undefined)[];
+  };
   readonly periods: number;
   /**
    * 塔 The tower's qi, traced: every floor's pay as it landed, by the realm it fell in, beside
@@ -480,7 +505,8 @@ function arrange(s: State, build: School | Pair): State {
  * could never put together a class whose shapes that beast does not leave.
  */
 function quarryFor(s: State, build: School | Pair | undefined): Beast | undefined {
-  const safe = [...huntable(s.realm, s.layer)].reverse().filter((x) => odds(s, x) > 0.7);
+  // 升 Never the risen elite: its fight is on the day's dice, and tryElite() takes it.
+  const safe = [...huntable(s.realm, s.layer)].reverse().filter((x) => !risenElite(s, x) && odds(s, x) > 0.7);
   if (!build || safe.length < 2) return safe[0];
   const want = quotas(build);
   const counts = callingOf(s.worn).counts;
@@ -613,6 +639,62 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher, start?: State, ga
   const floorRung: number[] = [];
   const bouts = [0, 0, 0];
   let periods = 0, lastPeriod = -1;
+  const eliteTries = new Array(10).fill(0), eliteWins = new Array(10).fill(0), handHunts = new Array(10).fill(0);
+  const eliteFirst: ({ day: number; bare: number; carried: number } | undefined)[] = new Array(10).fill(undefined);
+  let errands = 0;
+  /** 定 The days, bodies and kits a risen elite was lost to: the same dice, not pressed again. */
+  const eliteLost = new Set<string>();
+  /**
+   * 升 One try at the risen elite, the way somebody who fights takes it: the best kit carried
+   * (a crafter's), and only at ELITE_WILLING odds or better with it. A loss is remembered
+   * against the day, the wins, the stance, the arts, the kit and how far the beast is thinned,
+   * so it is pressed again only once one of them has changed. True when a fight was fought.
+   */
+  const tryElite = (): boolean => {
+    const b = NO_ELITE ? null : risenNow(s);
+    if (!b) return false;
+    if (h.crafts) s = carryBest(s, b, 'elite');
+    // 勢 In each stance held, as the Platform is taken: the dice are set, so a stance that lost
+    // today is not pressed again, and the next best one is a different fight.
+    const kitOf = (x: State) => (h.crafts ? eliteKit(x, b) : { kit: NO_KIT, spends: false, used: NOT_USED });
+    const sigOf = (x: State) => {
+      const k = kitOf(x);
+      const thin = effectiveBeastPower(x, b) / Math.max(1e-9, power(x));
+      return [dayOf(x.at), x.killed[b.key] ?? 0, x.stance, x.sequence.join(','), k.used.elixir, k.used.sigil, thin.toFixed(5)].join('|');
+    };
+    const bodies = (h.build ? stanceChoices(s.realm, s.layer).map((x) => ({ ...s, stance: x.key }) as State) : [s])
+      .map((x) => ({ x, o: odds(x, b, undefined, kitOf(x).kit) }))
+      .sort((a, z) => z.o - a.o);
+    if (!eliteFirst[s.realm]) {
+      eliteFirst[s.realm] = { day: (t - T0) / DAY, bare: Math.max(...bodies.map(({ x }) => odds(x, b))), carried: bodies[0]?.o ?? 0 };
+    }
+    const pick = bodies.find(({ x, o }) => o >= ELITE_WILLING && !eliteLost.has(sigOf(x)));
+    if (!pick) return false;
+    const k = kitOf(pick.x);
+    const out = eliteFight(pick.x, b, k.kit);
+    eliteTries[s.realm]++;
+    handHunts[s.realm]++;
+    fights++;
+    if (!out.won) { eliteLost.add(sigOf(pick.x)); return true; }
+    eliteWins[s.realm]++;
+    s = quarried(s, takeKill(s, b));
+    if (k.spends) s = spendKit(s, tookPart(k.used, !!out.revived));
+    if (h.gear) s = takeDrop(s, b, ++seed, h.calling);
+    return true;
+  };
+  /**
+   * 升 The errand back to an old elite: one left behind in a realm from ELITE_RISEN_FROM, back at
+   * its wall and safe now, killed once a visit until it is 熟 Known, so it can be driven and the
+   * knife can take it apart. Its blood is that realm's.
+   */
+  const oldElite = (): Beast | undefined => {
+    if (NO_ELITE) return undefined;
+    for (let r = s.realm - 1; r >= ELITE_RISEN_FROM; r--) {
+      const b = eliteOf(r);
+      if (b && (s.killed[b.key] ?? 0) < MARKS[1] && odds(s, b) > 0.7) return b;
+    }
+    return undefined;
+  };
   const tried = new Set<string>();
   /** Qi that left the save on an action (a purchase, a pill, a drive, a price on the road). */
   const spend = (next: State): State => { led.spent += Math.max(0, s.qi - next.qi); return next; };
@@ -781,6 +863,7 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher, start?: State, ga
         s = quarried(s, takeKill(s, q));
         if (h.gear) s = takeDrop(s, q, ++seed, h.calling);
         fights++;
+        handHunts[s.realm]++;
       }
     }
     // 解 One kill a visit, at most, goes to a beast the knife does not know yet, and it is
@@ -792,19 +875,27 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher, start?: State, ga
     // 鑄 The class-builder who forges runs it too: the knife opens on a first-realm common it
     // knows, and one who left the first realm before ten of any had fallen held a Rendering
     // stuck at level 1, so no warden's part and no shape of 百形 (獵王 at seed 991).
-    const learn = (h.crafts || forging) && h.hunts > 0 ? toLearn(s, huntable(s.realm, s.layer).filter((x) => odds(s, x) > 0.7)) : undefined;
+    const learn = (h.crafts || forging) && h.hunts > 0
+      ? toLearn(s, huntable(s.realm, s.layer).filter((x) => !risenElite(s, x) && odds(s, x) > 0.7)) : undefined;
     if (learn) {
       s = quarried(s, takeKill(s, learn));
       if (h.gear) s = takeDrop(s, learn, ++seed, h.calling);
       fights++;
+      handHunts[s.realm]++;
     }
     for (let i = 0; i < h.hunts; i++) {
-      const b = quarryFor(s, h.calling);
+      // 升 The risen elite first, while it is worth a try; 熟 then, once a visit, an old one
+      // gone back to until it is Known; and otherwise the strongest safe beast, as always.
+      if (tryElite()) { if (h.gear) s = fuseAll(s, h.calling); continue; }
+      const back = i === 0 ? oldElite() : undefined;
+      const b = back ?? quarryFor(s, h.calling);
       if (!b) break;
+      if (back) errands++;
       s = quarried(s, takeKill(s, b));
       if (h.gear) s = takeDrop(s, b, ++seed, h.calling);
       if (h.gear) s = fuseAll(s, h.calling);
       fights++;
+      handHunts[s.realm]++;
     }
 
     // 圍 Drives, bought with whatever the ladder is not about to need. The rule is
@@ -993,6 +1084,7 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher, start?: State, ga
     qi: { gained: s.qi + led.ladder + led.spent, drunk: led.drunk, incense: led.incense, platform: led.platform,
       quarry: led.quarry },
     beats, quarries, bouts, periods,
+    elite: { tries: eliteTries, wins: eliteWins, errands, hunts: handHunts, first: eliteFirst },
     tower: (() => {
       const total = s.qi + led.ladder + led.spent;
       const gained = towerBy.map((_, r) => {
