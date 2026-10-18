@@ -47,6 +47,7 @@ import { itemWorth } from '../src/sim/chest.ts';
 import { WEEK, quarryOf, quarryOwed } from '../src/sim/week.ts';
 import { HEAVENS, MARKS_PER_HEAVEN } from '../src/data/heavens.ts';
 import { playEndgame } from './endgame.ts';
+import { canMakeRelic } from '../src/sim/relics.ts';
 
 /** 悟道 One card at each heaven, which is what the nine of them now owe. */
 const CARDS_PER_HEAVEN = 1;
@@ -102,6 +103,8 @@ export const KINDS: readonly Kind[] = [
    * a hunt: the beast is already counted under 狩, and what the week adds is the reason
    * to go and pick that one.
    */
+  // 神器 A relic whose shards and material are held, waiting to be made (2026-10-18).
+  { han: '神器', name: 'make a relic', taps: (s) => [1, 2, 3, 4, 5, 6, 7, 8, 9].filter((r) => canMakeRelic(s, r)).length },
   { han: '期', name: 'take the week', taps: (s) => {
       const q = quarryOf(s);
       return q && quarryOwed(s) && odds(s, q) > 0.6 ? 1 : 0;
