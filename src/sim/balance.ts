@@ -1703,23 +1703,36 @@ export const ELITE_LOOT = 3;
 export const ELITE_RISEN_FROM = 5;
 
 /**
- * 升 Where a risen elite stands, by realm (index realm − 1), as a multiple of the cultivator's
- * own 力 before 破甲, 破煞, the tree and the class thin it, as a challenger's PLATFORM_EDGE is.
- * Zero below ELITE_RISEN_FROM, where the elite keeps its wall.
+ * 升 Where a risen elite stands, by realm (index realm − 1), as a multiple of the Platform's
+ * second challenger's edge (platformEdge(1, realm)), which is itself a multiple of the
+ * cultivator's own 力: so in the fifth realm the elite stands at 1.15 × 1.87 = 2.15 of the
+ * cultivator's power before 破甲, 破煞, the tree and the class thin it, as a challenger is
+ * thinned. Zero below ELITE_RISEN_FROM, where the elite keeps its wall. See sim/risen.ts.
  *
- * 量 Measured on five seeds (tools/elite.ts): bare, the active, casual and once-a-day
- * cultivators meet it at 12 to 41%; carrying the realm's Common elixir and their best sigil,
- * 56 to 76%, and about 98% in the ninth realm, where the sigils are strongest. Pushed a tenth
- * each way, the odds move a few points and nothing walls.
+ * 量 Measured with tools/elite.ts (npm run elite) on five seeds (991, 1234, 5555, 7777, 31337),
+ * the once-a-day, casual and active cultivators, the day each realm's elite walks out, in the
+ * best stance held (a loss is answered by changing stance). Bare: realm 5 17 to 54% (median
+ * 34), 6 0 to 51 (27), 7 17 to 68 (29), 8 15 to 56 (24), 9 7 to 95 (22). Carrying the realm's
+ * Common elixir and its best sigil, 93 to 100%; the crafter the harness plays, carrying what
+ * it has made by then (a fourth-realm elixir and a Thunder Sigil), 56 to 63% in the fifth.
+ * A tenth heavier, bare medians 7 to 10% and carried 66 to 93%; a tenth lighter, bare 61 to
+ * 68%. Over the whole climb, every habit on five seeds reaches the summit at the table, a
+ * tenth lighter and a tenth heavier (with GATE_EDGE pushed alike), and the ninth realm moves
+ * by −1.7 to +3.0 days against 3e92b8e at the table, −1.7 to +4.0 pushed. The cultivator who
+ * never fights does not move (121, 114, 114, 122, 122).
  */
 export const ELITE_EDGE: readonly number[] = [0, 0, 0, 0, 1.15, 1.25, 1.3, 1.3, 1.35];
 
 /**
  * 關 The vault's last gate from ELITE_RISEN_FROM: never below the walker's own fight. It
- * stands at the greater of its own beast and this multiple of the walker's 力 (by realm,
- * index realm − 1), thinned as any beast is, so a cultivator who has outgrown the realm's
- * commons still meets a real fight at the last door. Measured on five seeds: bare 7 to 34%,
- * with the kit carried 39 to 66%.
+ * stands at the greater of its own beast and GATE_EDGE of the Platform's second challenger's
+ * edge of the walker's 力 (by realm, index realm − 1), thinned as any beast is, so a cultivator
+ * who has outgrown the realm's commons still meets a real fight at the last door; before, it
+ * was 1 to 23% of their power. Measured as ELITE_EDGE is, in the stance held: realm 5 10 to
+ * 37% (median 20), 7 27 to 68 (44), 8 15 to 71 (22), 9 0 to 95 (12); in the best stance held
+ * the sixth realm's reads 0 to 68 (44), where the harness's own stance cannot win it. Carrying
+ * the kit, 41 to 100%. A gate lost walks out keeping everything, and the rooms not reached
+ * stay in the spring.
  */
 export const GATE_EDGE: readonly number[] = [0, 0, 0, 0, 1.2, 1.2, 1.2, 1.2, 1.35];
 
