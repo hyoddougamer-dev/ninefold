@@ -700,7 +700,14 @@ describe('量 what the seal costs each way of playing (tools/seal.ts)', () => {
       console.log(`    ${name}: realm 9 on day ${plain.realm9?.toFixed(1)} without the workshop, ${crafted.realm9?.toFixed(1)} with it`);
       expect(plain.realm9).toBeDefined();
       expect(crafted.realm9).toBeDefined();
-      expect(crafted.sealed.reduce((a, b) => a + b, 0), name).toBe(0);
+      // 精血 Never more than two days in all across the four sealed gates, against three or more for
+      // the one who skips the workshop. It was never at all until the Breakthrough Pill asked for
+      // its realm's Essence Blood (2026-10-18), which only the realm's risen elite leaves, and the
+      // elite walks out a layer before the gate: a crafter who loses its dice that day waits on the
+      // seal a little. Read on five seeds (991, 1234, 5555, 7777, 31337), pressing the elite at any
+      // odds while the pill is short (tools/habits.ts): active 1.33, 0, 0, 0, 0 days; casual 0,
+      // 1.33, 1.0, 1.67, 1.33; the one without the workshop 5.5 to 6.0, and still days slower.
+      expect(crafted.sealed.reduce((a, b) => a + b, 0), name).toBeLessThanOrEqual(2);
       expect(plain.sealed.reduce((a, b) => a + b, 0), name).toBeGreaterThanOrEqual(3);
       expect(plain.realm9! - crafted.realm9!, name).toBeGreaterThan(1);
     }
@@ -743,8 +750,18 @@ describe('量 what paying into the bar changes (tools/seal.ts)', () => {
     const waits = row('active', undefined, true), pays = row('active', 1, true);
     const plain = row('active', 1);
     console.log(`    active with the workshop: day ${waits.realm9?.toFixed(1)} waiting, ${pays.realm9?.toFixed(1)} paying; without it, paying: ${plain.realm9?.toFixed(1)}`);
-    expect(pays.realm9).toBe(waits.realm9);
-    expect(waits.realm9!).toBeLessThan(plain.realm9!);
+    // 精血 Equal until the Breakthrough Pill asked for its realm's Essence Blood (2026-10-18): a
+    // crafter who has not yet won the blood when the gate seals now pays into the bar like anyone,
+    // so paying can only be as quick or quicker, and by a breath (seed 991: 47.3 paying, 47.5
+    // waiting; equal at 1234, 5555, 7777 and 31337).
+    expect(pays.realm9!).toBeLessThanOrEqual(waits.realm9!);
+    expect(waits.realm9! - pays.realm9!).toBeLessThanOrEqual(1);
+    // 量 At this seed the crafter who never pays was a tenth of a day ahead of the one who pays
+    // without the workshop (47.2 against 47.3 on 3e92b8e), a knife's edge; with the pill asking
+    // for the risen elite's blood it is 47.5 against 47.2. Across five seeds (991, 1234, 5555,
+    // 7777, 31337) the workshop is ahead at the other four by 1.5 to 2.6 days, as it was (1.5 to
+    // 2.3). So: never more than half a day behind here, and the seeds are read in the comment.
+    expect(waits.realm9!).toBeLessThan(plain.realm9! + 0.5);
     expect(pays.sealed.reduce((a, b) => a + b, 0)).toBe(0);
   }, 240_000);
 });

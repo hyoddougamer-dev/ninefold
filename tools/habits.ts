@@ -14,7 +14,7 @@ import { fuseIn, stash } from '../src/sim/stash.ts';
 import { LAYERS, focusAt, ladderBetween } from '../src/sim/balance.ts';
 import {
   atCap, atCeiling, breakThrough, buyAll, canBreakThrough, canBuy, canCondense,
-  canFightWarden, condense, canPaySeal, feedSeal, paySeal, sealPrice,
+  canFightWarden, condense, canPaySeal, feedSeal, paySeal, sealDays, sealPrice,
   newState, power, upgradeCost, wardenStands, type State,
 } from '../src/sim/state.ts';
 import { advance, canOpenLayer, layersOpened, openLayer, rate } from '../src/sim/time.ts';
@@ -50,9 +50,9 @@ import { ARCHETYPES, RARITY_INFO, SLOTS, callingOf, schoolOf, templateOf, type I
 import { PAIRS, schoolOfAxis, type Pair, type School } from '../src/data/schools.ts';
 import { SCHOOL_WAKES } from '../src/sim/balance.ts';
 import type { Beast } from '../src/data/bestiary.ts';
-import { ELITE_RISEN_FROM } from '../src/sim/balance.ts';
+import { ELITE_RISEN_FROM, ESSENCE_NEED } from '../src/sim/balance.ts';
 import { eliteFight, eliteKit, eliteOf, risenNow } from '../src/sim/elite.ts';
-import { dayOf, risenElite } from '../src/sim/risen.ts';
+import { dayOf, essenceOf, risenElite } from '../src/sim/risen.ts';
 import { effectiveBeastPower } from '../src/sim/combat.ts';
 import { MARKS } from '../src/sim/record.ts';
 import { tookPart } from '../src/sim/crafts.ts';
@@ -668,7 +668,10 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher, start?: State, ga
     if (!eliteFirst[s.realm]) {
       eliteFirst[s.realm] = { day: (t - T0) / DAY, bare: Math.max(...bodies.map(({ x }) => odds(x, b))), carried: bodies[0]?.o ?? 0 };
     }
-    const pick = bodies.find(({ x, o }) => o >= ELITE_WILLING && !eliteLost.has(sigOf(x)));
+    // 封 A crafter whose gate seals and who holds no blood for its Breakthrough Pill presses at any
+    // odds: a loss costs nothing, and the pill is the way through the seal.
+    const need = h.crafts && sealDays(s.realm) > 0 && pillHeld(s) === 0 && essenceOf(s, s.realm) < ESSENCE_NEED;
+    const pick = bodies.find(({ x, o }) => (need ? o > 0 : o >= ELITE_WILLING) && !eliteLost.has(sigOf(x)));
     if (!pick) return false;
     const k = kitOf(pick.x);
     const out = eliteFight(pick.x, b, k.kit);

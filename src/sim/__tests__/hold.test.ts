@@ -71,9 +71,15 @@ describe('留 hold the layer: off for everyone until it is turned on', () => {
     // road and the door, never the hold, and 875e601, the tree before it, still gives the old
     // digits (active on day 47.667, drives it all 48.5); these are the same habits on this tree
     // with the toggle off. Off still means off: the toggle is false through every walk below.
+    // 升 Taken a fifth time on 2026-10-18, when the elite of the realm stood in rose to the
+    // cultivator's own power from the fifth realm (sim/risen.ts). That touches the hunt, never
+    // the hold: 3e92b8e, the tree before it, still gives the old digits (active 49.5 and 3931
+    // fights at 60968266000, drives it all 49.5 and 29413 at 61713545000). Drives it all ends
+    // weaker here because it can no longer drive the elite of the realm it stands in, which it
+    // used to drive by the thousand for its triple material.
     const was: Record<string, { arrival: number[]; fights: number; power: number }> = {
-      active: { arrival: [0, 0.5, 1, 3.333, 7.667, 14.333, 24.5, 35.667, 49.5], fights: 3931, power: 60968266000 },
-      'drives it all': { arrival: [0, 0.5, 1.167, 3.5, 7.833, 14, 24.167, 35.833, 49.5], fights: 29413, power: 61713545000 },
+      active: { arrival: [0, 0.5, 1, 3.333, 7.667, 14.167, 23.667, 36.333, 48.833], fights: 3903, power: 64744431000 },
+      'drives it all': { arrival: [0, 0.5, 1.167, 3.5, 7.833, 14, 24.667, 37.167, 49.833], fights: 30575, power: 45899247000 },
     };
     for (const [name, want] of Object.entries(was)) {
       const run = play(HABITS.find((h) => h.name === name)!, 120);

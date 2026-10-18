@@ -232,7 +232,6 @@ for (const b of BEASTS) {
 for (let realm = ELITE_RISEN_FROM; realm <= 9; realm++) {
   const elite = commonsOf(realm)[commonsOf(realm).length - 1];
   item({ key: essenceKey(realm), han: '精血', name: 'Essence Blood', kind: 'blood', realm, icon: 'fire-gem',
-    beast: elite?.key,
     does: `Left by ${elite ? `the ${elite.name}, realm ${realm}’s elite` : `realm ${realm}’s elite`}: ${ELITE_ESSENCE} for every one felled. Realm ${realm}’s elixirs, sigils and Breakthrough Pills ask for ${ESSENCE_NEED} each.` });
 }
 

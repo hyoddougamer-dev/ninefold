@@ -829,7 +829,8 @@ export function App() {
           auto={auto && auto.beast.key === battle.beast.key && battle.floor === undefined && !battle.demon
             && battle.challenger === undefined
             ? { kills: auto.kills, gained: Math.max(0, state.materials - auto.from) } : null}
-          onAuto={canAgain && battle.outcome.won && !auto && autoLeft === 0 ? startAuto : undefined}
+          // 升 Never on a risen elite: each of its fights is the day's dice (sim/risen.ts).
+          onAuto={canAgain && battle.outcome.won && !auto && autoLeft === 0 && !battle.risen ? startAuto : undefined}
           autoLeft={canAgain && battle.outcome.won && !auto ? autoLeft : 0}
           onAutoNext={autoNext}
           onStop={stopAuto}
