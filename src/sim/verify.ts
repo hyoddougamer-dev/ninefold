@@ -61,7 +61,9 @@ import { forkTrees } from './fork.ts';
 import { wearSet } from './sets.ts';
 import { pillCost } from './furnace.ts';
 import { LINES } from '../data/alchemy.ts';
-import { BEASTS, wardenOf } from '../data/bestiary.ts';
+import { BEASTS, commonsOf, isElite, wardenOf } from '../data/bestiary.ts';
+import { GATE_ELITE_WEIGHT, GATE_SEAL_MINUTES } from './balance.ts';
+import { gateWeight } from './relicbase.ts';
 import { SLOTS, TEMPLATE_BY_KEY, templateOf, type Item } from '../data/gear.ts';
 import { equip } from './chest.ts';
 import { codexToKeep, hundredFits, keptCovers } from './hundred.ts';
@@ -416,14 +418,32 @@ export function sealSeconds(before: State, after: State): number {
     const qi = bar ? SEAL_PAY_EASY_SHARE * sealDays(r) : 0;
     const lesser = bar ? bestFeed(after, r) : 0;
     if (r === before.realm && before.wardenFell) continue;
+    // 鬥關 And the wins at the gate: every kill of the realm's own beasts between the two
+    // saves, at the most it can count. The server sees the kills and never where they were
+    // made, so it allows them all, as it allows the kit.
+    const fought = foughtDays(before, after, r);
     if (r === before.realm && wardenStands(before)) {
       // What the earlier save had already put in is inside sealLeft; allow only the rest.
       const more = Math.max(0, qi - Math.max(0, before.sealPaid ?? 0) / 86_400)
         + Math.max(0, lesser - Math.max(0, before.sealFed ?? 0) / 86_400);
-      days += sealLeft(before, whole > 0 ? whole : more);
-    } else days += Math.max(0, sealDays(r) - (whole > 0 ? whole : qi + lesser));
+      days += sealLeft(before, whole > 0 ? whole : more + fought);
+    } else days += Math.max(0, sealDays(r) - (whole > 0 ? whole : qi + lesser + fought));
   }
   return days * 86_400;
+}
+
+/**
+ * 鬥關 The days of realm r's seal the kills between two saves could have filled at its gate:
+ * each kill of one of its commons at GATE_SEAL_MINUTES, the elite's at GATE_ELITE_WEIGHT
+ * times that, and the gate relics the later save holds on top. Never more than the seal.
+ */
+export function foughtDays(before: State, after: State, r: number): number {
+  let wins = 0;
+  for (const b of commonsOf(r)) {
+    const n = Math.max(0, (after.killed[b.key] ?? 0) - (before.killed[b.key] ?? 0));
+    wins += n * (isElite(b) ? GATE_ELITE_WEIGHT : 1);
+  }
+  return Math.min(sealDays(r), (wins * gateWeight(after) * GATE_SEAL_MINUTES) / 1440);
 }
 
 /** 封 Whether a save carries the bar's fields: one written by a game that had the bar. */

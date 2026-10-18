@@ -50,6 +50,8 @@ import { ARCHETYPES, RARITY_INFO, SLOTS, callingOf, schoolOf, templateOf, type I
 import { PAIRS, schoolOfAxis, type Pair, type School } from '../src/data/schools.ts';
 import { SCHOOL_WAKES } from '../src/sim/balance.ts';
 import type { Beast } from '../src/data/bestiary.ts';
+import { canMakeRelic, made as relicMade, makeRelic, relicMaterial, relicSeen, shardsHeld } from '../src/sim/relics.ts';
+import { shardBeast, shardsFor } from '../src/data/relics.ts';
 
 /**
  * 承 What a worn piece is worth with its place's refining on it, for choosing the place
@@ -178,6 +180,19 @@ export interface Habit {
    * a player who wants their qi for upgrades is after. tools/habits.ts HOLDER plays it.
    */
   readonly holds?: boolean;
+  /**
+   * 神器 Whether they go back for the relics: once the realm a relic belongs to is left, the
+   * hunt (and the drives, for somebody who drives) goes to that relic's shard beast, the
+   * oldest unmade relic first, while it is safe. Everybody makes a relic the moment its
+   * shards and material are held (NF_NO_RELICS=1 turns that off, to measure what it costs).
+   */
+  readonly chases?: boolean;
+  /**
+   * 生 Seconds added to the instant this cultivator was begun. The relic shards are rolled
+   * off it (as the meetings and the vault's paths are), so without it every seed rolls the
+   * same shards on the same kills; tools/relics.ts gives each seed its own.
+   */
+  readonly born?: number;
   /** One line for the page: who this is. */
   readonly who: string;
   /** 道 The branch they walk, bought the moment the points allow. */
@@ -332,6 +347,10 @@ export interface Run {
    * floors in that realm, in hours of the rate on the bar and in rungs of the rung then
    * standing. `floors[f]` is the rung (layersOpened) floor f fell at.
    */
+  /** 神器 The day each realm's relic was made (index 0 the first realm), or NaN if it never was. */
+  readonly relicDays: readonly number[];
+  /** 神器 The day each realm's relic was seen: its warden's first fall, which leaves the first shard. */
+  readonly relicSeenDays: readonly number[];
   readonly tower: {
     readonly qi: number;
     readonly byRealm: readonly number[];
@@ -585,6 +604,7 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher, start?: State, ga
   // 轉世 Every day below is counted from here: T0, or the instant a given start stands at.
   const T0 = start?.at ?? EPOCH;
   let s = start ?? newState(T0);
+  if (h.born && !start) s = { ...s, startedAt: s.startedAt - h.born };
   if (h.holds) s = { ...s, hold: true };
   let t = T0;
   const tick = DAY / h.checks;
@@ -613,6 +633,19 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher, start?: State, ga
   const floorRung: number[] = [];
   const bouts = [0, 0, 0];
   let periods = 0, lastPeriod = -1;
+  const relicDays: number[] = new Array(9).fill(NaN);
+  const relicSeenDays: number[] = new Array(9).fill(NaN);
+  /** 神器 The shard beast a chaser goes back for: the oldest relic seen and not made, of a realm already left. */
+  const chaseTarget = (x: State): Beast | undefined => {
+    if (!h.chases) return undefined;
+    for (let r = 1; r <= 9; r++) {
+      if (r >= x.realm && r !== 9) break;
+      if (!relicSeen(x, r) || relicMade(x, r) || shardsHeld(x, r) >= shardsFor(r)) continue;
+      const b = shardBeast(r);
+      if (odds(x, b) > 0.7) return b;
+    }
+    return undefined;
+  };
   const tried = new Set<string>();
   /** Qi that left the save on an action (a purchase, a pill, a drive, a price on the road). */
   const spend = (next: State): State => { led.spent += Math.max(0, s.qi - next.qi); return next; };
@@ -799,7 +832,7 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher, start?: State, ga
       fights++;
     }
     for (let i = 0; i < h.hunts; i++) {
-      const b = quarryFor(s, h.calling);
+      const b = chaseTarget(s) ?? quarryFor(s, h.calling);
       if (!b) break;
       s = quarried(s, takeKill(s, b));
       if (h.gear) s = takeDrop(s, b, ++seed, h.calling);
@@ -812,7 +845,7 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher, start?: State, ga
     // being asked is what the *worst* case does to the climb, not what a careful
     // player does.
     if (h.drives) for (let i = 0; i < 40; i++) {
-      const b = [...huntable(s.realm, s.layer)].reverse().find((x) => canDrive(s, x));
+      const b = [chaseTarget(s), ...[...huntable(s.realm, s.layer)].reverse()].find((x) => x && canDrive(s, x));
       if (!b) break;
       // Stuck at a ceiling with a warden they cannot beat, qi has nowhere else to go,
       // so it all goes here. Otherwise they keep one rung of headroom and drive the
@@ -901,6 +934,17 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher, start?: State, ga
           s = { ...s, worn: after.worn, chest: [...after.chest] };
         }
       }
+    }
+
+    // 神器 A relic is made the moment its shards and its material are held, keeping back
+    // what a 妖丹 core costs, as the refining below does.
+    if (process.env.NF_NO_RELICS !== '1') for (let r = 1; r <= 9; r++) {
+      const keep = isOpen(s.realm, 'cores') && canBuy(s, 'cores') ? upgradeCost(s, 'cores') : 0;
+      if (canMakeRelic(s, r) && s.materials - relicMaterial(r) >= keep) s = makeRelic(s, r);
+    }
+    for (let r = 1; r <= 9; r++) {
+      if (Number.isNaN(relicDays[r - 1]) && relicMade(s, r)) relicDays[r - 1] = (t - T0) / DAY;
+      if (Number.isNaN(relicSeenDays[r - 1]) && relicSeen(s, r)) relicSeenDays[r - 1] = (t - T0) / DAY;
     }
 
     // 拆 And on a visit, the junk goes. A cultivator who picks gear up is a cultivator
@@ -992,7 +1036,7 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher, start?: State, ga
     reached: s.realm, done: layersOpened(s) >= LAYERS - 1, power: power(s),
     qi: { gained: s.qi + led.ladder + led.spent, drunk: led.drunk, incense: led.incense, platform: led.platform,
       quarry: led.quarry },
-    beats, quarries, bouts, periods,
+    beats, quarries, bouts, periods, relicDays, relicSeenDays,
     tower: (() => {
       const total = s.qi + led.ladder + led.spent;
       const gained = towerBy.map((_, r) => {

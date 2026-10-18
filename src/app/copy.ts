@@ -464,8 +464,15 @@ export const CULTIVATE = {
   sealBar: (served: number) => `Seal ${percent(served)} filled`,
   sealServed: '封 The seal has run out. The gate is open.',
   /** 封 What has filled the bar so far, one word for each way. */
-  sealLegend: (time: number, qi: number, pills: number) =>
-    `Filled by time ${duration(time * 86_400)} · qi ${qi > 0 ? duration(qi * 86_400) : 'none'} · pills ${pills > 0 ? duration(pills * 86_400) : 'none'}`,
+  sealLegend: (time: number, qi: number, pills: number, fights = 0) =>
+    `Filled by time ${duration(time * 86_400)} · fights ${fights > 0 ? duration(fights * 86_400) : 'none'} · qi ${qi > 0 ? duration(qi * 86_400) : 'none'} · pills ${pills > 0 ? duration(pills * 86_400) : 'none'}`,
+  /**
+   * 鬥關 The gate as effort (2026-10-18): every win over this realm's own beasts while the
+   * warden stands fills the seal and loosens the wall. Said once, under the bar and the wall.
+   */
+  gateFights: (minutes: number, elite: number, wins: number, double: boolean) =>
+    `鬥關 Every win over this realm’s beasts while the warden waits fills ${minutes} min of the seal and loosens the bottleneck by as much. The elite counts ${elite} times${double ? ', and your relic doubles it all' : ''}. `
+    + (wins > 0 ? `Your wins here count for ${duration(wins * minutes * 60)} so far.` : 'Hunt or drive to break it sooner, or wait: time still opens it.'),
   /** 封 Pay qi into the bar: the button, what it fills, and why it may be out of reach. */
   sealPay: (price: string) => `Pay ${price} qi`,
   sealPayFills: (days: number) => `fills ${duration(days * 86_400)}`,
@@ -3374,3 +3381,34 @@ export const QOL = {
     bought: (n: number) => `${n} ${n === 1 ? 'level' : 'levels'}`,
   },
 };
+
+/**
+ * 神器 The relics (2026-10-18): one for each realm, a handful of shards and an enormous heap
+ * of 材 material. Everything a player reads about them, on the hunt and after a fight.
+ */
+export const RELIC = {
+  head: 'Relics',
+  band: (made: number, shards: number) => `${made} of 9 made · ${shards} ${shards === 1 ? 'shard' : 'shards'} held`,
+  open: 'Show',
+  close: 'Hide',
+  intro: (one: number, bond: number) =>
+    `One relic for each realm. Its warden leaves the first shard when it falls; the rest come from the realm’s elite, about one kill in ${one.toLocaleString('en-GB')}. `
+    + `The win that fills a beast’s bond bar is ${bond} times likelier to leave one, and each deep mark on the elite adds half again. Shards are never lost.`,
+  unseen: (realm: number) => `Realm ${realm}. Beat its warden to find this relic.`,
+  shards: (have: number, need: number, name: string) => `${have} of ${need} · ${name}`,
+  from: (beast: string) => `from the ${beast}`,
+  material: (need: string, short: boolean) => `${need} 材 material${short ? ', more than you hold' : ''}`,
+  chance: (one: number) => `About 1 in ${one.toLocaleString('en-GB')} on your next kill of it.`,
+  make: 'Make it',
+  made: 'Made',
+  gift: (gift: 'power' | 'gate' | 'seek', power: number, seek: number) =>
+    gift === 'gate' ? `+${percent(power)} power, and every win at a sealed gate counts twice`
+      : gift === 'seek' ? `+${percent(power)} power, and every shard is ${percent(seek)} likelier`
+        : `+${percent(power)} power`,
+  /** 片 On the hunt row of a beast that leaves shards. */
+  rowTag: (have: number, need: number) => `片 ${have}/${need} shards`,
+  rowLabel: (have: number, need: number, relic: string) => `Relic shards: ${have} of ${need} for the ${relic}`,
+  /** 片 After a fight or a drive that left one. */
+  fell: (shard: string, relic: string) => `片 A ${shard} fell: part of the ${relic}.`,
+  fellMany: (n: number) => `片 ${n} relic ${n === 1 ? 'shard' : 'shards'} fell.`,
+} as const;

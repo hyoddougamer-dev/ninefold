@@ -40,7 +40,7 @@ import { rollSecondaries } from './drops.ts';
 import { limitFor, stash } from './stash.ts';
 import { NO_KIT, type Kit } from './kit.ts';
 import type { State } from './state.ts';
-import { sealFought, wallFought } from './relics.ts';
+import { sealFought, wallFought } from './relicbase.ts';
 import {
   bestHundred, codexValue, hundredKit, orderNeeds, orderRecipe, piecesMade, pieceOf, setOpen, validHundredMade, validOrder,
   type Order,

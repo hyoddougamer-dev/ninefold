@@ -8,39 +8,18 @@
  * harness see exactly the same shards because all three take a kill through takeKill or
  * drive, which call shardOn below.
  */
-import { GATE_ELITE_WEIGHT, GATE_SEAL_MINUTES, GATE_WALL_MINUTES, RELIC_BOND_TILT, RELIC_DEEP_TILT, RELIC_MATERIAL_KILLS,
-  RELIC_SHARD_GIFT, RELIC_SHARD_ODDS, LAYERS_PER_REALM } from './balance.ts';
-import { RELICS, relicOf, relicPowerOf, shardBeast, shardWarden, shardsFor, type RelicGift } from '../data/relics.ts';
+import { GATE_ELITE_WEIGHT, RELIC_BOND_TILT, RELIC_DEEP_TILT, RELIC_MATERIAL_KILLS, RELIC_SHARD_ODDS, LAYERS_PER_REALM } from './balance.ts';
+import { shardBeast, shardWarden, shardsFor } from '../data/relics.ts';
 import { isElite, type Beast } from '../data/bestiary.ts';
 import { deepOf } from './record.ts';
 import { loot } from './combat.ts';
 import { fateDue } from './fate.ts';
 import type { State } from './state.ts';
+import { gateWeight, made, relicsOf, seekBonus, shardsHeld } from './relicbase.ts';
 
-/** 神器 What a save holds of the relics: shards by realm (index 0 is the first), and the realms whose relic is made. */
-export interface Relics {
-  readonly shards: readonly number[];
-  readonly made: readonly number[];
-}
+export { GATE_WEIGHT_MOST, NO_RELICS, gateWeight, made, relicPower, relicsOf, sealFought, seekBonus, shardsHeld, wallFought,
+  type Relics } from './relicbase.ts';
 
-export const NO_RELICS: Relics = { shards: [0, 0, 0, 0, 0, 0, 0, 0, 0], made: [] };
-
-export function relicsOf(s: { relics?: Relics }): Relics {
-  return s.relics ?? NO_RELICS;
-}
-
-export function made(s: { relics?: Relics }, realm: number): boolean {
-  return relicsOf(s).made.includes(realm);
-}
-
-export function shardsHeld(s: { relics?: Relics }, realm: number): number {
-  return relicsOf(s).shards[realm - 1] ?? 0;
-}
-
-/** How many relics of a kind are made. */
-function giftCount(s: { relics?: Relics }, gift: RelicGift): number {
-  return relicsOf(s).made.filter((r) => relicOf(r).gift === gift).length;
-}
 
 /**
  * 神器 Whether the chase for a realm's relic has begun: its warden has fallen. Until then no
@@ -55,25 +34,6 @@ export function relicsOpen(s: State): boolean {
   return relicSeen(s, 1);
 }
 
-/** What all the made relics add to power, multiplied. 1 with none. */
-export function relicPower(s: { relics?: Relics }): number {
-  let p = 1;
-  for (const r of relicsOf(s).made) p *= 1 + relicPowerOf(r);
-  return p;
-}
-
-/** 尋 What the seeking relics add to every shard chance, as a share. */
-export function seekBonus(s: { relics?: Relics }): number {
-  return RELIC_SHARD_GIFT * giftCount(s, 'seek');
-}
-
-/** 鬥關 What one win at a gate counts for, with the gate relics made: 1, 2 or 3. */
-export function gateWeight(s: { relics?: Relics }): number {
-  return 1 + giftCount(s, 'gate');
-}
-
-/** The most gateWeight can ever be: every gate relic made. 驗 the server reads it. */
-export const GATE_WEIGHT_MOST = 1 + RELICS.filter((r) => r.gift === 'gate').length;
 
 /**
  * 片 The chance this kill of this beast leaves a shard, read before the kill is counted:
@@ -171,12 +131,3 @@ export function gateOn(s: State, b: Beast, n = 1): State {
   return { ...s, gateWins: Math.max(0, s.gateWins ?? 0) + n * gateWinWorth(s, b) };
 }
 
-/** 鬥關 The days of the seal's bar the wins at this gate have filled. */
-export function sealFought(s: State): number {
-  return (Math.max(0, s.gateWins ?? 0) * GATE_SEAL_MINUTES) / 1440;
-}
-
-/** 鬥關 The days of the bottleneck's loosening the wins at this gate count for. */
-export function wallFought(s: State): number {
-  return (Math.max(0, s.gateWins ?? 0) * GATE_WALL_MINUTES) / 1440;
-}

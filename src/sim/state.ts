@@ -26,7 +26,7 @@ import { NO_CRAFTS, eatPill, feedShare, unsealCarried, type Crafts } from './cra
 import { type ChestFilter } from './filters.ts';
 import { echoFactor, type Life } from './echo.ts';
 import { seasonAt } from './season.ts';
-import { NO_RELICS, relicPower, sealFought, type Relics } from './relics.ts';
+import { NO_RELICS, relicPower, sealFought, type Relics } from './relicbase.ts';
 
 /** The four things qi is spent on. All of them multiply; none of them is ever lost. */
 export type Upgrade = 'technique' | 'method' | 'pills' | 'cores';

@@ -1,3 +1,4 @@
+import { makeRelic } from '../sim/relics.ts';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { limitFor, stash } from '../sim/stash.ts';
 import { pictureOf } from '../data/pictures.ts';
@@ -733,6 +734,7 @@ export function App() {
             onAuto={(key) => autoFrom(byKey[key])}
             onSecret={() => { setState((s) => enterSecret(s)); sfx.tap(); }}
             onKey={() => { setState((s) => enterSecret(useKey(s))); sfx.buy(); haptics.strike(); }}
+            onMakeRelic={(realm) => { setState((s) => makeRelic(s, realm)); sfx.buy(); haptics.strike(); }}
           />
         )}
         {tab === 'trials' && <Trials state={state} onFloor={climbTower} onBrew={onBrew}

@@ -14,7 +14,7 @@ import {
 
 import { BEASTS, commonsOf } from '../data/bestiary.ts';
 import { shardBeast, shardWarden, shardsFor } from '../data/relics.ts';
-import { GATE_WEIGHT_MOST, type Relics } from './relics.ts';
+import { GATE_WEIGHT_MOST, type Relics } from './relicbase.ts';
 import { GATE_ELITE_WEIGHT, GATE_SEAL_MINUTES, GATE_WALL_MINUTES } from './balance.ts';
 import { figureOf } from '../data/figures.ts';
 import {

@@ -16,7 +16,9 @@ import { Term } from '../ui/Term.tsx';
 import { schoolSays } from '../classes.ts';
 import { Door } from '../ui/Secret.tsx';
 import { isOpen } from '../../sim/unlocks.ts';
-import { HUNT, PILE, QOL, UNIT } from '../copy.ts';
+import { HUNT, PILE, QOL, RELIC, UNIT } from '../copy.ts';
+import { Relics, shardTag } from '../ui/Relics.tsx';
+import { relicsOpen as relicsShown } from '../../sim/relics.ts';
 import { Bestiary } from './Bestiary.tsx';
 import { DriveTag } from '../ui/Drive.tsx';
 import { canDrive } from '../../sim/hunt.ts';
@@ -47,8 +49,10 @@ import { WARDEN_EVEN } from '../guide.ts';
 type HuntOrder = 'mark' | 'strong' | 'material';
 const ORDER_KEY = 'ninefold.huntorder';
 
-export function Hunt({ state, onFight, onDrive, onPile, onAuto, onSecret, onKey }: {
+export function Hunt({ state, onFight, onDrive, onPile, onAuto, onSecret, onKey, onMakeRelic }: {
   state: State;
+  /** 神器 Make the relic of this realm, its shards and material held. */
+  onMakeRelic?: (realm: number) => void;
   onFight: (key: string) => void;
   /** 圍 Open the drive sheet for a beast you have 熟 Known. */
   onDrive: (key: string) => void;
@@ -62,6 +66,7 @@ export function Hunt({ state, onFight, onDrive, onPile, onAuto, onSecret, onKey 
   onKey: () => void;
 }) {
   const [record, setRecord] = useState(false);
+  const [relicsOpen, setRelicsOpen] = useRemembered<boolean>('hunt.relics', false, (x): x is boolean => typeof x === 'boolean');
   const seen = BEASTS.filter((b) => (state.killed[b.key] ?? 0) > 0).length;
   const tally = recordTally(state.killed);
   // 器 Nothing falls before gear opens, so the row says nothing about it either.
@@ -240,6 +245,11 @@ export function Hunt({ state, onFight, onDrive, onPile, onAuto, onSecret, onKey 
           a question that expires on Monday. Two different questions, two places. */}
       <QuarryBand state={state} onFight={onFight} />
 
+      {/* 神器 The relics, from the day the first warden falls: the long chase of every realm. */}
+      {relicsShown(state) && onMakeRelic && (
+        <Relics state={state} open={relicsOpen} onToggle={() => setRelicsOpen(!relicsOpen)} onMake={onMakeRelic} />
+      )}
+
       <div className="huntrow">
         <h2 className="heading">{HUNT.reach(sorted.length, beatable)}</h2>
         <div className="huntorder" role="group" aria-label={HUNT.orderBy}>
@@ -318,6 +328,11 @@ export function Hunt({ state, onFight, onDrive, onPile, onAuto, onSecret, onKey 
                   <span className="etag"><b className="cjk">{HUNT.elite(ELITE_LOOT).han}</b>
                     <i>{HUNT.elite(ELITE_LOOT).name} · {HUNT.elite(ELITE_LOOT).note}</i></span>
                 )}
+                {/* 片 A beast whose kills leave relic shards says how many its relic holds. */}
+                {(() => {
+                  const t = shardTag(state, b.key);
+                  return t && <span className="stag" aria-label={RELIC.rowLabel(t.have, t.need, t.relic)}>{RELIC.rowTag(t.have, t.need)}</span>;
+                })()}
                 {/* 註 The pips are the characters, so they are the tappable ones. A
                     second copy of 見 in the sentence beside them was the screen naming
                     the same thing twice on the same line. */}

@@ -22,7 +22,8 @@ import { DEMON_KEY } from './seclusion.ts';
 import { hasBoon } from '../data/meetings.ts';
 import { NO_KIT, type Kit } from './kit.ts';
 import { codexFoe, codexValue } from './hundred.ts';
-import { gateOn, shardOn, wallFought } from './relics.ts';
+import { gateOn, shardOn } from './relics.ts';
+import { wallFought } from './relicbase.ts';
 
 export { NO_KIT, type Kit };
 export { isElite };

@@ -2913,11 +2913,11 @@ export const RUNG_AT: readonly number[] = [0, 9, 27, 45, 63, 81, 85, 90, 100];
  *
  * Measured with tools/relics.ts (see the bible's 神器 section for the table).
  */
-export const RELIC_SHARD_ODDS = 1 / 3000;
+export const RELIC_SHARD_ODDS = 1 / 6000;
 export const RELIC_BOND_TILT = 6;
 export const RELIC_DEEP_TILT = 0.5;
 export const RELIC_SHARDS: readonly number[] = [3, 3, 4, 4, 5, 5, 6, 6, 7];
-export const RELIC_MATERIAL_KILLS = 4000;
+export const RELIC_MATERIAL_KILLS = 20000;
 export const RELIC_POWER: readonly number[] = [0.03, 0.04, 0.04, 0.05, 0.05, 0.06, 0.06, 0.07, 0.08];
 export const RELIC_SHARD_GIFT = 0.25;
 
