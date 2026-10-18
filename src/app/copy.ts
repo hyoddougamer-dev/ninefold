@@ -2692,7 +2692,7 @@ export const BESTIARY = {
  */
 export const TROPHY = {
   /** The hunt row, while this bar's trophy is still somewhere ahead. */
-  odds: (name: string, oneIn: string, left: string) => `${name}: 1 in ${oneIn} a kill, found by ${left} more`,
+  odds: (name: string, oneIn: string, left: string) => `${name}: 1 in ${oneIn} a kill, certain within ${left}`,
   /** The hunt row, once this bar's trophy has fallen. */
   fallen: (name: string, left: string) => `${name} found in this bar. The next bar starts in ${left} kills`,
   held: (n: number) => `${n} held`,

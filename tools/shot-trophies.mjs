@@ -56,9 +56,9 @@ function cultivator(extra = {}) {
     qi: 1e15, materials: 2e9, wardenFell: true, sealPaid: 0, sealFed: 0,
     levels: { technique: 54, method: 54, pills: 54, cores: 48 }, killed,
     worn: { weapon: { id: 'w', template: 'sword9', rarity: 'heaven', rolls: [{ affix: 'power', value: 60 }] } },
-    chest: [], self: 'woman', stance: 'swift', sequence: ['crane', 'tiger'], tribulation: 3, tribulationAt: 0,
+    chest: [], self: 'woman', stance: 'swift', sequence: ['crane', 'tiger'], tribulation: 0, tribulationAt: 0,
     tower: 70, brewed: { body: 40, bane: 30, fortune: 10 }, quarryWeek: 99999,
-    awakened: [],
+    awakened: ['feast', 'wolf', 'slaughter', 'platform', 'hoard', 'dew', 'taotie', 'onethought'],
     seen: ['guide', 'marks', 'reach', 'tree', 'stance', 'gear', 'tower', 'keystones',
            'bestiary', 'salvage', 'fuse', 'whom', 'cave', 'secret', 'crafts', 'seal'],
     trophy: { used: { rat: 1, hound: 1, frog: 1 }, made: {}, gilt: [1], kept: [] },
@@ -101,6 +101,7 @@ const plant = async (save) => {
   await page.waitForSelector('nav.tabs button', { timeout: 15000 });
   await page.waitForTimeout(700);
   await clear();
+  await page.mouse.move(1, 1);
 };
 
 let shots = 0;
@@ -146,6 +147,9 @@ if (fold) {
   await page.waitForTimeout(500);
   const book = (await page.$('.tbook')) ? '.tbook' : 'button.fold';
   await from('bestiary-book', book, 1250);
+  // 鎏 The third realm's page: whole, with a spare of each, ready for the forge.
+  const pages = await page.$$('.tpage');
+  if (pages[2]) { await pages[2].scrollIntoViewIfNeeded(); await pages[2].screenshot({ path: `${dir}/bestiary-gild.png` }); console.log(`${dir}/bestiary-gild.png`); shots++; }
 }
 
 // 圍 The drive sheet on the squid, before, and after a drive of 200 that crosses its trophy.
@@ -161,11 +165,11 @@ for (const r of rows) {
 }
 if (opened) {
   await page.waitForTimeout(500);
-  await shot('drive-before', '.drivesheet');
+  await from('drive-before', '.drivesheet', 760);
   const sizes = await page.$$('.drivesheet button.size');
   for (const b of sizes) if ((await b.textContent())?.trim().startsWith('200')) { await b.click(); break; }
   await page.waitForTimeout(700);
-  await shot('drive-after', '.drivesheet');
+  await from('drive-after', '.drivesheet', 560);
 } else console.log('(no squid drive tag)');
 
 await browser.close();
