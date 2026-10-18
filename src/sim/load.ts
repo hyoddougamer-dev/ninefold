@@ -36,10 +36,10 @@ import {
 } from '../data/secret.ts';
 import {
   DRIVE_PILE, INCENSE_HOLD, MELT_CAP, PLATFORM_EDGE, PLATFORM_REALM, SEAL_PAY_SHARE, SEAL_PILL_SHARE,
-  LIVES_MAX, SECLUSION, SHRINE_DAO_PER_REALM, SPRING_HOLD
+  LIVES_MAX, GATE_STRIKE_SHARE, SECLUSION, SHRINE_DAO_PER_REALM, SPRING_HOLD
 } from './balance.ts';
 import { demonsFor } from './seclusion.ts';
-import { shortestDoorGap, validCrafts } from './crafts.ts';
+import { shortestDoorGap, validCrafts, wallDays } from './crafts.ts';
 import { keptByFilter, validFilters } from './filters.ts';
 import { FORGED, HUNDRED_RANKS, ITEM_BY_KEY, RECIPE_BY_KEY, type HundredRank } from '../data/crafts.ts';
 import { backHundred, bandTop, validKept } from './hundred.ts';
@@ -375,6 +375,12 @@ export function validate(raw: unknown, now: number): State {
     // 封 The bar's fills: only at a sealed gate, and never more than the most each can be.
     // A save from before the bar has none, and keeps having none until the game writes one.
     ...(o.sealPaid === undefined && o.sealFed === undefined ? {} : sealFills(o, realm, layer)),
+    // 擊 The hard wins counted at the gate: only while a warden stands below the summit, and
+    // never more than GATE_STRIKE_SHARE of the longer of its seal and its wall's loosening.
+    ...(o.gateStruck === undefined ? {} : {
+      gateStruck: realm < 9 && layer >= LAYERS_PER_REALM - 1
+        ? clamp(num(o.gateStruck, 0), 0, GATE_STRIKE_SHARE * Math.max(sealDays(realm), wallDays(realm)) * 86_400) : 0,
+    }),
     levels,
     killed,
     worn: Object.fromEntries(Object.entries(worn).map(([k, it]) => [k, marks(it as Item)])) as Worn,

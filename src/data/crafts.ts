@@ -30,6 +30,7 @@ import {
   CRAFT_HOURS_TO_CAP, CRAFT_KIT, CRAFT_KIT_WORK, CRAFT_LONG_WATCH_HOURS, CRAFT_MARKS, CRAFT_QUALITY, CRAFT_QUALITY_MULT, CRAFT_SECONDS,
   CRAFT_TOOL_STEPS, DRAGON_KIT_SHARE, BREAKTHROUGH_LEVEL,
   HUNDRED_ELITE_PARTS, HUNDRED_INGOTS, HUNDRED_LEVEL, HUNDRED_LEVEL_TOP, HUNDRED_SECONDS, HUNDRED_WARDEN_PARTS,
+  LEGEND_DAYS, LEGEND_LEVEL, LEGEND_MASTERED, LEGEND_POWER, LEGEND_SPEED,
 } from '../sim/balance.ts';
 import { opensAt, type System } from '../sim/unlocks.ts';
 
@@ -141,7 +142,7 @@ export function levelOf(xp: number): number {
 
 /* ── 物 Materials ─────────────────────────────────────────────────────────── */
 
-export type ItemKind = 'herb' | 'ore' | 'part' | 'metal' | 'elixir' | 'sigil' | 'array' | 'key';
+export type ItemKind = 'herb' | 'ore' | 'part' | 'metal' | 'elixir' | 'sigil' | 'array' | 'key' | 'soul' | 'legend';
 
 export interface CraftItem {
   readonly key: string;
@@ -229,7 +230,9 @@ export type Makes =
   | { readonly kind: 'tool'; readonly skill: SkillKey; readonly step: number }
   | { readonly kind: 'gear'; readonly template: string; readonly beast: string }
   /** 百煉 A Hundredfold piece of a realm's set, for one place, at a rank the forge chose. */
-  | { readonly kind: 'hundred'; readonly realm: number; readonly slot: Slot; readonly rarity: HundredRank };
+  | { readonly kind: 'hundred'; readonly realm: number; readonly slot: Slot; readonly rarity: HundredRank }
+  /** 傳說 A craft's legendary work: made once, forged over days, struck shorter by hard wins. */
+  | { readonly kind: 'legend'; readonly skill: SkillKey };
 
 export interface Recipe {
   readonly key: string;
@@ -640,6 +643,58 @@ REALM_SETS.forEach((set, i) => {
 });
 
 /**
+ * 傳說 The legendary works, one at the top of each craft (Bruno, 2026-10-18). Every number is
+ * in balance.ts (LEGEND_*); the rules are in sim/legend.ts. A work is a recipe like any other
+ * on the screen, in its craft's own Legendary list, so it is seen, with what it asks for and
+ * what is held beside it, from the day the craft opens: the long goal is never hidden.
+ *
+ * What it asks for is the late realms' own material in heaps a craft gathers over days, the
+ * parts of a late warden, and 精魄 Elite Souls (SOUL), which nothing makes: one win in
+ * LEGEND_SOUL_EVERY over the elite of the realm one stands in leaves one.
+ */
+export const SOUL = 'soul';
+item({ key: SOUL, han: '精魄', name: 'Elite Soul', kind: 'soul', realm: 9, icon: 'floating-ghost',
+  does: 'Left by one win in many over the elite of the realm you stand in. Only a legendary work asks for it.' });
+
+export const legendKey = (skill: SkillKey) => `legend:${skill}`;
+export interface LegendInfo {
+  readonly skill: SkillKey;
+  readonly han: string;
+  readonly name: string;
+  readonly icon: string;
+  readonly realm: number;
+  readonly needs: readonly (readonly [string, number])[];
+}
+export const LEGENDS: readonly LegendInfo[] = [
+  { skill: 'herb', han: '神農百草經', name: 'Shennong’s Herbal', icon: 'spell-book', realm: 8,
+    needs: [['beard', 15000], ['vine', 15000], ['fern', 15000], [partKey('jiao'), 30], [SOUL, 10]] },
+  { skill: 'vein', han: '息壤', name: 'Living Soil', icon: 'crystal-shrine', realm: 8,
+    needs: [['voidcrystal', 15000], ['thunderore', 15000], ['starfall', 15000], [partKey('golem'), 30], [SOUL, 10]] },
+  { skill: 'render', han: '庖丁解牛圖', name: 'Cook Ding’s Chart', icon: 'scroll-unfurled', realm: 8,
+    needs: [[partKey('minotaur'), 5000], [partKey('gargoyle'), 5000], [partKey('skeleton'), 5000], [partKey('direwolf'), 30], [SOUL, 10]] },
+  { skill: 'alchemy', han: '八卦爐', name: 'Eight-Trigram Furnace', icon: 'cauldron', realm: 8,
+    needs: [['beard', 20000], ['cinnabar', 10000], [metalKey(8), 2000], [partKey('jiao'), 40], [SOUL, 15]] },
+  { skill: 'forge', han: '干將莫邪', name: 'Ganjiang and Moye', icon: 'hook-swords', realm: 8,
+    needs: [[metalKey(8), 4000], [metalKey(7), 4000], [partKey('minotaur'), 2000], [partKey('jiao'), 40], [SOUL, 15]] },
+  { skill: 'sigil', han: '河圖', name: 'The River Chart', icon: 'burning-book', realm: 8,
+    needs: [['bark', 20000], ['cinnabar', 20000], [partKey('wraith'), 2000], [partKey('jiao'), 40], [SOUL, 20]] },
+  { skill: 'array', han: '周天星斗陣', name: 'Array of the Circling Stars', icon: 'galaxy', realm: 9,
+    needs: [['stone', 30000], [metalKey(9), 2000], [metalKey(8), 3000], [partKey('jiao'), 50], [SOUL, 25]] },
+];
+export const LEGEND_BY_SKILL: Readonly<Record<SkillKey, LegendInfo>> =
+  Object.fromEntries(LEGENDS.map((l) => [l.skill, l])) as Record<SkillKey, LegendInfo>;
+/** 傳說 What a legendary work does, read off balance.ts so the sentence and the number are one. */
+export const legendDoes = (skill: SkillKey) =>
+  `Made once, kept for good: power ×${(1 + LEGEND_POWER).toFixed(2)}, and ${SKILL_BY_KEY[skill].name} ${Math.round(LEGEND_SPEED * 100)}% faster.`;
+for (const l of LEGENDS) {
+  const key = legendKey(l.skill);
+  item({ key, han: l.han, name: l.name, kind: 'legend', realm: l.realm, icon: l.icon, does: legendDoes(l.skill) });
+  recipe({ key, skill: l.skill, group: 'Legendary', han: l.han, name: l.name, level: LEGEND_LEVEL[l.skill], realm: l.realm,
+    seconds: LEGEND_DAYS[l.skill] * 86_400, needs: l.needs, makes: { kind: 'legend', skill: l.skill }, graded: false,
+    does: `${legendDoes(l.skill)} Asks for ${LEGEND_MASTERED} ${SKILL_BY_KEY[l.skill].name} recipes mastered.` });
+}
+
+/**
  * 經 Experience, from one number.
  *
  * A recipe pays in proportion to its time and grows with its level, and each craft's
@@ -652,7 +707,8 @@ export const RECIPES: readonly Recipe[] = (() => {
   const scale: Record<string, number> = {};
   for (const s of SKILLS) {
     // 百煉 The Hundredfold pieces are left out too: a goal beside the craft, not a step of it.
-    const mine = draft.filter((r) => r.skill === s.key && r.group !== 'Tools' && r.group !== 'Hundredfold');
+    // 傳說 And the legendary works, which pay no experience at all (see below).
+    const mine = draft.filter((r) => r.skill === s.key && r.group !== 'Tools' && r.group !== 'Hundredfold' && r.makes.kind !== 'legend');
     let hours = 0;
     for (let l = 1; l < LEVEL_CAP; l++) {
       const best = Math.max(...mine.filter((r) => r.level <= l).map((r) => r.level));
@@ -664,6 +720,9 @@ export const RECIPES: readonly Recipe[] = (() => {
   // recipe pays one or two.
   return draft.map((r) => {
     const weight = r.weight ?? 1;
+    // 傳說 A legendary work pays nothing and earns no mark: its days are struck shorter by
+    // fights, and experience a fight paid would be experience no clock could bound.
+    if (r.makes.kind === 'legend') return { ...r, weight, marks: CRAFT_MARKS.map(() => Infinity), xp: 0 };
     return { ...r, weight, marks: CRAFT_MARKS.map((m) => Math.max(1, Math.ceil(m / weight))),
       xp: Math.max(0.1, Math.round(scale[r.skill] * r.seconds * growth(r.level) * 10) / 10) };
   });

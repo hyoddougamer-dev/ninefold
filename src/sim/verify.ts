@@ -53,9 +53,10 @@ import { CAPSTONE_TIER, capstonesOpen, focusBonus } from './dao.ts';
 import { NODE_BY_KEY } from '../data/techniques.ts';
 import { freePoints } from './points.ts';
 import { driveFloor } from './hunt.ts';
-import { XP_PER_SECOND_MAX, bestFeed, carriedXp, bestKit, bestUnseal, shortestDoorGap } from './crafts.ts';
+import { XP_PER_SECOND_MAX, bestFeed, carriedXp, bestKit, bestUnseal, shortestDoorGap, wallDays } from './crafts.ts';
+import { GATE_STRIKE_SHARE, LEGEND_FIGHT_SHARE } from './balance.ts';
 import type { Kit } from './kit.ts';
-import { RECIPE_BY_KEY, SKILL_KEYS } from '../data/crafts.ts';
+import { RECIPE_BY_KEY, SKILL_KEYS, legendKey } from '../data/crafts.ts';
 import { floorBeast, floorPower, floorQiPay } from './tower.ts';
 import { forkTrees } from './fork.ts';
 import { wearSet } from './sets.ts';
@@ -415,13 +416,17 @@ export function sealSeconds(before: State, after: State): number {
     const bar = hasBar(after);
     const qi = bar ? SEAL_PAY_EASY_SHARE * sealDays(r) : 0;
     const lesser = bar ? bestFeed(after, r) : 0;
+    // 擊 And the hard wins a save that counts them could have counted at the gate, at the most
+    // they may (GATE_STRIKE_SHARE): the server sees the gate crossed, never the wins.
+    const struck = hasStrike(after) ? Math.min(sealDays(r), GATE_STRIKE_SHARE * Math.max(sealDays(r), wallDays(r))) : 0;
     if (r === before.realm && before.wardenFell) continue;
     if (r === before.realm && wardenStands(before)) {
       // What the earlier save had already put in is inside sealLeft; allow only the rest.
       const more = Math.max(0, qi - Math.max(0, before.sealPaid ?? 0) / 86_400)
-        + Math.max(0, lesser - Math.max(0, before.sealFed ?? 0) / 86_400);
+        + Math.max(0, lesser - Math.max(0, before.sealFed ?? 0) / 86_400)
+        + Math.max(0, struck - Math.max(0, before.gateStruck ?? 0) / 86_400);
       days += sealLeft(before, whole > 0 ? whole : more);
-    } else days += Math.max(0, sealDays(r) - (whole > 0 ? whole : qi + lesser));
+    } else days += Math.max(0, sealDays(r) - (whole > 0 ? whole : qi + lesser + struck));
   }
   return days * 86_400;
 }
@@ -429,6 +434,34 @@ export function sealSeconds(before: State, after: State): number {
 /** 封 Whether a save carries the bar's fields: one written by a game that had the bar. */
 function hasBar(s: State): boolean {
   return s.sealPaid !== undefined || s.sealFed !== undefined;
+}
+
+/** 擊 Whether a save carries the gate's strikes: one written by a game that counted them. */
+function hasStrike(s: State): boolean {
+  return s.gateStruck !== undefined;
+}
+
+/**
+ * 傳說 The seconds of the workshop's own work the legendary works moved between two saves took:
+ * what the work on the anvil gained, and for each work newly made, all of it the earlier save
+ * did not hold, less the most hard wins may have struck off it (LEGEND_FIGHT_SHARE). It goes
+ * beside craftSeconds, since the workshop does one thing at a time; a work pays no experience,
+ * so craftSeconds never counts it.
+ */
+export function legendSeconds(before: State, after: State): number {
+  const bw = before.crafts?.legend ?? null;
+  const aw = after.crafts?.legend ?? null;
+  let t = 0;
+  for (const k of SKILL_KEYS) {
+    const key = legendKey(k);
+    if (!((after.crafts?.made[key] ?? 0) > 0) || (before.crafts?.made[key] ?? 0) > 0) continue;
+    const need = RECIPE_BY_KEY[key]?.seconds ?? 0;
+    const was = bw?.key === key ? bw : null;
+    const fights = Math.max(0, LEGEND_FIGHT_SHARE * need - (was?.struck ?? 0));
+    t += Math.max(0, need - (was ? was.done + was.struck : 0) - fights);
+  }
+  if (aw) t += Math.max(0, aw.done - (bw?.key === aw.key ? bw.done : 0));
+  return t;
 }
 
 /**
@@ -659,7 +692,8 @@ export function verify(before: State, after: State, seconds: number, first = fal
   }
   // 業 One task at a time, so the experience every craft gained between two saves has to
   // fit in the seconds between them, at the fastest each one can ever be worked.
-  if (dt > 0 && craftSeconds(before, after) > dt * SLACK + 60 && !why.includes('too-fast')) why.push('too-fast');
+  // 傳說 And the legendary works' forging beside it (legendSeconds).
+  if (dt > 0 && craftSeconds(before, after) + legendSeconds(before, after) > dt * SLACK + 60 && !why.includes('too-fast')) why.push('too-fast');
   // 劫 Every mark is a Dragon beaten, and the last one has to be beatable by this build.
   //
   // 誤 It stood on the wrong anchor until 2026-10-04: `after` carries the anchor the

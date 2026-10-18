@@ -608,6 +608,8 @@ const fmtXp = (x: number) => (x >= 100 ? num(Math.round(x)) : x.toFixed(1).repla
 /** The thing a recipe makes, drawn: its item, its tool, or the shape of its gear. */
 function Out({ r, size }: { r: Recipe; size: number }) {
   if (r.makes.kind === 'item') return <Thing k={r.makes.item} size={size} />;
+  // 傳說 A legendary work is drawn as the thing it is, from its own entry in the item table.
+  if (r.makes.kind === 'legend') return <Thing k={r.key} size={size} />;
   if (r.makes.kind === 'tool') {
     const t = SKILL_BY_KEY[r.makes.skill].tool;
     return <span className="cic" style={{ width: size, height: size, color: realmOf(r.realm).colour }}>

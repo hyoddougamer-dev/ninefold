@@ -2888,3 +2888,55 @@ export const CODEX_CAP = {
  * knife edge: a rank is a place on the climb, not a tuned number.
  */
 export const RUNG_AT: readonly number[] = [0, 9, 27, 45, 63, 81, 85, 90, 100];
+
+/**
+ * 傳說 The legendary works: one at the top of each craft, the long goal past its last recipe
+ * (Bruno, 2026-10-18: *"crafts almost unreachable that take enormous amounts of materials, or
+ * very rare drop items ... I do not want players time-gated just because, forced to wait"*).
+ * See data/crafts.ts (LEGENDS) and sim/legend.ts.
+ *
+ * A work asks for a craft mastered (LEGEND_LEVEL in it and LEGEND_MASTERED of its recipes
+ * with every familiarity mark), a heap of the late realms' herbs, ores, ingots and parts, and
+ * 精魄 Elite Souls, which only a win over the elite of the realm one stands in leaves. Its
+ * materials go onto the anvil when it is begun, and from then it is a forging of
+ * LEGEND_DAYS of the workshop's time, kept to the second whatever else the workshop is set
+ * on and however long the player is away: nothing is ever taken back.
+ *
+ * 擊 A hard win strikes it: every win over one's own realm's elite (LEGEND_STRIKE_ELITE) and
+ * every gate beaten in 秘境 the vault (LEGEND_STRIKE_GATE) takes that much off the forging,
+ * up to LEGEND_FIGHT_SHARE of it. So a player who fights finishes a work in a quarter of the
+ * days somebody who waits does, and somebody who waits still finishes it.
+ *
+ * What it gives: LEGEND_POWER on power, multiplied, for each work made, and its own craft
+ * LEGEND_SPEED faster. Seven works, each made once, so both are capped; neither touches the
+ * qi rate.
+ */
+export const LEGEND_LEVEL: Readonly<Record<string, number>> = {
+  herb: 80, vein: 80, render: 80, alchemy: 85, forge: 85, sigil: 88, array: 90,
+};
+export const LEGEND_MASTERED = 6;
+export const LEGEND_DAYS: Readonly<Record<string, number>> = {
+  herb: 3, vein: 3, render: 3, alchemy: 4, forge: 4, sigil: 5, array: 6,
+};
+export const LEGEND_FIGHT_SHARE = 0.75;
+export const LEGEND_STRIKE_ELITE = 20 * 60;
+export const LEGEND_STRIKE_GATE = 60 * 60;
+export const LEGEND_POWER = 0.04;
+export const LEGEND_SPEED = 0.15;
+/**
+ * 精魄 One win in this many over the elite of the realm one stands in leaves an Elite Soul,
+ * read off the run and the kill's count (sim/legend.ts soulOn), so a soul is the same soul on
+ * every device and in every harness.
+ */
+export const LEGEND_SOUL_EVERY = 25;
+
+/**
+ * 擊 And the gates (封 the seal, 瓶頸 the bottleneck), which wait only to slow: while one's
+ * realm's warden stands, every hard win (the same two: the realm's elite, a vault gate) counts
+ * as GATE_STRIKE_ELITE or GATE_STRIKE_GATE seconds waited, for the seal's bar and the wall's
+ * loosening alike, up to GATE_STRIKE_SHARE of the longer of the two. Time still fills both
+ * exactly as before, so whoever only waits passes when they always did.
+ */
+export const GATE_STRIKE_ELITE = 30 * 60;
+export const GATE_STRIKE_GATE = 60 * 60;
+export const GATE_STRIKE_SHARE = 0.5;

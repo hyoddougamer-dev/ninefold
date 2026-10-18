@@ -136,7 +136,8 @@ export function advance(s: State, now: number, auto = false, focus = 1): State {
   if (layer === LAYERS_PER_REALM - 1 && realm < 9 && !gateAt) gateAt = now;
   if (layer < LAYERS_PER_REALM - 1 || realm >= 9) gateAt = 0;
   // 封 The bar belongs to the gate standing now: none standing, nothing filled.
-  const fills = gateAt && realm === s.realm ? {} : { sealPaid: 0, sealFed: 0 };
+  // 擊 And so do the hard wins counted at it.
+  const fills = gateAt && realm === s.realm ? {} : { sealPaid: 0, sealFed: 0, gateStruck: 0 };
   return { ...s, at: now, realm, layer, qi, wardenFell, melt, gateAt, ...fills };
 }
 

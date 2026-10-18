@@ -7,7 +7,9 @@ import {
   REALM_WALL, REFERENCE_BELOW, ROUND_CAP, SEEN_BOUNTY, STANCE_NUMBERS, WARDEN_LOOT, WARDEN_TRIBUTE,
   floorPay, ladderBetween,
 } from './balance.ts';
-import { UPGRADE_INFO, capOf, crossTribulation, power, tribulationPower, type State } from './state.ts';
+import { UPGRADE_INFO, capOf, crossTribulation, gateWaited, power, sealDays, tribulationPower, wardenStands, type State } from './state.ts';
+import { gateStrikeRoom, hardBeast, hardWin, soulOn } from './legend.ts';
+import { wallDays } from './crafts.ts';
 import { beastWeakness } from './dao.ts';
 import { heavenAt } from '../data/heavens.ts';
 import { sequenceOf, stanceOf } from './arts.ts';
@@ -109,7 +111,8 @@ export function bottleneck(s: State, b: Beast, breach = 0): number {
   if (!b.warden || b.realm >= 9 || b.realm !== s.realm) return 1;
   const wall = wallOf(b.realm);
   if (wall <= 1) return 1;
-  const days = (s.gateAt > 0 ? Math.max(0, (s.at - s.gateAt) / 86_400) : 0) + Math.max(0, breach);
+  // 擊 Hard wins at the gate count as days waited (gateWaited).
+  const days = gateWaited(s) + Math.max(0, breach);
   return Math.max(1, wall * (1 - BOTTLENECK_LOOSEN) ** days) / wall;
 }
 
@@ -358,7 +361,7 @@ export function takeKill(s: State, b: Beast): State {
   // is the first ever. Both can land on the same kill, and should: the week pointed at
   // something the player had never been to look at, which is the best week it can have.
   const week = isQuarry(s, b) && quarryOwed(s);
-  return {
+  const out: State = {
     ...s,
     wardenFell: b.warden ? true : s.wardenFell,
     // 金剛 The Vajra's first sights and quarries pay more.
@@ -367,6 +370,23 @@ export function takeKill(s: State, b: Beast): State {
     killed: { ...s.killed, [b.key]: kills + 1 },
     quarryWeek: week ? weekOf(s.at) : s.quarryWeek,
   };
+  // 擊 The elite of the realm one stands in is a hard win: it strikes the legendary work on
+  // the anvil and counts as time waited at a standing gate (sim/legend.ts), and one win in
+  // LEGEND_SOUL_EVERY leaves 精魄 an Elite Soul. A 圍 drive never comes through here: a hard
+  // win is a fight fought, not one bought.
+  if (!hardBeast(s, b)) return out;
+  const souled = soulOn(s.startedAt, b.key, kills + 1)
+    ? { ...out, crafts: { ...out.crafts, souls: (out.crafts.souls ?? 0) + 1 } } : out;
+  return hardWin(souled, 'elite', gateRoom(souled));
+}
+
+/**
+ * 擊 How much more of the gate standing now hard wins may count as waited: none when no warden
+ * stands, its realm has no seal and no wall, or it has already fallen.
+ */
+export function gateRoom(s: State): number {
+  if (s.realm >= 9 || s.wardenFell || !wardenStands(s) || s.gateAt <= 0) return 0;
+  return gateStrikeRoom(s, sealDays(s.realm), wallDays(s.realm));
 }
 
 /**
