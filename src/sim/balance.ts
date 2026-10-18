@@ -2905,7 +2905,33 @@ export const RUNG_AT: readonly number[] = [0, 9, 27, 45, 63, 81, 85, 90, 100];
  * 量 Chosen against the drive's price: an old beast's kill costs DRIVE_MINUTES * DRIVE_OLD
  * of the cultivator's own gathering, so a first bar of 40,000 (about 21,500 kills once
  * both deep marks are earned) is at most about 22 hours of a summit cultivator's qi and on
- * average half that. Measured in tools/trophies.ts on five seeds.
+ * average half that.
+ *
+ * Measured 2026-10-18 with tools/trophies.ts (seeds 991, 1234, 5555, 7777, 31337, the mean):
+ *
+ *   the plain climb does not move: realm 9 and the summit on the same day for every habit,
+ *   never fights 118.6 and 131.8, and the marks by day 112 the same (the book pays only for
+ *   whole pages, and nobody who does not chase it finishes one on the way up).
+ *
+ *   all qi into the book from the summit:   whole book     first gilt   book gilt
+ *     once a day   (summit 86.4)             day 104.4      113.8        4 of 5 by 200
+ *     casual       (summit 77.7)             94.9           104.2        none by 200
+ *     active       (summit 57.3)             71.7           79.5         1 of 5 by 200
+ *     every hour   (summit 36.6)             46.0           51.8         none by 200
+ *     buys every node (summit 48.6)          61.1           68.6         3 of 5 by 200
+ *     drives it all (summit 56.7)            70.7           78.5         5 of 5, day 114.7
+ *   (drives it all finds its first trophy on day 0.7, a lucky point early in a frog's bar.)
+ *
+ *   a quarter of each day's qi into the book in the endgame, marks by day 112, plain / book:
+ *     once a day 4.0 / 4.0, casual 6.8 / 6.0, active 10.2 / 8.8, every hour 13.8 / 11.4
+ *
+ *   a visit with something new in it, to day 112, plain / collecting: casual 2.7% / 13.3%,
+ *   active 1.3% / 9.3%.
+ *
+ *   Pushed 10% each way (every bar and the gilding's material together), the active
+ *   collector's whole book moves from day 71.7 to 70.7 and 73.0, the first gilt 79.5 to 77.4
+ *   and 81.5: it slows, it never walls. The book's power and the bars pushed together moved
+ *   the active collector's marks by day 112 from 8.8 to 8.8 and 9.0.
  */
 export const TROPHY_WINDOW = 40_000;
 /** 珍 Each later bar of the same beast is this many times the one before: the second trophy is twice as far. */
