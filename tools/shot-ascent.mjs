@@ -60,7 +60,7 @@ function cultivator(crafts = {}, extra = {}) {
     crafts: {
       xp, since: at - 5, made, tools: {}, arrays: [], carry: { elixir: null, sigil: null, pill: null }, seek: 0,
       task: 'herb:vine', souls: 4,
-      pouch: { beard: 15000, vine: 9200, fern: 15000, 'part:direwolf': 22, cinnabar: 800, lotus: 900 },
+      pouch: { vine: 20000, fern: 15000, ginseng: 9200, 'part:wraith': 140, cinnabar: 800, lotus: 900 },
       ...crafts,
     },
     ...extra,

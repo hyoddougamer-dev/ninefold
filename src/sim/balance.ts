@@ -2912,7 +2912,7 @@ export const RUNG_AT: readonly number[] = [0, 9, 27, 45, 63, 81, 85, 90, 100];
  * qi rate.
  */
 export const LEGEND_LEVEL: Readonly<Record<string, number>> = {
-  herb: 80, vein: 80, render: 80, alchemy: 85, forge: 85, sigil: 88, array: 90,
+  herb: 75, vein: 75, render: 75, alchemy: 82, forge: 85, sigil: 88, array: 90,
 };
 export const LEGEND_MASTERED = 6;
 /** 傳說 What every work's heap of herbs, ores, ingots and parts is multiplied by (data/crafts.ts LEGENDS). Souls are not. */
