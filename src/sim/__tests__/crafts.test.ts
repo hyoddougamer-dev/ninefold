@@ -1,4 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import { essenceFrom, essenceRealm } from '../risen.ts';
+import { eliteOf } from '../elite.ts';
+import { ESSENCE_NEED } from '../balance.ts';
 import {
   ITEMS, ITEM_BY_KEY, PARTS, RECIPES, RECIPE_BY_KEY, SKILLS, SKILL_KEYS, XP_TABLE, levelOf, partKey,
   FORGED, arrayDoes, splitKey, type SkillKey,
@@ -67,7 +70,13 @@ describe('業 the tables', () => {
       expect(r.seconds).toBeGreaterThan(0);
       for (const [k, n] of r.needs) {
         expect(n).toBeGreaterThan(0);
-        if (k !== 'mat') expect(made.has(k), `${r.key} needs ${k}, which nothing makes`).toBe(true);
+        // 精血 Essence Blood is the one need nothing makes: a felled elite of its realm leaves it.
+        const blood = essenceRealm(k);
+        if (blood !== null) {
+          expect(ITEM_BY_KEY[k]?.kind, `${r.key} needs ${k}`).toBe('blood');
+          expect(essenceFrom(eliteOf(blood)!), `${r.key} needs ${k}, which no elite leaves`).toBeGreaterThan(0);
+          expect(blood, `${r.key} needs the blood of realm ${blood}`).toBe(r.realm);
+        } else if (k !== 'mat') expect(made.has(k), `${r.key} needs ${k}, which nothing makes`).toBe(true);
       }
       if (r.makes.kind === 'gear') expect(TEMPLATE_BY_KEY[r.makes.template], r.key).toBeDefined();
       if (r.remains) expect(BEASTS.some((b) => b.key === r.remains)).toBe(true);
@@ -79,7 +88,7 @@ describe('業 the tables', () => {
     }
     // A need never asks for a realm the recipe itself does not reach.
     for (const r of RECIPES) for (const [k] of r.needs) {
-      if (k === 'mat') continue;
+      if (k === 'mat' || essenceRealm(k) !== null) continue;
       const maker = RECIPES.find((x) => x.makes.kind === 'item' && x.makes.item === k)!;
       expect(maker.realm, `${r.key} needs ${k} from realm ${maker.realm}`).toBeLessThanOrEqual(Math.max(r.realm, maker.realm));
     }
@@ -160,7 +169,11 @@ describe('丹符 a pill and a sigil are an hour of work', () => {
       expect(r.weight, r.key).toBe(CRAFT_KIT_WORK);
       expect(r.seconds % CRAFT_KIT_WORK, r.key).toBe(0);
       expect(r.seconds / CRAFT_KIT_WORK, r.key).toBeGreaterThanOrEqual(CRAFT_SECONDS[r.skill]);
-      for (const [k, n] of r.needs) expect(n % CRAFT_KIT_WORK, `${r.key} ${k}`).toBe(0);
+      // 精血 Every need but the blood, which is one a make (ESSENCE_NEED) however heavy the make.
+      for (const [k, n] of r.needs) {
+        if (essenceRealm(k) !== null) expect(n, `${r.key} ${k}`).toBe(ESSENCE_NEED);
+        else expect(n % CRAFT_KIT_WORK, `${r.key} ${k}`).toBe(0);
+      }
     }
     // 陣 Arrays are heavy too since the same day, by CRAFT_ARRAY_WORK: see their own block.
     for (const r of RECIPES.filter((x) => x.skill !== 'alchemy' && x.skill !== 'sigil' && x.skill !== 'array')) expect(r.weight, r.key).toBe(1);
@@ -716,7 +729,9 @@ describe('守 a save is input', () => {
 
   it('holds every key a real pouch can hold', () => {
     const maxed = Object.fromEntries(SKILL_KEYS.map((k) => [k, XP_TABLE[99]]));
-    for (const it of ITEMS) {
+    // 精血 Not Essence Blood, which is held beside the pouch (State.essence) and bounded by the
+    // elite's kills in validate(): see elite.test.ts.
+    for (const it of ITEMS.filter((x) => x.kind !== 'blood')) {
       const k = it.graded ? `${it.key}@2` : it.key;
       expect(splitKey(k).key).toBe(it.key);
       const back = validCrafts({ pouch: { [k]: 3 }, xp: maxed }, { realm: 9, killed: {}, startedAt: T0 }, T0 + 1e9);

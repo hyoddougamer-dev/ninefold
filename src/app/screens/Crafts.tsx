@@ -743,7 +743,7 @@ function Row({ state, r, on, lit, onStart, onGo, looks }: {
         {/* 精血 A recipe short of its realm's blood says where blood comes from: the elite. */}
         {needsOf(state, r).some(([k, n]) => essenceRealm(k) !== null && held(state, k) < n) && (() => {
           const elite = eliteOf(r.realm);
-          return elite ? <i className="cr-does cr-blood"><b className="cjk">精血</b> {WORKSHOP_FIX.eliteNote(elite.name, r.realm, ELITE_ESSENCE)}</i> : null;
+          return elite ? <i className="cr-does cr-blood">{WORKSHOP_FIX.eliteNote(elite.name, r.realm, ELITE_ESSENCE)}</i> : null;
         })()}
         {r.does && <i className="cr-does">{r.does}</i>}
         {isPill(r) ? <i className="cr-does">{CRAFTS.pillRow(r.realm)}</i>

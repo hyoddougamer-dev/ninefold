@@ -2985,8 +2985,8 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
         border-left: 2px solid color-mix(in srgb, var(--gold) 60%, transparent); padding-left: 8px; }
 .beast .brisen i { font-style: normal; font-size: 11.5px; line-height: 1.4; color: var(--faint); }
 .beast .brisen i:first-child { color: var(--text); }
-/* 精血 A recipe short of its realm's blood, in the workshop list. */
-.crow .cr-blood b.cjk { color: var(--cinnabar); font-weight: 400; margin-right: 3px; }
+/* 精血 A recipe short of its realm's blood, in the workshop list: the line in cinnabar. */
+.crow .cr-blood { color: color-mix(in srgb, var(--cinnabar) 80%, var(--text)); }
 /* 精血 The blood chip in the verdict, in cinnabar: it is the elite's own. */
 .gain.blood { color: var(--cinnabar); background: color-mix(in srgb, var(--cinnabar) 12%, transparent);
               border-color: color-mix(in srgb, var(--cinnabar) 45%, transparent); }

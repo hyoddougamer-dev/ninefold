@@ -1712,7 +1712,7 @@ export const ELITE_RISEN_FROM = 5;
  * 56 to 76%, and about 98% in the ninth realm, where the sigils are strongest. Pushed a tenth
  * each way, the odds move a few points and nothing walls.
  */
-export const ELITE_EDGE: readonly number[] = [0, 0, 0, 0, 1.15, 1.25, 1.25, 1.25, 1.25];
+export const ELITE_EDGE: readonly number[] = [0, 0, 0, 0, 1.15, 1.25, 1.3, 1.3, 1.35];
 
 /**
  * 關 The vault's last gate from ELITE_RISEN_FROM: never below the walker's own fight. It
@@ -1721,7 +1721,7 @@ export const ELITE_EDGE: readonly number[] = [0, 0, 0, 0, 1.15, 1.25, 1.25, 1.25
  * commons still meets a real fight at the last door. Measured on five seeds: bare 7 to 34%,
  * with the kit carried 39 to 66%.
  */
-export const GATE_EDGE: readonly number[] = [0, 0, 0, 0, 1.2, 1.2, 1.2, 1.2, 1.2];
+export const GATE_EDGE: readonly number[] = [0, 0, 0, 0, 1.2, 1.2, 1.2, 1.2, 1.35];
 
 /**
  * 精血 What every elite felled leaves: this much of its realm's Essence Blood, by hand or by

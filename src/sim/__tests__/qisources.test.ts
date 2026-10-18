@@ -54,7 +54,10 @@ describe('泉 the spring fills while the door is shut', () => {
   });
 
   it('shares it among the reward rooms, deeper more: 10, 20, 30 and 40% in seven rooms', () => {
-    let s = enter(walker({ levels: { technique: 80, method: 30, pills: 30, cores: 80 } }));
+    // 升 In the fourth realm: from the fifth the last gate stands on the walker's own power
+    // (GATE_EDGE), so a walker with nothing but levels no longer walks every room there, and
+    // what this measures is how the spring is shared, which is the same seven rooms either side.
+    let s = enter(walker({ realm: 4, levels: { technique: 80, method: 30, pills: 30, cores: 80 } }));
     expect(s.spring).toBe(SPRING_HOLD);
     const shares: number[] = [];
     for (let i = 0; i < ROOMS && inside(s); i++) {

@@ -1225,8 +1225,10 @@ export const RISEN = {
   dice: 'The dice are set for today: a win, a new day, or a change of stance, arts or what you carry is a new fight.',
   leaves: (blood: number, part: string) => `Each win leaves ${blood} 精血 Essence Blood and its ${part} for the workshop.`,
   never: 'Never driven or put on Auto while it stands risen. Leave the realm and it goes back to its wall.',
-  /** 鬥 A risen elite lost: why Again is not offered, and what changes the fight. */
-  lost: 'The dice are set for today, so pressed again as you are it is the same fight. Change your stance, your arts or what you carry, or come back tomorrow. The loss cost nothing.',
+  /** 鬥 A risen elite lost: the verdict's line, which never says "come back stronger" (power alone does not move it). */
+  lostHead: 'Nothing was lost. Its dice are set for today.',
+  /** 鬥 And under it: why Again is not offered, and what changes the fight. */
+  lost: 'Pressed again as you are, it is the same fight. Change your stance, your arts or what you carry, or come back tomorrow.',
   /** 鬥 A risen elite won: the blood and the part, as chips. */
   blood: (n: number) => `+${n} 精血 Essence Blood`,
   part: (n: string, name: string) => `+${n} ${name}`,

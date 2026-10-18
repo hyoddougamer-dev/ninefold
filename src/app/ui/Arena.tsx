@@ -195,7 +195,9 @@ export function Arena({ battle, state, pulse, onClose, onAgain, onSkip, overflow
   const ordinal = platform ? PLATFORM.ordinal[tier] : '';
   const say = over
     ? (platform ? (outcome.won ? { han: '勝', text: PLATFORM.won(ordinal) } : { han: '再來', text: PLATFORM.lost })
-      : battle.demon ? (outcome.won ? SECLUSION.won : SECLUSION.lost) : verdictLine(outcome.won, !!beast.warden,
+      : battle.demon ? (outcome.won ? SECLUSION.won : SECLUSION.lost)
+      // 升 A risen elite lost: power alone never moves it, so the line is not "come back stronger".
+      : battle.risen && !outcome.won ? { han: '再來', text: RISEN.lostHead } : verdictLine(outcome.won, !!beast.warden,
         realm === 9 && beast.key === 'dragon' && battle.floor === undefined))
     : blowLine(f.striker, f.round);
   // 劫 A lost Dragon says how far it stands, in pills of this realm's grade. Read once a
