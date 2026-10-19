@@ -3387,7 +3387,7 @@ export const ASCENT = {
   rule: `A legendary work is the top of its craft, and it is made once. Begun, everything it asks for goes onto the anvil, and from then it forges for days of the workshop’s own time, kept to the second however long you are away. `
     + `Every win over the elite of the realm you stand in strikes ${ascentTime(LEGEND_STRIKE_ELITE)} off it, and every gate beaten in 秘境 the secret realm ${ascentTime(LEGEND_STRIKE_GATE)}, up to ${Math.round(LEGEND_FIGHT_SHARE * 100)}% of the forging. Fighting finishes it sooner; waiting still finishes it.`,
   /** 精魄 Where a soul comes from. */
-  soulRule: `One win in ${LEGEND_SOUL_EVERY} over the elite of the realm you stand in leaves 精魄 an Elite Soul.`,
+  soulRule: `One win in ${LEGEND_SOUL_EVERY} over the elite of the realm you stand in, or over a gate in the secret realm, leaves 精魄 an Elite Soul.`,
   /** The next goal, on every craft's panel. */
   next: (name: string) => `Next goal: ${name}.`,
   needLevel: (have: number, need: number) => `level ${have} of ${need}`,

@@ -44,7 +44,7 @@ import {
   bestHundred, codexValue, hundredKit, orderNeeds, orderRecipe, piecesMade, pieceOf, setOpen, validHundredMade, validOrder,
   type Order,
 } from './hundred.ts';
-import { BOTTLENECK_LOOSEN, CODEX_CAP, CRAFT_CARRY, GATE_STRIKE_SHARE, HUNDRED_HEAVEN_MADE, LEGEND_FIGHT_SHARE, LEGEND_MASTERED, LEGEND_SPEED, REALM_WALL, SEAL_DAYS, SEAL_PILL_SHARE } from './balance.ts';
+import { BOTTLENECK_LOOSEN, CODEX_CAP, CRAFT_CARRY, DEEP_ROOMS, DOOR_GAP, GATE_STRIKE_SHARE, HUNDRED_HEAVEN_MADE, LEGEND_FIGHT_SHARE, LEGEND_MASTERED, LEGEND_SPEED, REALM_WALL, SEAL_DAYS, SEAL_PILL_SHARE } from './balance.ts';
 import { finishLegend, isLegend, legendLeft, legendMade, legendSpeed, type LegendWork } from './legend.ts';
 import { SOUL } from '../data/crafts.ts';
 
@@ -1343,9 +1343,12 @@ export function validCrafts(
     if (masteredBy(k) < LEGEND_MASTERED) delete made[key]; else made[key] = 1;
   }
   const legend = validLegend(o.legend, made, open, level, s.realm, masteredBy, elapsed);
-  // 精魄 Souls only from wins over elites, so never more than the elites the save has beaten.
+  // 精魄 Souls only from wins over elites and gates in the secret realm, so never more than the
+  // elites the save has beaten and the gates the time it has lived could hold: a walk every
+  // door gap at its shortest (the Hidden Door at its deepest), a Realm Key a day, two in hand.
   const elites = BEASTS.filter(isElite).reduce((n, b) => n + Math.max(0, Math.floor(num(s.killed[b.key], 0, 1e9))), 0);
-  const souls = Math.floor(num(o.souls, 0, Math.min(1e6, elites)));
+  const walks = Math.ceil(elapsed / (DOOR_GAP - CRAFT_ARRAY_DOOR * CRAFT_ARRAY_DEPTH_TOP)) + Math.ceil(elapsed / 86_400) + 2;
+  const souls = Math.floor(num(o.souls, 0, Math.min(1e6, elites + walks * Math.floor(DEEP_ROOMS / 2))));
 
   // 具 A tool is only held if this forge level and realm could have made it.
   const forge = open('forge') ? level('forge') : 0;

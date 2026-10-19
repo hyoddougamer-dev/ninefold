@@ -650,11 +650,11 @@ REALM_SETS.forEach((set, i) => {
  *
  * What it asks for is the late realms' own material in heaps a craft gathers over days, the
  * parts of a late warden, and 精魄 Elite Souls (SOUL), which nothing makes: one win in
- * LEGEND_SOUL_EVERY over the elite of the realm one stands in leaves one.
+ * LEGEND_SOUL_EVERY over the elite of the realm one stands in, or over a gate in the secret realm, leaves one.
  */
 export const SOUL = 'soul';
 item({ key: SOUL, han: '精魄', name: 'Elite Soul', kind: 'soul', realm: 9, icon: 'floating-ghost',
-  does: 'Left by one win in many over the elite of the realm you stand in. Only a legendary work asks for it.' });
+  does: 'Left by one win in many over the elite of the realm you stand in, or over a gate in the secret realm. Only a legendary work asks for it.' });
 
 export const legendKey = (skill: SkillKey) => `legend:${skill}`;
 export interface LegendInfo {

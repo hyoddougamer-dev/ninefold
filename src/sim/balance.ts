@@ -2897,7 +2897,7 @@ export const RUNG_AT: readonly number[] = [0, 9, 27, 45, 63, 81, 85, 90, 100];
  *
  * A work asks for a craft mastered (LEGEND_LEVEL in it and LEGEND_MASTERED of its recipes
  * with every familiarity mark), a heap of the late realms' herbs, ores, ingots and parts, and
- * 精魄 Elite Souls, which only a win over the elite of the realm one stands in leaves. Its
+ * 精魄 Elite Souls, which only a hard win leaves (the elite of one's own realm, a gate in the secret realm). Its
  * materials go onto the anvil when it is begun, and from then it is a forging of
  * LEGEND_DAYS of the workshop's time, kept to the second whatever else the workshop is set
  * on and however long the player is away: nothing is ever taken back.

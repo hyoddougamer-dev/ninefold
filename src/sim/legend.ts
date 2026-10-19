@@ -131,6 +131,18 @@ export function soulOn(startedAt: number, beast: string, count: number): boolean
 }
 
 /**
+ * 精魄 A gate beaten in the secret realm leaves a soul one time in LEGEND_SOUL_EVERY too, read
+ * off the run's count and the gate's place in it. Everybody walks the secret realm, so this is
+ * the way to a work for the cultivator whose build cannot yet beat the elite of the realm it
+ * stands in (measured 2026-10-18: the casual crafter beat the ninth realm's elite 0 to 159
+ * times in two hundred days and, with the elite alone, never made a work).
+ */
+export function gateSoul(s: State): State {
+  if (!soulOn(s.startedAt, 'secret-realm', s.runs * 64 + s.lastRun.gates)) return s;
+  return { ...s, crafts: { ...s.crafts, souls: (s.crafts.souls ?? 0) + 1 } };
+}
+
+/**
  * 封 瓶頸 The most hard wins may count as waited at the gate standing now, in seconds:
  * GATE_STRIKE_SHARE of the seal or the wall's loosening, whichever is longer. `wallDays` is
  * passed in (sim/crafts.ts owns it) so this file never reads the wall's curve twice.

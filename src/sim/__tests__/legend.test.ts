@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  GATE_STRIKE_ELITE, GATE_STRIKE_SHARE, LAYERS_PER_REALM, LEGEND_DAYS, LEGEND_FIGHT_SHARE, LEGEND_LEVEL,
+  DEEP_ROOMS, GATE_STRIKE_ELITE, GATE_STRIKE_SHARE, LAYERS_PER_REALM, LEGEND_DAYS, LEGEND_FIGHT_SHARE, LEGEND_LEVEL,
   LEGEND_MASTERED, LEGEND_POWER, LEGEND_SOUL_EVERY, LEGEND_SPEED, LEGEND_STRIKE_ELITE, LEGEND_STRIKE_GATE, CRAFT_WORK_HOURS,
 } from '../balance.ts';
 import {
@@ -207,8 +207,14 @@ describe('守 a save is input', () => {
       legend: { key: r.key, done: 1e12, struck: 1e12 } } })), T0);
     expect(greedy.crafts.legend!.struck).toBeCloseTo(LEGEND_FIGHT_SHARE * r.seconds, 6);
     expect(greedy.crafts.legend!.done).toBeLessThanOrEqual(r.seconds);
+    // Never more souls than the elites beaten and the secret realm's gates the time could hold.
     const elites = BEASTS.filter(isElite).reduce((n, b) => n + (s.killed[b.key] ?? 0), 0);
-    expect(greedy.crafts.souls).toBe(elites);
+    expect(greedy.crafts.souls).toBeGreaterThanOrEqual(elites);
+    expect(greedy.crafts.souls).toBeLessThan(elites + 200 * 6 * Math.floor(DEEP_ROOMS / 2));
+    // A cultivator begun this second who has beaten nothing holds no more than two walks' worth.
+    const fresh = newState(T0);
+    const none = validate(JSON.parse(JSON.stringify({ ...fresh, crafts: { ...fresh.crafts, souls: 999 } })), T0);
+    expect(none.crafts.souls ?? 0).toBeLessThanOrEqual(3 * Math.floor(DEEP_ROOMS / 2));
     // A work made by a craft with too few mastered recipes was not made.
     const thin = master(92, 2);
     const forged = validate(JSON.parse(JSON.stringify({ ...thin, crafts: { ...thin.crafts, made: { ...thin.crafts.made, [r.key]: 5 } } })), T0);

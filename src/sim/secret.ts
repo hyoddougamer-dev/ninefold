@@ -8,7 +8,7 @@ import { stash } from './stash.ts';
 import { commonsOf, type Beast } from '../data/bestiary.ts';
 import { REALM_KEY } from '../data/crafts.ts';
 import { beastPower, gateRoom, isElite, odds } from './combat.ts';
-import { hardWin } from './legend.ts';
+import { gateSoul, hardWin } from './legend.ts';
 
 import { rate } from './time.ts';
 import { rollDrop } from './drops.ts';
@@ -418,7 +418,7 @@ export function open(s: State, which: 0 | 1 | 2, seed: number): State {
     out = { ...(carried.spends ? spendKit(out, tookPart(carried.used, revived)) : out), lastRun: { ...out.lastRun, gates: out.lastRun.gates + 1 } };
     // 擊 A gate beaten is a hard win: it strikes the legendary work on the anvil, and counts as
     // time waited at a warden's gate, if one stands (sim/legend.ts). Still nothing on the record.
-    out = hardWin(out, 'gate', gateRoom(out));
+    out = gateSoul(hardWin(out, 'gate', gateRoom(out)));
   } else {
     // 泉 The room is spent, whichever door it was.
     out = {
