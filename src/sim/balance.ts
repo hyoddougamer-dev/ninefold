@@ -2910,6 +2910,28 @@ export const RUNG_AT: readonly number[] = [0, 9, 27, 45, 63, 81, 85, 90, 100];
  * What it gives: LEGEND_POWER on power, multiplied, for each work made, and its own craft
  * LEGEND_SPEED faster. Seven works, each made once, so both are capped; neither touches the
  * qi rate.
+ *
+ * Measured with tools/ascent.ts on 2026-10-18 (five seeds, 991 1234 5555 7777 31337, read by
+ * name; each habit made a crafter that chases the works, played on to day 200; the mean day
+ * each work is made, and on how many seeds):
+ *
+ *   habit          Herbal      Living Soil  Cook Ding   Furnace     Ganjiang    River Chart, Circling Stars
+ *   once a day     152.2 (5)   194.0 (1)    193.0 (3)   never       never       never
+ *   casual         121.5 (5)    89.1 (5)    142.1 (5)   never       never       never
+ *   active          67.2 (5)    76.5 (5)     78.7 (5)   110.8 (5)   180.8 (5)   never by day 200
+ *   every hour      73.6 (5)    84.6 (5)     86.8 (5)   never       never       never
+ *
+ * The first works land inside a 112-day season for whoever crafts and fights every day; the
+ * last two, at levels 88 and 90 in crafts that one workshop can only level one at a time, are
+ * the goal past the season, as asked ("almost unreachable"). Pushed a tenth either way
+ * together (the strikes, the share, the days, the heap, the soul odds, the power, the speed),
+ * the active crafter's works move 0.3 to 5.9 days slower and 0.3 to 3.5 sooner; nothing walls.
+ * Where it fails: the hourly crafter's forge stalls at level 11 under tools/crafter.ts (its
+ * one-hour span never finds a forge recipe worth setting), so its Furnace, which asks for
+ * ingots, never comes; that is the harness's crafter, not the game, and is said so here rather
+ * than tuned around. With souls from the elite alone, the casual and once-a-day crafters made
+ * no work at all in two hundred days (they beat the ninth realm's elite 0 to 160 times), which
+ * is why a gate in the secret realm leaves souls too.
  */
 export const LEGEND_LEVEL: Readonly<Record<string, number>> = {
   herb: 75, vein: 75, render: 75, alchemy: 82, forge: 85, sigil: 88, array: 90,
@@ -2940,6 +2962,29 @@ export const LEGEND_SOUL_EVERY = 100;
  * A gate in the secret realm strikes a legendary work and never the realm's gate: everybody
  * walks the secret realm, the cultivator who never fights included (see hardWin in
  * sim/legend.ts for the measurement that settled it).
+ *
+ * Measured with tools/ascent.ts on 2026-10-18 (five seeds, read by name; before is 3e92b8e):
+ *
+ *   habit            realm 9 before → after   summit before → after   marks by day 112
+ *   never fights     118.6 → 118.6            131.8 → 131.8           0 → 0
+ *   barely fights    102.0 → 102.0            110.4 → 110.4           0 → 0
+ *   once a day        74.2 → 74.4              86.4 → 87.0            4.0 → 4.0
+ *   casual            66.9 → 66.9              77.7 → 77.7            6.8 → 6.8
+ *   active            49.2 → 48.3              57.3 → 56.9            10.2 → 10.2
+ *   every hour        31.9 → 30.6              36.6 → 36.2            13.8 → 13.6
+ *   drives it all     48.4 → 47.3              56.7 → 55.8            10.6 → 11.0
+ *   walks 神          48.5 → 47.5              56.7 → 56.5            10.8 → 10.2
+ *   buys every node   42.2 → 41.0              48.5 → 48.0            13.2 → 12.8
+ *   crafts it all     46.5 → 46.5              55.7 → 55.7            11.0 → 11.0
+ *
+ * The waiter is where it was, to the day; the crafter too, whose pill already opened every
+ * seal. Whoever beats the realm's elite at its gate gains a day or so. Pushed a tenth either
+ * way the ninth realm moves 0.5 of a day at most. The once-a-day cultivator is 0.2 and 0.6 of
+ * a day later, the one row that moves the wrong way: four hunts a day reach the elite rarely,
+ * and the gates it does strike change which visit the warden falls on. Measured, reported, not
+ * tuned around. The busy share of visits with something past the hunt and the cave on them
+ * (tools/busy.ts, "strike the gate" a new kind): active 80.7% → 84.0%, every hour 47.3% →
+ * 52.2%, casual 96.5% → 96.5%.
  */
 export const GATE_STRIKE_ELITE = 30 * 60;
 export const GATE_STRIKE_SHARE = 0.5;
