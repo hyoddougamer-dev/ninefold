@@ -75,7 +75,8 @@ describe('業 the tables', () => {
         if (blood !== null) {
           expect(ITEM_BY_KEY[k]?.kind, `${r.key} needs ${k}`).toBe('blood');
           expect(essenceFrom(eliteOf(blood)!), `${r.key} needs ${k}, which no elite leaves`).toBeGreaterThan(0);
-          expect(blood, `${r.key} needs the blood of realm ${blood}`).toBe(r.realm);
+          // 破境丹 A Breakthrough Pill asks for the realm below's, which its old elite is driven for.
+          expect(blood, `${r.key} needs the blood of realm ${blood}`).toBe(r.group === 'Breakthrough' ? r.realm - 1 : r.realm);
         } else if (k !== 'mat') expect(made.has(k), `${r.key} needs ${k}, which nothing makes`).toBe(true);
       }
       if (r.makes.kind === 'gear') expect(TEMPLATE_BY_KEY[r.makes.template], r.key).toBeDefined();

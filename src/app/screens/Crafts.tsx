@@ -741,9 +741,12 @@ function Row({ state, r, on, lit, onStart, onGo, looks }: {
           </span>
         )}
         {/* 精血 A recipe short of its realm's blood says where blood comes from: the elite. */}
-        {needsOf(state, r).some(([k, n]) => essenceRealm(k) !== null && held(state, k) < n) && (() => {
-          const elite = eliteOf(r.realm);
-          return elite ? <i className="cr-does cr-blood">{WORKSHOP_FIX.eliteNote(elite.name, r.realm, ELITE_ESSENCE)}</i> : null;
+        {(() => {
+          // 破境丹 A Breakthrough Pill names the realm below's blood, so read the realm off the need.
+          const short = needsOf(state, r).find(([k, n]) => essenceRealm(k) !== null && held(state, k) < n);
+          const realm = short ? essenceRealm(short[0]) : null;
+          const elite = realm !== null ? eliteOf(realm) : undefined;
+          return elite && realm !== null ? <i className="cr-does cr-blood">{WORKSHOP_FIX.eliteNote(elite.name, realm, ELITE_ESSENCE)}</i> : null;
         })()}
         {r.does && <i className="cr-does">{r.does}</i>}
         {isPill(r) ? <i className="cr-does">{CRAFTS.pillRow(r.realm)}</i>

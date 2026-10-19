@@ -232,7 +232,7 @@ for (const b of BEASTS) {
 for (let realm = ELITE_RISEN_FROM; realm <= 9; realm++) {
   const elite = commonsOf(realm)[commonsOf(realm).length - 1];
   item({ key: essenceKey(realm), han: '精血', name: 'Essence Blood', kind: 'blood', realm, icon: 'fire-gem',
-    does: `Left by ${elite ? `the ${elite.name}, realm ${realm}’s elite` : `realm ${realm}’s elite`}: ${ELITE_ESSENCE} for every one felled. Realm ${realm}’s elixirs, sigils and Breakthrough Pills ask for ${ESSENCE_NEED} each.` });
+    does: `Left by ${elite ? `the ${elite.name}, realm ${realm}’s elite` : `realm ${realm}’s elite`}: ${ELITE_ESSENCE} for every one felled. Realm ${realm}’s elixirs and sigils ask for ${ESSENCE_NEED} each${realm < 8 ? `, and so does realm ${realm + 1}’s Breakthrough Pill` : ''}.` });
 }
 
 /* ── 方 Recipes ──────────────────────────────────────────────────────────── */
@@ -677,12 +677,16 @@ export const RECIPES: readonly Recipe[] = (() => {
   // recipe pays one or two.
   return draft.map((r) => {
     const weight = r.weight ?? 1;
-    // 精血 A realm's elixirs, sigils and Breakthrough Pills from ELITE_RISEN_FROM ask for its
-    // Essence Blood too: ESSENCE_NEED, last of the needs and never made heavier.
+    // 精血 A realm's elixirs and sigils from ELITE_RISEN_FROM ask for its Essence Blood too:
+    // ESSENCE_NEED, last of the needs and never made heavier. 破境丹 A Breakthrough Pill asks
+    // for the realm below's instead: it is made before its own gate seals, and the old elite,
+    // Known, is driven for it, so a crafter never waits on the day's dice at a sealed gate.
     const made = r.makes.kind === 'item' ? items.find((x) => x.key === (r.makes as { item: string }).item) : undefined;
-    const blood = made && (made.kind === 'elixir' || made.kind === 'sigil') && made.realm >= ELITE_RISEN_FROM
+    const pill = !!made && BREAKTHROUGH_TIERS.some((tier) => breakthroughKey(tier) === made.key);
+    const bloodRealm = made ? (pill ? made.realm - 1 : made.realm) : 0;
+    const blood = made && (made.kind === 'elixir' || made.kind === 'sigil') && bloodRealm >= ELITE_RISEN_FROM
       && (r.skill === 'alchemy' || r.skill === 'sigil');
-    const needs = blood ? [...r.needs, [essenceKey(made.realm), ESSENCE_NEED] as const] : r.needs;
+    const needs = blood ? [...r.needs, [essenceKey(bloodRealm), ESSENCE_NEED] as const] : r.needs;
     return { ...r, needs, weight, marks: CRAFT_MARKS.map((m) => Math.max(1, Math.ceil(m / weight))),
       xp: Math.max(0.1, Math.round(scale[r.skill] * r.seconds * growth(r.level) * 10) / 10) };
   });
