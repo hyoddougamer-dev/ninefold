@@ -5,7 +5,7 @@ import { realm as realmOf } from '../../data/realms.ts';
 import { RealmTag } from '../ui/RealmTag.tsx';
 import { beastPower, effectiveBeastPower, isElite, lootFrom, oddsRaw } from '../../sim/combat.ts';
 import { ELITE_ESSENCE, ELITE_LOOT, ODDS_CEILING, ODDS_FLOOR } from '../../sim/balance.ts';
-import { risenElite } from '../../sim/risen.ts';
+import { eliteHeld, risenElite } from '../../sim/risen.ts';
 import { eliteOdds } from '../../sim/elite.ts';
 import { ITEM_BY_KEY, partKey } from '../../data/crafts.ts';
 import { power, type State } from '../../sim/state.ts';
@@ -179,9 +179,9 @@ export function Hunt({ state, onFight, onDrive, onPile, onAuto, onSecret, onKey 
   // 升 The risen elite's two figures, bare and with what is carried, read once like the rest.
   const risen = useMemo(() => {
     const b = sorted.find((x) => risenElite(state, x));
-    return b ? { key: b.key, ...eliteOdds(state, b) } : null;
+    return b ? { key: b.key, held: eliteHeld(state, b), ...eliteOdds(state, b) } : null;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sorted, state.crafts.carry, state.crafts.pouch, ...fightDeps(state)]);
+  }, [sorted, state.crafts.carry, state.crafts.pouch, state.eliteLost, state.at, ...fightDeps(state)]);
   const beatable = sorted.filter((b) => (raws.get(b.key) ?? 0) > 0).length;
   const done = folds ? shown.filter(finished) : [];
   const list = showDone ? [...open, ...done] : open;
@@ -311,6 +311,7 @@ export function Hunt({ state, onFight, onDrive, onPile, onAuto, onSecret, onKey 
                the row 引 the guide points its arrow at. */
             <button key={b.key} className="beast" data-done={finished(b)} data-farm={!folds || undefined}
               data-coach={b.key === gearRow ? 'beast-gear' : i === 0 ? 'beast-first' : undefined}
+              data-held={up?.held || undefined} disabled={up?.held || undefined}
               onClick={() => onFight(b.key)}>
               {/* 牌 The plate, not the seal: thirty-six paintings exist now, and the
                   hunt list is the screen they are for. Where a file is missing the
@@ -357,7 +358,11 @@ export function Hunt({ state, onFight, onDrive, onPile, onAuto, onSecret, onKey 
                   </i>
                 </span>
               </span>
-              {up ? (
+              {up?.held ? (
+                <span className="odds risenodds" data-risen style={{ color: 'var(--faint)' }}>
+                  <span>{RISEN.heldLabel}</span>
+                </span>
+              ) : up ? (
                 <span className="odds risenodds" data-risen>
                   <span style={{ color: toneOf(up.carried) }}>{Math.round(up.carried * 100)}%<em>{up.carries ? RISEN.carried : RISEN.oddsLabel}</em></span>
                   {up.carries && <span className="bare" style={{ color: toneOf(up.bare) }}>{Math.round(up.bare * 100)}%<em>{RISEN.bare}</em></span>}
@@ -389,7 +394,7 @@ export function Hunt({ state, onFight, onDrive, onPile, onAuto, onSecret, onKey 
               {/* 升 Under a risen row, across its width: the odds in words, the day's dice, what a win leaves. */}
               {up && (
                 <span className="brisen">
-                  <i>{RISEN.odds(Math.round(up.bare * 100), Math.round(up.carried * 100), up.carries)} {RISEN.dice}</i>
+                  <i>{up.held ? RISEN.held : `${RISEN.odds(Math.round(up.bare * 100), Math.round(up.carried * 100), up.carries)} ${RISEN.dice}`}</i>
                   <i>{RISEN.leaves(ELITE_ESSENCE, partName)} {RISEN.never}</i>
                 </span>
               )}

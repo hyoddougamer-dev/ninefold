@@ -147,6 +147,13 @@ for (const w of [320, 400]) {
     await shoot(page, await page.$('button.beast:has-text("Rock Lizard")'), `hunt-${w}`);
     await page.close();
   }
+  // 定 The row the day it was lost: set for today, back tomorrow.
+  {
+    const page = await open(w, save(START, true, { eliteLost: { 5: Math.floor(NOW / 86_400) } }));
+    await tab(page, '狩');
+    await shoot(page, await page.$('button.beast:has-text("Rock Lizard")'), `hunt-held-${w}`);
+    await page.close();
+  }
   // 鬥 Bare, and with the kit.
   for (const kit of [false, true]) {
     const page = await open(w, save(START, kit));

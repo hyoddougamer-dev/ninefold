@@ -5,14 +5,14 @@ import { kitFor, type Carried } from './crafts.ts';
 import { NO_KIT, type Kit } from './kit.ts';
 import { ELITE_RISEN_FROM } from './balance.ts';
 import type { State } from './state.ts';
-import { eliteSeed, risenElite } from './risen.ts';
+import { eliteHeld, eliteSeed, loseElite, risenElite } from './risen.ts';
 
 /**
  * 升 The risen elite's fight: the day's dice (eliteSeed), what is carried (kitFor 'elite'),
  * and the odds the hunt row quotes, bare and with the kit. The rules are in sim/risen.ts.
  */
 
-export { eliteSeed, risenElite };
+export { eliteHeld, eliteSeed, loseElite, risenElite };
 
 /** 升 The elite of a realm: its last common. */
 export function eliteOf(realm: number): Beast | undefined {
@@ -20,11 +20,14 @@ export function eliteOf(realm: number): Beast | undefined {
   return commons[commons.length - 1];
 }
 
-/** 升 The risen elite this cultivator could meet now, if one has walked out: their realm's, from ELITE_RISEN_FROM. */
+/**
+ * 升 The risen elite this cultivator could meet now, if one has walked out: their realm's, from
+ * ELITE_RISEN_FROM, and not while a loss holds it for the day (eliteHeld).
+ */
 export function risenNow(s: State): Beast | null {
   if (s.realm < ELITE_RISEN_FROM) return null;
   const b = eliteOf(s.realm);
-  return b && s.layer >= b.layer && risenElite(s, b) ? b : null;
+  return b && s.layer >= b.layer && risenElite(s, b) && !eliteHeld(s, b) ? b : null;
 }
 
 /** 攜 What a risen elite is fought with: what is carried, as at any hard fight. */

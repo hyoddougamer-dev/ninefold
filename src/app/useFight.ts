@@ -20,7 +20,7 @@ import { MARKS } from '../sim/balance.ts';
 import { haptics } from './haptics.ts';
 import { sfx } from './sound.ts';
 import { isOpen } from '../sim/unlocks.ts';
-import { eliteSeed, risenElite } from '../sim/risen.ts';
+import { eliteHeld, eliteSeed, loseElite, risenElite } from '../sim/risen.ts';
 
 /**
  * 擊 The least time between two fights starting, in the app. The ranked server allows one
@@ -57,6 +57,8 @@ export function useFight(
     // fight asked for too soon is queued, and starts the moment the pace allows.
     // 擂 And only the challenger standing now, as with the warden: the sim is asked, once.
     if (challenger !== undefined && standingTier(state) !== challenger) return;
+    // 定 升 And never a risen elite lost today: it is set until the next UTC day (sim/risen.ts).
+    if (floor === undefined && !demon && challenger === undefined && eliteHeld(state, beast)) return;
     if (Date.now() < lastStart.current + PACE_MS) {
       queued.current = { beast, floor, demon, challenger };
       setTick((t) => t + 1);
@@ -216,6 +218,9 @@ export function useFight(
         const taken = extra ? stash(first, extra).state : first;
         return spent(s, sought ? spendSeek(taken) : taken);
       });
+    } else if (battle.risen) {
+      // 定 升 A risen elite lost: nothing is taken, and it is set until the next UTC day.
+      setState((s) => loseElite(s, beast));
     }
     setBattle(null);
     sfx.tap();

@@ -45,7 +45,23 @@ import { FORGED, HUNDRED_RANKS, ITEM_BY_KEY, RECIPE_BY_KEY, type HundredRank } f
 import { backHundred, bandTop, validKept } from './hundred.ts';
 import { validLives } from './echo.ts';
 import { seasonOf } from './season.ts';
-import { essenceFrom } from './risen.ts';
+import { dayOf, essenceFrom } from './risen.ts';
+import { ELITE_RISEN_FROM } from './balance.ts';
+
+/**
+ * 定 The days each realm's risen elite was lost on: whole days, realms from ELITE_RISEN_FROM,
+ * and never a day that has not come yet. Only today's matters, so older ones are dropped.
+ */
+function validEliteLost(raw: unknown, now: number): Record<string, number> {
+  const o = (raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {}) as Record<string, unknown>;
+  const out: Record<string, number> = {};
+  const today = dayOf(now);
+  for (let realm = ELITE_RISEN_FROM; realm <= 9; realm++) {
+    const v = o[String(realm)];
+    if (typeof v === 'number' && Number.isInteger(v) && v === today) out[String(realm)] = v;
+  }
+  return out;
+}
 import { commonsOf } from '../data/bestiary.ts';
 
 /**
@@ -496,6 +512,7 @@ export function validate(raw: unknown, now: number): State {
     // 精血 Never more of a realm's blood than its elite's kills could have left, and only the
     // realms whose elite leaves any. It is spent, so it may be anything up to that.
     essence: validEssence(o.essence, killed),
+    eliteLost: validEliteLost(o.eliteLost, now),
     lastRun: validTake(o.lastRun, (k) => k in TEMPLATE_BY_KEY, RARITIES, (k) => k in ITEM_BY_KEY),
     // 期 A week the cultivator has not lived through yet is not a week they took the
     // quarry's qi in, so the ceiling is this instant's own week. -1 is never, which is

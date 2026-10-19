@@ -13,7 +13,7 @@ import { MARKS } from '../record.ts';
 import { newState, power, type State } from '../state.ts';
 import { validate } from '../load.ts';
 import { verify } from '../verify.ts';
-import { dayOf, eliteEdge, eliteSeed, essenceKey, essenceOf, risenElite } from '../risen.ts';
+import { dayOf, eliteEdge, eliteHeld, eliteSeed, essenceKey, essenceOf, loseElite, risenElite } from '../risen.ts';
 import { eliteFight, eliteOdds, eliteOf, risenNow } from '../elite.ts';
 import { gateKit, gateLift, gateOdds, gateRisen, isGate } from '../secret.ts';
 import { roomsFor } from '../../data/secret.ts';
@@ -88,6 +88,30 @@ describe('升 the risen elite', () => {
     expect(k.rounds).not.toEqual(a.rounds);
   });
 
+  it('holds a loss for the UTC day: no stance, arts or kit buys another roll, and the next day frees it', () => {
+    const s = at(7, { stance: 'fierce' });
+    const b = eliteOf(7)!;
+    expect(eliteHeld(s, b)).toBe(false);
+    const lost = loseElite(s, b);
+    expect(eliteHeld(lost, b)).toBe(true);
+    expect(risenNow(lost)).toBeNull();
+    // Nothing the hand can change frees it the same day.
+    const turned: State = { ...lost, stance: 'calm', sequence: ['a', 'b', 'c'] };
+    expect(eliteHeld(turned, b)).toBe(true);
+    // The next UTC day it is back; another realm's elite was never held.
+    const next = (dayOf(s.at) + 1) * DAY;
+    expect(eliteHeld({ ...lost, at: next }, b)).toBe(false);
+    expect(risenNow({ ...lost, at: next })).toBe(b);
+    expect(eliteHeld({ ...lost, realm: 8 }, eliteOf(8)!)).toBe(false);
+    // A common, or an elite left behind, is never held.
+    expect(loseElite(s, commonsOf(7)[0])).toBe(s);
+    // validate() keeps today's hold, drops a past day's and refuses a day not yet come.
+    const v = (x: unknown, now: number) => validate(JSON.parse(JSON.stringify(x)), now).eliteLost;
+    expect(v(lost, s.at + 60)).toEqual({ 7: dayOf(s.at) });
+    expect(v(lost, next + 60)).toEqual({});
+    expect(v({ ...s, eliteLost: { 7: dayOf(s.at) + 5, 3: dayOf(s.at), 8: 'x' } }, s.at + 60)).toEqual({});
+  });
+
   it('takes what is carried, as a hard fight does, and quotes both figures', () => {
     const s = at(8);
     const b = eliteOf(8)!;
@@ -121,12 +145,15 @@ describe('精血 Essence Blood', () => {
     expect(essenceOf(d.state, 5)).toBe(50 * ELITE_ESSENCE);
   });
 
-  it('is asked by a realm’s elixirs, sigils and Breakthrough Pills from ELITE_RISEN_FROM, and nothing below', () => {
+  it('is asked by a realm’s elixirs and sigils from ELITE_RISEN_FROM, and by a Breakthrough Pill from the realm below', () => {
     const blood = (k: string) => RECIPE_BY_KEY[k].needs.find(([n]) => n.startsWith('essence:'));
     expect(blood(`alchemy:${elixirKey('might', 4)}`)).toBeUndefined();
     expect(blood(`alchemy:${elixirKey('might', 5)}`)).toEqual([essenceKey(5), ESSENCE_NEED]);
     expect(blood(`alchemy:${elixirKey('guard', 9)}`)).toEqual([essenceKey(9), ESSENCE_NEED]);
-    expect(blood(`alchemy:${breakthroughKey(6)}`)).toEqual([essenceKey(6), ESSENCE_NEED]);
+    // 破境丹 The realm below's blood, which its old elite, Known, is driven for: none at the fifth.
+    expect(blood(`alchemy:${breakthroughKey(5)}`)).toBeUndefined();
+    expect(blood(`alchemy:${breakthroughKey(6)}`)).toEqual([essenceKey(5), ESSENCE_NEED]);
+    expect(blood(`alchemy:${breakthroughKey(8)}`)).toEqual([essenceKey(7), ESSENCE_NEED]);
     expect(blood(`sigil:mirror`)).toEqual([essenceKey(5), ESSENCE_NEED]);
     expect(blood(`sigil:binding`)).toBeUndefined();
     // Only alchemy and sigils, never the knife, the forge or an array.

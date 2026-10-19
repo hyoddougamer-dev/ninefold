@@ -14,9 +14,10 @@ import type { State } from './state.ts';
  *   量 From ELITE_RISEN_FROM, the elite of the realm the cultivator stands in is measured
  *     against their own 力 (ELITE_EDGE), thinned like any beast. It is never a wall that
  *     power alone climbs over, and never one that power alone cannot.
- *   定 Its dice are set for the day: the same body meets the same fight until a win, a new
- *     day, or something carried, worn or held changes. So the way past a loss is to change
- *     something, and a loss still costs nothing.
+ *   定 Its dice are set for the day, and a loss holds for the day: once lost, the realm's
+ *     risen elite cannot be fought again until the next UTC day (State.eliteLost). Nothing
+ *     the hand can change (stance, arts, what is carried) buys another roll the same day,
+ *     and a loss still costs nothing.
  *   手 While risen it is never driven and never on Auto. Left behind, it goes back to its
  *     fixed wall (ELITE_WALL) and is a hunt like any other.
  *   血 Every elite felled from ELITE_RISEN_FROM leaves ELITE_ESSENCE of its realm's blood,
@@ -67,13 +68,23 @@ function hash(n: number): number {
 
 /**
  * 定 The day's dice for a risen elite: the run, the wins over it so far, the realm and the
- * day. The same body pressing again the same day meets the same fight; a win, a new day, or
- * a change to the body or the kit is a different one.
+ * day. A loss holds for the day (eliteHeld), so what the hand changes cannot re-roll it.
  */
 export function eliteSeed(s: Pick<State, 'startedAt' | 'killed' | 'realm' | 'at'>, b: Beast): number {
   const wins = s.killed[b.key] ?? 0;
   return hash((s.startedAt >>> 0) ^ Math.imul(wins + 1, 2654435761) ^ Math.imul(s.realm, 40503)
     ^ Math.imul(dayOf(s.at) + 7, 0x9e3779b1));
+}
+
+/** 定 Whether this risen elite was lost today: it is set until the next UTC day. */
+export function eliteHeld(s: Pick<State, 'realm' | 'at' | 'eliteLost'>, b: Beast): boolean {
+  return risenElite(s, b) && s.eliteLost?.[String(b.realm)] === dayOf(s.at);
+}
+
+/** 定 A risen elite lost: its realm is set for the rest of this UTC day. Nothing else changes. */
+export function loseElite<T extends Pick<State, 'realm' | 'at' | 'eliteLost'>>(s: T, b: Beast): T {
+  if (!risenElite(s, b)) return s;
+  return { ...s, eliteLost: { ...(s.eliteLost ?? {}), [String(b.realm)]: dayOf(s.at) } };
 }
 
 /* ── 精血 Essence Blood ──────────────────────────────────────────────────── */

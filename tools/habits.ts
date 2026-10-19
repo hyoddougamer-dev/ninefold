@@ -14,7 +14,7 @@ import { fuseIn, stash } from '../src/sim/stash.ts';
 import { LAYERS, focusAt, ladderBetween } from '../src/sim/balance.ts';
 import {
   atCap, atCeiling, breakThrough, buyAll, canBreakThrough, canBuy, canCondense,
-  canFightWarden, condense, canPaySeal, feedSeal, paySeal, sealDays, sealPrice,
+  canFightWarden, condense, canPaySeal, feedSeal, paySeal, sealPrice,
   newState, power, upgradeCost, wardenStands, type State,
 } from '../src/sim/state.ts';
 import { advance, canOpenLayer, layersOpened, openLayer, rate } from '../src/sim/time.ts';
@@ -50,17 +50,16 @@ import { ARCHETYPES, RARITY_INFO, SLOTS, callingOf, schoolOf, templateOf, type I
 import { PAIRS, schoolOfAxis, type Pair, type School } from '../src/data/schools.ts';
 import { SCHOOL_WAKES } from '../src/sim/balance.ts';
 import type { Beast } from '../src/data/bestiary.ts';
-import { ELITE_RISEN_FROM, ESSENCE_NEED } from '../src/sim/balance.ts';
-import { eliteFight, eliteKit, eliteOf, risenNow } from '../src/sim/elite.ts';
-import { dayOf, essenceOf, risenElite } from '../src/sim/risen.ts';
-import { effectiveBeastPower } from '../src/sim/combat.ts';
+import { ELITE_RISEN_FROM } from '../src/sim/balance.ts';
+import { eliteFight, eliteKit, eliteOf, loseElite, risenNow } from '../src/sim/elite.ts';
+import { risenElite } from '../src/sim/risen.ts';
 import { MARKS } from '../src/sim/record.ts';
 import { tookPart } from '../src/sim/crafts.ts';
 
 /**
  * 升 The least odds, with what is carried, at which a cultivator who fights tries the risen
  * elite (sim/risen.ts). A loss costs nothing, so a quarter is worth a tap; the dice are set
- * for the day, so a loss is not pressed again until something has changed.
+ * for the day and a loss holds until the next UTC day (State.eliteLost).
  */
 export const ELITE_WILLING = 0.25;
 /** 升 The risen elite left alone, for measuring what it is worth: NF_NO_ELITE=1 */
@@ -642,43 +641,31 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher, start?: State, ga
   const eliteTries = new Array(10).fill(0), eliteWins = new Array(10).fill(0), handHunts = new Array(10).fill(0);
   const eliteFirst: ({ day: number; bare: number; carried: number } | undefined)[] = new Array(10).fill(undefined);
   let errands = 0;
-  /** 定 The days, bodies and kits a risen elite was lost to: the same dice, not pressed again. */
-  const eliteLost = new Set<string>();
   /**
    * 升 One try at the risen elite, the way somebody who fights takes it: the best kit carried
-   * (a crafter's), and only at ELITE_WILLING odds or better with it. A loss is remembered
-   * against the day, the wins, the stance, the arts, the kit and how far the beast is thinned,
-   * so it is pressed again only once one of them has changed. True when a fight was fought.
+   * (a crafter's), in the stance that suits it best, and only at ELITE_WILLING odds or better.
+   * 定 A loss holds for the day (State.eliteLost, sim/risen.ts), so risenNow says nothing until
+   * the next UTC day. True when a fight was fought.
    */
   const tryElite = (): boolean => {
     const b = NO_ELITE ? null : risenNow(s);
     if (!b) return false;
     if (h.crafts) s = carryBest(s, b, 'elite');
-    // 勢 In each stance held, as the Platform is taken: the dice are set, so a stance that lost
-    // today is not pressed again, and the next best one is a different fight.
     const kitOf = (x: State) => (h.crafts ? eliteKit(x, b) : { kit: NO_KIT, spends: false, used: NOT_USED });
-    const sigOf = (x: State) => {
-      const k = kitOf(x);
-      const thin = effectiveBeastPower(x, b) / Math.max(1e-9, power(x));
-      return [dayOf(x.at), x.killed[b.key] ?? 0, x.stance, x.sequence.join(','), k.used.elixir, k.used.sigil, thin.toFixed(5)].join('|');
-    };
     const bodies = (h.build ? stanceChoices(s.realm, s.layer).map((x) => ({ ...s, stance: x.key }) as State) : [s])
       .map((x) => ({ x, o: odds(x, b, undefined, kitOf(x).kit) }))
       .sort((a, z) => z.o - a.o);
     if (!eliteFirst[s.realm]) {
       eliteFirst[s.realm] = { day: (t - T0) / DAY, bare: Math.max(...bodies.map(({ x }) => odds(x, b))), carried: bodies[0]?.o ?? 0 };
     }
-    // 封 A crafter whose gate seals and who holds no blood for its Breakthrough Pill presses at any
-    // odds: a loss costs nothing, and the pill is the way through the seal.
-    const need = h.crafts && sealDays(s.realm) > 0 && pillHeld(s) === 0 && essenceOf(s, s.realm) < ESSENCE_NEED;
-    const pick = bodies.find(({ x, o }) => (need ? o > 0 : o >= ELITE_WILLING) && !eliteLost.has(sigOf(x)));
+    const pick = bodies[0] && bodies[0].o >= ELITE_WILLING ? bodies[0] : undefined;
     if (!pick) return false;
     const k = kitOf(pick.x);
     const out = eliteFight(pick.x, b, k.kit);
     eliteTries[s.realm]++;
     handHunts[s.realm]++;
     fights++;
-    if (!out.won) { eliteLost.add(sigOf(pick.x)); return true; }
+    if (!out.won) { s = loseElite(s, b); return true; }
     eliteWins[s.realm]++;
     s = quarried(s, takeKill(s, b));
     if (k.spends) s = spendKit(s, tookPart(k.used, !!out.revived));

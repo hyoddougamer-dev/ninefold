@@ -77,9 +77,13 @@ describe('留 hold the layer: off for everyone until it is turned on', () => {
     // fights at 60968266000, drives it all 49.5 and 29413 at 61713545000). Drives it all ends
     // weaker here because it can no longer drive the elite of the realm it stands in, which it
     // used to drive by the thousand for its triple material.
+    // 定 Taken a sixth time on 2026-10-19, when a loss to the risen elite began to hold for the
+    // UTC day (State.eliteLost): the harness no longer presses it again in another stance the
+    // same day. 4f153d8, the tree before it, gives the old digits (active 48.833 and 3903 fights,
+    // drives it all 49.833 and 30575).
     const was: Record<string, { arrival: number[]; fights: number; power: number }> = {
-      active: { arrival: [0, 0.5, 1, 3.333, 7.667, 14.167, 23.667, 36.333, 48.833], fights: 3903, power: 64744431000 },
-      'drives it all': { arrival: [0, 0.5, 1.167, 3.5, 7.833, 14, 24.667, 37.167, 49.833], fights: 30575, power: 45899247000 },
+      active: { arrival: [0, 0.5, 1, 3.333, 7.667, 13.833, 23.833, 36.333, 48.167], fights: 3861, power: 59279977000 },
+      'drives it all': { arrival: [0, 0.5, 1.167, 3.5, 7.833, 14, 25, 37.667, 50.667], fights: 44616, power: 50656277000 },
     };
     for (const [name, want] of Object.entries(was)) {
       const run = play(HABITS.find((h) => h.name === name)!, 120);

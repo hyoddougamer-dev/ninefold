@@ -1222,13 +1222,17 @@ export const RISEN = {
   odds: (bare: number, carried: number, carries: boolean) => (carries
     ? `${bare}% bare, ${carried}% with what you carry.`
     : `${bare}% bare. Carry an elixir or a sigil from the workshop to raise it.`),
-  dice: 'The dice are set for today: a win, a new day, or a change of stance, arts or what you carry is a new fight.',
+  dice: 'Its dice are set for today. Lose and it is done for today; it comes back tomorrow.',
+  /** 定 The row once it was lost today: set for today, back tomorrow (00:00 UTC). */
+  held: 'Lost today, and nothing was taken. It is set for today and comes back tomorrow (the day turns at 00:00 UTC).',
+  /** The odds column's label on a row lost today. */
+  heldLabel: 'tomorrow',
   leaves: (blood: number, part: string) => `Each win leaves ${blood} 精血 Essence Blood and its ${part} for the workshop.`,
   never: 'Never driven or put on Auto while it stands risen. Leave the realm and it goes back to its wall.',
   /** 鬥 A risen elite lost: the verdict's line, which never says "come back stronger" (power alone does not move it). */
-  lostHead: 'Nothing was lost. Its dice are set for today.',
-  /** 鬥 And under it: why Again is not offered, and what changes the fight. */
-  lost: 'Pressed again as you are, it is the same fight. Change your stance, your arts or what you carry, or come back tomorrow.',
+  lostHead: 'Nothing was lost. It is set for today.',
+  /** 鬥 And under it: why Again is not offered. */
+  lost: 'It cannot be fought again today. It comes back tomorrow, and the rest of the hunt is open.',
   /** 鬥 A risen elite won: the blood and the part, as chips. */
   blood: (n: number) => `+${n} 精血 Essence Blood`,
   part: (n: string, name: string) => `+${n} ${name}`,
@@ -1934,8 +1938,8 @@ export const SECRET = {
    */
   beast: (power: string, pct: number, above: boolean) =>
     `力 ${power}, ${above ? 'a realm above you' : 'the strongest thing this realm has'}. ${pct}% to put it down.`,
-  /** 關 The last gate from the fifth realm, which stands at least at the walker's own fight. */
-  risenGate: (edge: string) => `升 Risen: the last gate never stands below ×${edge} your own power, so it stays a real fight. What you carry counts here.`,
+  /** 關 The last gate from the fifth realm, which stands on the walker's own power, thinned like any beast. */
+  risenGate: '升 Risen: the last gate rises with your own power, so it stays a real fight. The 力 above is what it stands at after your sunder and bane. What you carry counts here.',
   apiece: 'a piece of gear',
   law: 'Take one and the room is spent. Everything you take is yours the moment you take it, and the rooms you do not reach stay in the spring for next time. A beast that puts you down ends the run and takes nothing back.',
   out: 'Walk out and keep everything',

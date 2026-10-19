@@ -300,6 +300,12 @@ export interface State {
    */
   essence?: Readonly<Record<string, number>>;
   /**
+   * 定 The UTC day (dayOf) each realm's risen elite was last lost on, by realm ("5" to "9").
+   * On that day it cannot be fought again (eliteHeld in sim/risen.ts). validate() keeps only
+   * days that have come, so a forged one can only ever hold a fight back.
+   */
+  eliteLost?: Readonly<Record<string, number>>;
+  /**
    * 記 What the last run gave, in total, so the end of one can say so.
    *
    * It is a record and not loot in flight: every room paid into the save the moment it
@@ -512,6 +518,7 @@ export function newState(now: number): State {
     spring: 0, springAt: now, incenseUntil: 0, trail: false,
     platform: { period: -1, beaten: 0 }, bouts: 0,
     essence: {},
+    eliteLost: {},
     quarryWeek: -1,
     fate: {},
     crafts: { ...NO_CRAFTS, since: now },

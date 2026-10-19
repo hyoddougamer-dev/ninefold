@@ -3,7 +3,6 @@ import {
   ROOM_INFO, doorIn, doorsAt, giftOf, incenseLeft, isGate, leave, roomsFor, canUseKey,
   shareAt, springNow, gateOdds, gatePower, gateRisen, type BoxHolds, type Gift,
 } from '../../sim/secret.ts';
-import { gateEdge } from '../../sim/risen.ts';
 import { rate } from '../../sim/time.ts';
 import { INCENSE_BONUS, KEY_SPRING, SPRING_FILL, SPRING_HOLD } from '../../sim/balance.ts';
 import { duration, num } from '../../sim/format.ts';
@@ -159,7 +158,7 @@ export function Secret({ state, onOpen, onLeave }: {
                 <i>{gift.fight
                   ? SECRET.beast(num(gatePower(state, step, gift.fight)), chance, gift.fight.realm > state.realm)
                   : info.says}</i>
-                {risenGate && <i className="risengate">{SECRET.risenGate(Number(gateEdge(state.realm).toFixed(2)).toString())}</i>}
+                {risenGate && <i className="risengate">{SECRET.risenGate}</i>}
                 {line && <em className="mono">{line}</em>}
                 {/* 期 And on the door itself, where the doubled number is already being
                     quoted: giftOf applies the blessing, so the line above is the truth
