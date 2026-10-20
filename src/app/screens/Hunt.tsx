@@ -3,7 +3,8 @@ import { fightDeps } from '../memo.ts';
 import { BEASTS, comingIn, huntable, plateOf } from '../../data/bestiary.ts';
 import { realm as realmOf } from '../../data/realms.ts';
 import { RealmTag } from '../ui/RealmTag.tsx';
-import { beastPower, effectiveBeastPower, isElite, lootFrom, oddsRaw } from '../../sim/combat.ts';
+import { beastPower, effectiveBeastPower, gateRoom, isElite, lootFrom, oddsRaw } from '../../sim/combat.ts';
+import { hardBeast } from '../../sim/legend.ts';
 import { ELITE_ESSENCE, ELITE_LOOT, ODDS_CEILING, ODDS_FLOOR } from '../../sim/balance.ts';
 import { eliteHeld, risenElite } from '../../sim/risen.ts';
 import { eliteOdds } from '../../sim/elite.ts';
@@ -19,7 +20,7 @@ import { Term } from '../ui/Term.tsx';
 import { schoolSays } from '../classes.ts';
 import { Door } from '../ui/Secret.tsx';
 import { isOpen } from '../../sim/unlocks.ts';
-import { HUNT, PILE, QOL, RISEN, UNIT } from '../copy.ts';
+import { ASCENT, HUNT, PILE, QOL, RISEN, UNIT } from '../copy.ts';
 import { Bestiary } from './Bestiary.tsx';
 import { TrophyLine } from '../ui/Trophy.tsx';
 import { DriveTag } from '../ui/Drive.tsx';
@@ -340,6 +341,13 @@ export function Hunt({ state, onFight, onDrive, onPile, onAuto, onSecret, onKey,
                 {up && (
                   <span className="etag rtagrisen"><b className="cjk">{RISEN.han}</b>
                     <i>{RISEN.name} · {RISEN.note} · {RISEN.today}</i></span>
+                )}
+                {/* 擊 The elite of the realm one stands in is a hard win: say what it strikes. */}
+                {hardBeast(state, b) && (
+                  <em className="htag">{ASCENT.hard} {[
+                    state.crafts.legend ? ASCENT.hardLegend : null,
+                    gateRoom(state) > 0 ? ASCENT.hardGate : null,
+                    ASCENT.hardSoul].filter(Boolean).join(', ')}.</em>
                 )}
                 {/* 註 The pips are the characters, so they are the tappable ones. A
                     second copy of 見 in the sentence beside them was the screen naming

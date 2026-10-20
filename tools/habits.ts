@@ -11,14 +11,14 @@ import { FORGED, NOT_USED, feedShare, kitFor, pillHeld, soulLocked, spendKit, un
 import { NO_KIT } from '../src/sim/kit.ts';
 import { carryBest, craftVisit, forgeKeep, forgeVisit, toLearn } from './crafter.ts';
 import { fuseIn, stash } from '../src/sim/stash.ts';
-import { LAYERS, focusAt, ladderBetween } from '../src/sim/balance.ts';
+import { GATE_STRIKE_ELITE, GATE_STRIKE_SHARE, LAYERS, focusAt, ladderBetween } from '../src/sim/balance.ts';
 import {
   atCap, atCeiling, breakThrough, buyAll, canBreakThrough, canBuy, canCondense,
-  canFightWarden, condense, canPaySeal, feedSeal, paySeal, sealPrice,
+  canFightWarden, condense, canPaySeal, feedSeal, paySeal, sealDays, sealPrice,
   newState, power, upgradeCost, wardenStands, type State,
 } from '../src/sim/state.ts';
 import { advance, canOpenLayer, layersOpened, openLayer, rate } from '../src/sim/time.ts';
-import { fight, odds, quarryPaid, takeKill } from '../src/sim/combat.ts';
+import { fight, gateRoom, odds, quarryPaid, takeKill } from '../src/sim/combat.ts';
 import { quarryOf, quarryOwed } from '../src/sim/week.ts';
 import { DRIVE_SIZES, canDrive, drive, driveCost, driveMax } from '../src/sim/hunt.ts';
 import { huntable, wardenOf } from '../src/data/bestiary.ts';
@@ -65,6 +65,8 @@ import { tookPart } from '../src/sim/crafts.ts';
 export const ELITE_WILLING = 0.25;
 /** 升 The risen elite left alone, for measuring what it is worth: NF_NO_ELITE=1 */
 const NO_ELITE = process.env.NF_NO_ELITE === '1';
+import { SKILL_KEYS } from '../src/data/crafts.ts';
+import { hardBeast, legendMade, legendsMade } from '../src/sim/legend.ts';
 
 /**
  * 承 What a worn piece is worth with its place's refining on it, for choosing the place
@@ -81,15 +83,25 @@ const DAY = 86_400;
  * 封 One visit's worth of paying a sealed gate: qi into the bar while it is allowed and the
  * purse can pay (at `scale` times the real price), then every lesser pill held.
  */
-export function payGate(s: State, scale: number): State {
+export function payGate(s: State, scale: number, hunts = 0): State {
   // Somebody holding the pill made for this gate carries it instead: it breaks the whole bar for nothing.
   const own = pillHeld(s) > 0 || unsealCarried(s) > 0;
+  // 擊 And somebody who will beat the realm's elite on this visit leaves to those wins the part
+  // of the seal they fill for nothing (sim/legend.ts), and pays for the rest: the card says what
+  // one win counts. Measured 2026-10-18: paying the whole bar first left the active payer at
+  // day 49.0 against 48.2 waiting, the qi spent on hours the hunt then filled anyway.
+  const elite = huntable(s.realm, s.layer).find((b) => hardBeast(s, b));
+  const coming = hunts > 0 && elite && odds(s, elite) > 0.7
+    ? Math.min(gateRoom(s), GATE_STRIKE_SHARE * sealDays(s.realm) * DAY - (s.gateStruck ?? 0), hunts * GATE_STRIKE_ELITE) : 0;
+  const struck = s.gateStruck;
+  if (coming > 0) s = { ...s, gateStruck: Math.max(0, struck ?? 0) + coming };
   for (let i = 0; i < 40 && !own && canPaySeal(s) && s.qi >= sealPrice(s) * scale; i++) {
     const owed = sealPrice(s);
     const next = paySeal(s);
     // A price off the real one is the real one paid and the difference handed back, or taken.
     s = { ...next, qi: Math.max(0, next.qi + owed * (1 - scale)) };
   }
+  if (coming > 0) s = { ...s, gateStruck: struck };
   for (const key of Object.keys(s.crafts.pouch)) {
     while (feedShare(key, s.realm) > 0 && (s.crafts.pouch[key] ?? 0) > 0) {
       const next = feedSeal(s, key);
@@ -204,6 +216,12 @@ export interface Habit {
    * the points reach. Every other habit stops at its branch.
    */
   readonly greedy?: boolean;
+  /**
+   * 傳說 Whether a crafter chases the legendary works (tools/crafter.ts legendTask): the one on
+   * the anvil forged, the nearest walked toward. Only with `crafts`; no habit in HABITS carries
+   * it, so no curve printed before the works moves for it. tools/ascent.ts plays it.
+   */
+  readonly legends?: boolean;
 }
 
 /**
@@ -339,6 +357,17 @@ export interface Run {
   }[];
   /** 期 Every week's quarry taken: the day, the realm, what it paid on top of the kill. */
   readonly quarries: readonly { readonly day: number; readonly realm: number; readonly paid: number }[];
+  /**
+   * 傳說 擊 The day each craft's legendary work was made (NaN if never), in the order of the
+   * crafts; the day the first 精魄 Elite Soul fell; and every hard win (one's own realm's
+   * elite, a vault gate), counted where they land.
+   */
+  readonly legend: {
+    readonly made: readonly number[];
+    readonly firstSoul: number;
+    readonly eliteWins: number;
+    readonly gateWins: number;
+  };
   /** 擂 Challengers beaten, by position (first, second, third), and periods the Platform stood. */
   readonly bouts: readonly number[];
   /**
@@ -640,6 +669,15 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher, start?: State, ga
   const biggest = Array.from({ length: 11 }, () => ({ hours: 0, rungs: 0 }));
   const floorRung: number[] = [];
   const bouts = [0, 0, 0];
+  const legendDay: number[] = SKILL_KEYS.map(() => NaN);
+  let firstSoul = NaN;
+  let gateWins = 0;
+  let hardWins = 0;
+  /** 擊 takeKill, with the hard wins counted as they land (the risen elite's among them). */
+  const killIt = (x: State, b: Beast): State => {
+    if (hardBeast(x, b)) hardWins++;
+    return takeKill(x, b);
+  };
   let periods = 0, lastPeriod = -1;
   const eliteTries = new Array(10).fill(0), eliteWins = new Array(10).fill(0), handHunts = new Array(10).fill(0);
   const eliteFirst: ({ day: number; bare: number; carried: number } | undefined)[] = new Array(10).fill(undefined);
@@ -670,7 +708,7 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher, start?: State, ga
     fights++;
     if (!out.won) { s = loseElite(s, b); return true; }
     eliteWins[s.realm]++;
-    s = quarried(s, takeKill(s, b));
+    s = quarried(s, killIt(s, b));
     if (k.spends) s = spendKit(s, tookPart(k.used, !!out.revived));
     if (h.gear) s = takeDrop(s, b, ++seed, h.calling);
     return true;
@@ -721,7 +759,7 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher, start?: State, ga
     watch?.((t - T0) / DAY, s);
 
     // 封 Qi into the bar of a sealed gate, and lesser pills, before the tree takes the qi.
-    if (h.paysSeal !== undefined) s = payGate(s, h.paysSeal);
+    if (h.paysSeal !== undefined) s = payGate(s, h.paysSeal, h.hunts);
 
     s = spendTree(s, h.branch, h.greedy);
 
@@ -853,7 +891,7 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher, start?: State, ga
     if (h.hunts > 0 && quarryOwed(s)) {
       const q = quarryOf(s);
       if (q && odds(s, q) > 0.7) {
-        s = quarried(s, takeKill(s, q));
+        s = quarried(s, killIt(s, q));
         if (h.gear) s = takeDrop(s, q, ++seed, h.calling);
         fights++;
         handHunts[s.realm]++;
@@ -871,7 +909,7 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher, start?: State, ga
     const learn = (h.crafts || forging) && h.hunts > 0
       ? toLearn(s, huntable(s.realm, s.layer).filter((x) => !risenElite(s, x) && odds(s, x) > 0.7)) : undefined;
     if (learn) {
-      s = quarried(s, takeKill(s, learn));
+      s = quarried(s, killIt(s, learn));
       if (h.gear) s = takeDrop(s, learn, ++seed, h.calling);
       fights++;
       handHunts[s.realm]++;
@@ -884,7 +922,7 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher, start?: State, ga
       const b = back ?? quarryFor(s, h.calling);
       if (!b) break;
       if (back) errands++;
-      s = quarried(s, takeKill(s, b));
+      s = quarried(s, killIt(s, b));
       if (h.gear) s = takeDrop(s, b, ++seed, h.calling);
       if (h.gear) s = fuseAll(s, h.calling);
       fights++;
@@ -947,6 +985,7 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher, start?: State, ga
      */
     if (canEnter(s)) {
       s = enterSecret(s);
+      const gatesAt = s.lastRun.gates;
       for (let r = 0; r < roomsFor(s.realm) + 2 && insideSecret(s); r++) {
         const step = s.runStep;
         const doors = doorsAt(s, step);
@@ -962,6 +1001,7 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher, start?: State, ga
         if (drinking) led.drunk += Math.max(0, s.qi - before);
       }
       if (insideSecret(s)) s = leaveSecret(s);
+      gateWins += Math.max(0, s.lastRun.gates - gatesAt);
     }
 
     /**
@@ -985,7 +1025,7 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher, start?: State, ga
     // it on something that will still be running when they are back, and wear a forged
     // piece the moment the game would mark it ▲, as with anything that falls.
     if (h.crafts || forging) {
-      s = h.crafts ? craftVisit(s, t, tick, h.calling, h.hundred ?? false) : forgeVisit(s, t, tick, h.calling!);
+      s = h.crafts ? craftVisit(s, t, tick, h.calling, h.hundred ?? false, !!h.legends) : forgeVisit(s, t, tick, h.calling!);
       for (const it of s.chest.filter((x) => x.from === FORGED)) {
         const slot = templateOf(it).slot as Slot;
         const worn = s.worn[slot];
@@ -1054,6 +1094,10 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher, start?: State, ga
       if (Number.isFinite(rung)) b.rungs = Math.max(b.rungs, visit / rung);
     }
 
+    // 傳說 The works made, and the first soul, read once a visit where they landed.
+    SKILL_KEYS.forEach((k, i) => { if (!Number.isFinite(legendDay[i]) && legendMade(s.crafts.made, k)) legendDay[i] = (t - T0) / DAY; });
+    if (!Number.isFinite(firstSoul) && ((s.crafts.souls ?? 0) > 0 || legendsMade(s.crafts.made) > 0)) firstSoul = (t - T0) / DAY;
+
     // 盡 The 修 screen's Buy all is this loop (buyAll); the harness has always bought every
     // box the sim will sell, 妖丹 included, so it passes that rule rather than the screen's.
     s = spend(buyAll(s, () => true).state);
@@ -1087,6 +1131,7 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher, start?: State, ga
       quarry: led.quarry },
     beats, quarries, bouts, periods,
     elite: { tries: eliteTries, wins: eliteWins, errands, hunts: handHunts, first: eliteFirst },
+    legend: { made: legendDay, firstSoul, eliteWins: hardWins, gateWins },
     tower: (() => {
       const total = s.qi + led.ladder + led.spent;
       const gained = towerBy.map((_, r) => {

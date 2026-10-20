@@ -22,8 +22,9 @@ import {
   workshopOpen, xpOf, type Where,
 } from '../src/sim/crafts.ts';
 import {
-  HUNDRED_RANKS, RECIPE_BY_KEY, hundredLevel, splitKey, type HundredRank, type Recipe, type SkillKey,
+  HUNDRED_RANKS, LEGENDS, RECIPE_BY_KEY, hundredLevel, legendKey, splitKey, type HundredRank, type Recipe, type SkillKey,
 } from '../src/data/crafts.ts';
+import { legendMade } from '../src/sim/legend.ts';
 import { GEAR, SLOTS, type Affix } from '../src/data/gear.ts';
 import { HUNDRED_HEAVEN_MADE, SECONDARIES } from '../src/sim/balance.ts';
 import { CRUCIBLE } from '../src/data/hundred.ts';
@@ -286,7 +287,7 @@ function feed(s: State, r: Recipe, span: number, depth = 0): string | null {
  * `span` is how long until they are back, so a task that would run dry in minutes is
  * passed over for one that keeps going, or for gathering what it is short of.
  */
-export function pickTask(s: State, span: number, build?: School | Pair, forgeFirst = false): string | null {
+export function pickTask(s: State, span: number, build?: School | Pair, forgeFirst = false, legends = false): string | null {
   // 戰 The kit first: a hard fight is where the crafts show, so the pouch never runs low.
   for (const r of kitTargets(s)) {
     const it = itemOf(r);
@@ -295,6 +296,8 @@ export function pickTask(s: State, span: number, build?: School | Pair, forgeFir
     const t = feed(s, r, span);
     if (t) return t;
   }
+  // 傳說 Somebody chasing the legendary works: the one on the anvil, or the nearest one.
+  if (legends) { const t = legendTask(s, span); if (t) return t; }
   // 職 Somebody building a class forges the places their school is short of, next.
   if (build) { const t = forFor(s, build, span); if (t) return t; }
   // 封 A gate that seals ahead, and an Alchemy level short of the Breakthrough Pill made for
@@ -338,6 +341,48 @@ export function pickTask(s: State, span: number, build?: School | Pair, forgeFir
 }
 
 /**
+ * 傳說 The workshop of somebody chasing the legendary works, read off the screen the way a
+ * player reads it: the work on the anvil is forged whenever nothing in the kit is short; a
+ * work that can be begun is begun; otherwise the nearest work (the one whose craft is
+ * closest to its level) is walked toward, one red line at a time: its craft levelled, a
+ * recipe of it mastered, or the material it is short of gathered or made. Elite Souls are
+ * the hunt's, so a work short only of souls waits on the hunt and the workshop levels on.
+ */
+export function legendTask(s: State, span: number): string | null {
+  const w = s.crafts.legend;
+  if (w) return w.key;
+  const open = LEGENDS.filter((l) => skillOpen(s, l.skill) && !legendMade(s.crafts.made, l.skill));
+  const ready = open.map((l) => RECIPE_BY_KEY[legendKey(l.skill)]).find((r) => blocked(s, r) === null);
+  if (ready) return ready.key;
+  const near = open.map((l) => RECIPE_BY_KEY[legendKey(l.skill)])
+    .sort((a, b) => (a.level - levelIn(s, a.skill)) - (b.level - levelIn(s, b.skill)) || a.level - b.level);
+  for (const r of near) {
+    const why = blocked(s, r);
+    // A level is left to the crafter's own levelling (the craft furthest behind first): a
+    // chaser who levelled only the nearest work's craft starved the knife that cuts the
+    // parts every work asks for, and made none in two hundred days (probe, 2026-10-18).
+    if (why === 'mastery') {
+      // The recipe nearest its last mark, so the count of mastered ones moves.
+      const mine = runnable(s, span, recipesOf(r.skill).filter((x) => x.makes.kind === 'item' || x.makes.kind === 'gear'));
+      const pick = mine.filter((x) => (s.crafts.made[x.key] ?? 0) < x.marks[x.marks.length - 1])
+        .sort((a, b) => (a.marks[a.marks.length - 1] - (s.crafts.made[a.key] ?? 0)) - (b.marks[b.marks.length - 1] - (s.crafts.made[b.key] ?? 0)))[0];
+      if (pick) return pick.key;
+      continue;
+    }
+    if (why === 'needs') {
+      for (const [k, n] of r.needs) {
+        if (k === 'mat' || held(s, k) >= n) continue;
+        for (const m of RECIPES.filter((x) => x.makes.kind === 'item' && x.makes.item === k)) {
+          const t = feed(s, m, span);
+          if (t) return t;
+        }
+      }
+    }
+  }
+  return null;
+}
+
+/**
  * 解 A beast Rendering does not know yet, among the ones they can safely hunt: the errand
  * the screen sets in red ("0 of 10 killed"), run the way a player runs it, a few kills of
  * an old beast on the way to the new ones.
@@ -358,7 +403,7 @@ export function toLearn(s: State, safe: readonly Beast[]): Beast | undefined {
  */
 export type SetChase = false | 'forge' | 'spread';
 
-export function craftVisit(s: State, now: number, span: number, build?: School | Pair, hundred: SetChase = false): State {
+export function craftVisit(s: State, now: number, span: number, build?: School | Pair, hundred: SetChase = false, legends = false): State {
   if (!workshopOpen(s)) return s;
   s = work(s, now);
   const slots = arraySlots(levelIn(s, 'array'));
@@ -375,7 +420,7 @@ export function craftVisit(s: State, now: number, span: number, build?: School |
     s = salvage(s, spare.map((x) => x.id));
   }
   const planned = plan ? { ...s, crafts: { ...s.crafts, order: plan } } : s;
-  const want = pickTask(planned, Math.min(span, workSeconds(s)), build, hundred === 'forge');
+  const want = pickTask(planned, Math.min(span, workSeconds(s)), build, hundred === 'forge', legends);
   if (want === s.crafts.task && (!plan || sameOrder(plan, s.crafts.order))) return s;
   if (plan && want && RECIPE_BY_KEY[want]?.makes.kind === 'hundred') return setOrder(s, plan, now);
   return setTask(plan ? { ...s, crafts: { ...s.crafts, order: plan } } : s, want, now);

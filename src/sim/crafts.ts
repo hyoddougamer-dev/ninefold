@@ -32,7 +32,7 @@ import {
   BREAKTHROUGH_TIERS, FORGED, arrayKey, breakthroughKey, levelOf, pouchKey, splitKey, tierLevel,
   type Recipe, type SkillKey,
 } from '../data/crafts.ts';
-import { BEASTS, type Beast } from '../data/bestiary.ts';
+import { BEASTS, isElite, type Beast } from '../data/bestiary.ts';
 import {
   RARITIES, TEMPLATE_BY_KEY, baseValue, roundValue, type Item, type Roll,
 } from '../data/gear.ts';
@@ -45,7 +45,17 @@ import {
   bestHundred, codexValue, hundredKit, orderNeeds, orderRecipe, piecesMade, pieceOf, setOpen, validHundredMade, validOrder,
   type Order,
 } from './hundred.ts';
-import { BOTTLENECK_LOOSEN, CODEX_CAP, CRAFT_CARRY, HUNDRED_HEAVEN_MADE, REALM_WALL, SEAL_DAYS, SEAL_PILL_SHARE } from './balance.ts';
+import { BOTTLENECK_LOOSEN, CODEX_CAP, CRAFT_CARRY, DEEP_ROOMS, DOOR_GAP, GATE_STRIKE_SHARE, HUNDRED_HEAVEN_MADE, LEGEND_FIGHT_SHARE, LEGEND_MASTERED, LEGEND_SPEED, REALM_WALL, SEAL_DAYS, SEAL_PILL_SHARE } from './balance.ts';
+import { finishLegend, isLegend, legendLeft, legendMade, legendSpeed, type LegendWork } from './legend.ts';
+import { SOUL } from '../data/crafts.ts';
+
+/**
+ * 擊 The days a gate counts as waited toward something `whole` days long: state.ts gateWaited,
+ * written here because state.ts reads this file. crafts.test holds the two to each other.
+ */
+export const waitedAt = (s: State, whole: number) => (s.gateAt > 0
+  ? Math.max(0, (s.at - s.gateAt) / 86_400)
+    + Math.min(Math.max(0, s.gateStruck ?? 0) / 86_400, GATE_STRIKE_SHARE * Math.max(0, whole)) : 0);
 
 export interface Carry {
   /** A pouch key: an elixir, with its rank. */
@@ -89,6 +99,13 @@ export interface Crafts {
    * rank and every line. Cleared when the piece is made. See sim/hundred.ts.
    */
   readonly order?: Order | null;
+  /**
+   * 傳說 The legendary work on the anvil, its materials already paid, kept to the second until
+   * it is made. One at a time. See sim/legend.ts.
+   */
+  readonly legend?: LegendWork | null;
+  /** 精魄 Elite Souls held: left by one's own realm's elite, asked for by the legendary works. */
+  readonly souls?: number;
 }
 
 const zeroSkills = <T>(v: T): Record<SkillKey, T> =>
@@ -162,6 +179,8 @@ export function held(s: State, key: string): number {
   // 精血 Blood is held beside the pouch, by realm.
   const blood = essenceRealm(key);
   if (blood !== null) return essenceOf(s, blood);
+  // 精魄 Elite Souls are held beside the pouch: nothing makes them, so the pouch's bounds never read them.
+  if (key === SOUL) return s.crafts.souls ?? 0;
   return s.crafts.pouch[key] ?? 0;
 }
 
@@ -237,7 +256,12 @@ export function masteryOf(s: State, skill: SkillKey): number {
 
 /** 熟 The most a craft's mastery can ever be: every recipe it has, mastered. */
 export function masteryMost(skill: SkillKey): number {
-  return masteryFor(RECIPES_OF[skill].length);
+  return masteryFor(masterable(skill));
+}
+
+/** 熟 How many of a craft's recipes can be mastered: all of them but its legendary work, which is made once. */
+export function masterable(skill: SkillKey): number {
+  return RECIPES_OF[skill].filter((r) => !isLegend(r)).length;
 }
 
 export function placed(s: State, key: string): boolean {
@@ -302,7 +326,9 @@ export function secondsOf(s: State, r: Recipe, mastery: number = masteryOf(s, r.
     * (1 - CRAFT_MARK_SUB) ** subsOf(s, r).fast
     * (1 - mastery)
     // 譜 碧玉 The Jadewater codex: the whole workshop faster, for good.
-    * (1 - codexValue(s, 'work'));
+    * (1 - codexValue(s, 'work'))
+    // 傳說 And the craft's own legendary work, once it is made.
+    * (1 - legendSpeed(s.crafts.made, r.skill));
 }
 
 /** 經 The experience one make pays this cultivator. */
@@ -329,11 +355,17 @@ export function needsOf(s: State, r: Recipe): readonly (readonly [string, number
   return r.needs.map(([k, n], i) => [k, i === 0 && less && n > r.weight ? n - r.weight : n] as const);
 }
 
-export type Blocked = 'shut' | 'level' | 'realm' | 'needs' | 'remains' | 'chest' | 'tool' | 'order' | null;
+/**
+ * 傳說 'mastery' a legendary work's craft has fewer than LEGEND_MASTERED recipes mastered,
+ * 'made' it is made already, 'anvil' another work is on the anvil.
+ */
+export type Blocked = 'shut' | 'level' | 'realm' | 'needs' | 'remains' | 'chest' | 'tool' | 'order'
+  | 'mastery' | 'made' | 'anvil' | null;
 
 /** Why a recipe cannot be made right now, or null if it can. The screen says each one. */
 export function blocked(s: State, r: Recipe): Blocked {
   if (!skillOpen(s, r.skill)) return 'shut';
+  if (r.makes.kind === 'legend') return legendBlocked(s, r);
   if (levelIn(s, r.skill) < r.level) return 'level';
   if (s.realm < r.realm) return 'realm';
   if (r.makes.kind === 'tool' && (s.crafts.tools[r.makes.skill] ?? 0) >= r.makes.step) return 'tool';
@@ -351,9 +383,29 @@ export function blocked(s: State, r: Recipe): Blocked {
   return null;
 }
 
+/**
+ * 傳說 Why a legendary work cannot be begun or worked on now. The one on the anvil is never
+ * blocked: its materials are paid, and the workshop may always go back to it. A work not begun
+ * asks for its level, its realm, its mastered recipes and every material at once, because
+ * beginning it is what puts them on the anvil.
+ */
+function legendBlocked(s: State, r: Recipe): Blocked {
+  const w = s.crafts.legend;
+  if (w && w.key === r.key) return null;
+  if (legendMade(s.crafts.made, r.skill as SkillKey)) return 'made';
+  if (levelIn(s, r.skill) < r.level) return 'level';
+  if (s.realm < r.realm) return 'realm';
+  if (masteredIn(s, r.skill) < LEGEND_MASTERED) return 'mastery';
+  if (w) return 'anvil';
+  if (r.needs.some(([k, n]) => held(s, k) < n)) return 'needs';
+  return null;
+}
+
 /** Whether a recipe could be set going at all: open, levelled and reached, whatever is in the pouch. */
 export function canSet(s: State, r: Recipe): boolean {
   const b = blocked(s, r);
+  // 傳說 A legendary work is begun with everything at once, so it is set only when it can be.
+  if (r.makes.kind === 'legend') return b === null;
   return b === null || b === 'needs' || b === 'remains' || b === 'chest';
 }
 
@@ -531,10 +583,11 @@ export function settle(s: State, now: number): Settled {
     return { state: c.since === now ? s : { ...s, crafts: { ...c, since: now } }, stood: 'idle', stoodFrom: c.since };
   }
   const r = RECIPE_BY_KEY[c.task];
-  if (!r || !canSet(s, r)) {
+  if (!r || !canSet(s, r) || (r.makes.kind === 'legend' && c.legend?.key !== r.key)) {
     return { state: { ...s, crafts: { ...c, task: null, since: now } }, stood: 'idle', stoodFrom: c.since };
   }
   if (now <= c.since) return { state: s, stood: null, stoodFrom: null };
+  if (r.makes.kind === 'legend') return settleLegend(s, now);
 
   const end = Math.min(now, c.since + workSeconds(s));
   let out = s;
@@ -574,13 +627,49 @@ export function settle(s: State, now: number): Settled {
   return { state: { ...out, crafts: { ...out.crafts, since: Math.min(now, since) } }, stood, stoodFrom };
 }
 
+/**
+ * 傳說 The workshop at a legendary work: every second it works goes onto the anvil, up to
+ * workSeconds() past the last visit like any other task, and none of it is ever lost. The
+ * work is made the instant its last second is in, and the workshop stands idle from there.
+ */
+function settleLegend(s: State, now: number): Settled {
+  const c = s.crafts;
+  const w = c.legend!;
+  const end = Math.min(now, c.since + workSeconds(s));
+  const worked = Math.max(0, end - c.since);
+  const left = legendLeft(w);
+  if (worked >= left) {
+    const at = c.since + left;
+    const done: State = { ...s, crafts: { ...c, legend: { ...w, done: w.done + left } } };
+    const made = finishLegend(done, at);
+    return { state: { ...made, crafts: { ...made.crafts, task: null, since: now } }, stood: 'idle', stoodFrom: at };
+  }
+  const state: State = { ...s, crafts: { ...c, legend: { ...w, done: w.done + worked }, since: end < now ? now : end } };
+  return { state, stood: end < now ? 'limit' : null, stoodFrom: end < now ? end : null };
+}
+
+/** 傳說 Put a legendary work on the anvil: every material paid at once, and nothing forged yet. */
+function beginLegend(s: State, r: Recipe): State {
+  const pouch: Record<string, number> = { ...s.crafts.pouch };
+  let materials = s.materials;
+  let souls = s.crafts.souls ?? 0;
+  for (const [k, n] of r.needs) {
+    if (k === 'mat') materials -= n;
+    else if (k === SOUL) souls -= n;
+    else addTo(pouch, k, -n);
+  }
+  return { ...s, materials, crafts: { ...s.crafts, pouch, souls, legend: { key: r.key, done: 0, struck: 0 } } };
+}
+
 /** 作 Set the workshop going on a recipe. Settles what was running first. */
 export function setTask(s: State, key: string | null, now: number): State {
   const settled = work(s, now);
   if (key === null) return { ...settled, crafts: { ...settled.crafts, task: null, since: now } };
   const r = RECIPE_BY_KEY[key];
   if (!r || !canSet(settled, r)) return settled;
-  return { ...settled, crafts: { ...settled.crafts, task: key, since: now } };
+  // 傳說 Set on a work not yet begun, the workshop begins it: its materials go onto the anvil.
+  const begun = r.makes.kind === 'legend' && settled.crafts.legend?.key !== r.key ? beginLegend(settled, r) : settled;
+  return { ...begun, crafts: { ...begun.crafts, task: key, since: now } };
 }
 
 /**
@@ -608,6 +697,12 @@ export function progressOf(s: State, now: number): number {
   const c = s.crafts;
   const r = c.task ? RECIPE_BY_KEY[c.task] : undefined;
   if (!r || blocked(s, r) !== null) return 0;
+  // 傳說 A legendary work's bar is the whole forging, with what is unsettled since the last visit.
+  if (r.makes.kind === 'legend' && c.legend?.key === r.key) {
+    const need = r.seconds;
+    const worked = Math.max(0, Math.min(now, c.since + workSeconds(s)) - c.since);
+    return Math.max(0, Math.min(1, (c.legend.done + c.legend.struck + worked) / need));
+  }
   return Math.max(0, Math.min(1, (now - c.since) / secondsOf(s, r)));
 }
 
@@ -755,7 +850,7 @@ export function wallDays(realm: number): number {
  */
 export function wallDaysLeft(s: State, b: Beast, breach = 0): number {
   if (!b.warden || b.realm >= 9 || b.realm !== s.realm) return 0;
-  const days = (s.gateAt > 0 ? Math.max(0, (s.at - s.gateAt) / 86_400) : 0) + Math.max(0, breach);
+  const days = waitedAt(s, wallDays(b.realm)) + Math.max(0, breach);
   return Math.max(0, wallDays(b.realm) - days);
 }
 
@@ -912,7 +1007,7 @@ export function kitFor(s: State, b: Beast, where: Where | null, share = DRAGON_K
     if (it && PILL_CARRIED.has(key)) {
       const seal = SEAL_DAYS[b.realm - 1] ?? 0;
       // 封 Time, qi and lesser pills fill the bar too: a pill breaks only what is still unfilled.
-      const waited = (s.gateAt > 0 ? Math.max(0, (s.at - s.gateAt) / 86_400) : 0)
+      const waited = waitedAt(s, seal)
         + (Math.max(0, s.sealPaid ?? 0) + Math.max(0, s.sealFed ?? 0)) / 86_400;
       const breaks = it.realm >= b.realm && seal > 0 && waited < seal;
       const share = pillShare(quality ?? 0, fade(it.realm, fightRealm));
@@ -1165,8 +1260,9 @@ export function carriedXp(xp: Readonly<Record<SkillKey, number>> | undefined, sh
 export const XP_PER_SECOND_MAX: Readonly<Record<SkillKey, number>> = Object.fromEntries(SKILL_KEYS.map((k) => {
   // The first mark, the four after it standing in as speed at most, the craft mastered in
   // every recipe it has, and the arrays at their deepest.
+  // 傳說 And the craft's own legendary work made.
   const fastest = (1 - CRAFT_TOOL_STEP * CRAFT_TOOL_STEPS) * (1 - CRAFT_ARRAY_SPEED * CRAFT_ARRAY_DEPTH_TOP)
-    * (1 - CRAFT_MARK_FASTER) * (1 - CRAFT_MARK_SUB) ** (CRAFT_MARKS.length - 1) * (1 - masteryMost(k));
+    * (1 - CRAFT_MARK_FASTER) * (1 - CRAFT_MARK_SUB) ** (CRAFT_MARKS.length - 1) * (1 - masteryMost(k)) * (1 - LEGEND_SPEED);
   const best = Math.max(...RECIPES.filter((r) => r.skill === k).map((r) => r.xp / (r.seconds * fastest)));
   // 譜 碧玉 And the Jadewater codex at its most.
   return [k, best * (1 + CRAFT_ARRAY_XP * CRAFT_ARRAY_DEPTH_TOP) / (1 - CODEX_CAP.work)];
@@ -1250,6 +1346,20 @@ export function validCrafts(
   // 百煉 And the Hundredfold pieces only where their set could be made: see validHundredMade.
   const fair = validHundredMade(made, s.killed);
   for (const k of Object.keys(made)) if (!(k in fair)) delete made[k];
+  // 傳說 A legendary work is made once, and only by a craft with LEGEND_MASTERED recipes mastered.
+  const masteredBy = (k: SkillKey) => RECIPES_OF[k].filter((r) => (made[r.key] ?? 0) >= r.marks[r.marks.length - 1]).length;
+  for (const k of SKILL_KEYS) {
+    const key = `legend:${k}`;
+    if (made[key] === undefined) continue;
+    if (masteredBy(k) < LEGEND_MASTERED) delete made[key]; else made[key] = 1;
+  }
+  const legend = validLegend(o.legend, made, open, level, s.realm, masteredBy, elapsed);
+  // 精魄 Souls only from wins over elites and gates in the secret realm, so never more than the
+  // elites the save has beaten and the gates the time it has lived could hold: a walk every
+  // door gap at its shortest (the Hidden Door at its deepest), a Realm Key a day, two in hand.
+  const elites = BEASTS.filter(isElite).reduce((n, b) => n + Math.max(0, Math.floor(num(s.killed[b.key], 0, 1e9))), 0);
+  const walks = Math.ceil(elapsed / (DOOR_GAP - CRAFT_ARRAY_DOOR * CRAFT_ARRAY_DEPTH_TOP)) + Math.ceil(elapsed / 86_400) + 2;
+  const souls = Math.floor(num(o.souls, 0, Math.min(1e6, elites + walks * Math.floor(DEEP_ROOMS / 2))));
 
   // 具 A tool is only held if this forge level and realm could have made it.
   const forge = open('forge') ? level('forge') : 0;
@@ -1311,7 +1421,31 @@ export function validCrafts(
     seek: seeks(level) ? Math.floor(num(o.seek, 0, CRAFT_SEEK_MAX)) : 0,
     // 百煉 An order is only what the crucible could hold: see validOrder.
     ...withOrder(validOrder(o.order, s.realm)),
+    // 傳說 精魄 Left out of a save that never had them, so an old save reads as it always did.
+    ...(legend ? { legend } : {}),
+    ...(souls > 0 ? { souls } : {}),
   };
+}
+
+/**
+ * 傳說 The work on the anvil, as a save may hold it: a real work not made yet, of a craft
+ * that could have begun it (its level, its realm, its mastered recipes), with no more of the
+ * workshop's seconds on it than the run has lived and no more struck off than strikes may take.
+ */
+function validLegend(
+  raw: unknown, made: Readonly<Record<string, number>>, open: (k: SkillKey) => boolean, level: (k: SkillKey) => number,
+  realm: number, mastered: (k: SkillKey) => number, elapsed: number,
+): LegendWork | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const o = raw as Record<string, unknown>;
+  const r = typeof o.key === 'string' ? RECIPE_BY_KEY[o.key] : undefined;
+  if (!r || r.makes.kind !== 'legend' || made[r.key]) return null;
+  const k = r.skill;
+  if (!open(k) || level(k) < r.level || realm < r.realm || mastered(k) < LEGEND_MASTERED) return null;
+  const n = (x: unknown, hi: number) => (typeof x === 'number' && Number.isFinite(x) ? Math.min(hi, Math.max(0, x)) : 0);
+  const struck = n(o.struck, LEGEND_FIGHT_SHARE * r.seconds);
+  const done = n(o.done, Math.min(elapsed, r.seconds - struck));
+  return { key: r.key, done, struck };
 }
 
 /** 百煉 A crucible with something in it is kept; an empty one is left out of the save. */

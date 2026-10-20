@@ -7,8 +7,9 @@ import { KEY_SPRING } from './balance.ts';
 import { stash } from './stash.ts';
 import { commonsOf, type Beast } from '../data/bestiary.ts';
 import { REALM_KEY } from '../data/crafts.ts';
-import { beastPower, effectiveBeastPower, isElite, odds } from './combat.ts';
+import { beastPower, effectiveBeastPower, gateRoom, isElite, odds } from './combat.ts';
 import { gateEdge } from './risen.ts';
+import { gateSoul, hardWin } from './legend.ts';
 import { power } from './state.ts';
 import type { Kit } from './kit.ts';
 import type { Carried } from './crafts.ts';
@@ -459,6 +460,9 @@ export function open(s: State, which: 0 | 1 | 2, seed: number): State {
     // walker back when the same roll would have lost without it; otherwise it stays.
     const revived = carried.kit.revive && roll >= gateOdds(s, step, beast, { ...carried.kit, revive: false });
     out = { ...(carried.spends ? spendKit(out, tookPart(carried.used, revived)) : out), lastRun: { ...out.lastRun, gates: out.lastRun.gates + 1 } };
+    // 擊 A gate beaten is a hard win: it strikes the legendary work on the anvil, and counts as
+    // time waited at a warden's gate, if one stands (sim/legend.ts). Still nothing on the record.
+    out = gateSoul(hardWin(out, 'gate', gateRoom(out)));
   } else {
     // 泉 The room is spent, whichever door it was.
     out = {

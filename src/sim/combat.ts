@@ -7,7 +7,9 @@ import {
   REALM_WALL, REFERENCE_BELOW, ROUND_CAP, SEEN_BOUNTY, STANCE_NUMBERS, WARDEN_LOOT, WARDEN_TRIBUTE,
   floorPay, ladderBetween,
 } from './balance.ts';
-import { UPGRADE_INFO, capOf, crossTribulation, power, tribulationPower, type State } from './state.ts';
+import { UPGRADE_INFO, capOf, crossTribulation, gateWaited, power, sealDays, tribulationPower, wardenStands, type State } from './state.ts';
+import { gateStrikeRoom, hardBeast, hardWin, soulOn } from './legend.ts';
+import { wallDays } from './crafts.ts';
 import { beastWeakness } from './dao.ts';
 import { heavenAt } from '../data/heavens.ts';
 import { sequenceOf, stanceOf } from './arts.ts';
@@ -113,7 +115,8 @@ export function bottleneck(s: State, b: Beast, breach = 0): number {
   if (!b.warden || b.realm >= 9 || b.realm !== s.realm) return 1;
   const wall = wallOf(b.realm);
   if (wall <= 1) return 1;
-  const days = (s.gateAt > 0 ? Math.max(0, (s.at - s.gateAt) / 86_400) : 0) + Math.max(0, breach);
+  // 擊 Hard wins at the gate count as days waited (gateWaited).
+  const days = gateWaited(s, wallDays(b.realm)) + Math.max(0, breach);
   return Math.max(1, wall * (1 - BOTTLENECK_LOOSEN) ** days) / wall;
 }
 
@@ -374,7 +377,16 @@ export function takeKill(s: State, b: Beast): State {
   // 精血 An elite leaves its realm's blood; 解 a risen one leaves its part as well, one heavy
   // make's worth, as much as the pouch may keep (sim/risen.ts).
   const blood = essenceFrom(b);
-  return blood > 0 ? eliteRemains(addEssence(taken, b.realm, blood), b, risenElite(s, b)) : taken;
+  const out = blood > 0 ? eliteRemains(addEssence(taken, b.realm, blood), b, risenElite(s, b)) : taken;
+  // 擊 The elite of the realm one stands in (from the fifth realm, the risen elite) is a hard
+  // win as well: it strikes the legendary work on the anvil and counts as time waited at a
+  // standing gate (sim/legend.ts), and one win in LEGEND_SOUL_EVERY leaves 精魄 an Elite Soul.
+  // Both effects land on the same win: its blood and its soul or strike. A 圍 drive never
+  // comes through here: a hard win is a fight fought, not one bought.
+  if (!hardBeast(s, b)) return out;
+  const souled = soulOn(s.startedAt, b.key, kills + 1)
+    ? { ...out, crafts: { ...out.crafts, souls: (out.crafts.souls ?? 0) + 1 } } : out;
+  return hardWin(souled, 'elite', gateRoom(souled));
 }
 
 /**
@@ -388,6 +400,15 @@ export function eliteRemains(s: State, b: Beast, risen: boolean): State {
   const n = Math.min(ELITE_PARTS, pouchRoom(s, key));
   if (n <= 0) return s;
   return { ...s, crafts: { ...s.crafts, pouch: { ...s.crafts.pouch, [key]: (s.crafts.pouch[key] ?? 0) + n } } };
+}
+
+/**
+ * 擊 How much more of the gate standing now hard wins may count as waited: none when no warden
+ * stands, its realm has no seal and no wall, or it has already fallen.
+ */
+export function gateRoom(s: State): number {
+  if (s.realm >= 9 || s.wardenFell || !wardenStands(s) || s.gateAt <= 0) return 0;
+  return gateStrikeRoom(s, sealDays(s.realm), wallDays(s.realm));
 }
 
 /**

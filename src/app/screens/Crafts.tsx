@@ -14,8 +14,11 @@ import { realm as realmOf } from '../../data/realms.ts';
 import {
   FEEDER, arraySlots, blocked, carrySlot, cutOf, depthOf, depthStrength, doubles, furnaceDiscount, held, levelIn, markApplies,
   marksOf, masteredIn, masteryMost, masteryOf, needsOf, placed, progressOf, qualityFor, knownAt, known, secondsOf, skillOpen, toNextDepth, totalLevel,
-  kitFor, makerOf, pillHeld, unsealCarried, wallDays, workSeconds, xpOf, type Hand,
+  kitFor, makerOf, masterable, pillHeld, unsealCarried, wallDays, workSeconds, xpOf, type Hand,
 } from '../../sim/crafts.ts';
+import { legendLeft, legendShare, strikeRoom } from '../../sim/legend.ts';
+import { LEGEND_MASTERED } from '../../sim/balance.ts';
+import { SOUL, legendKey } from '../../data/crafts.ts';
 import {
   CRAFT_ARRAY_DEPTH_EVERY, CRAFT_ARRAY_DEPTH_STEPS, CRAFT_ARRAY_DEPTH_TOP, CRAFT_FEED_LEVEL, CRAFT_TOOL_STEP,
   CRAFT_ARRAY_SLOTS, CRAFT_SEEK_MAX,
@@ -29,7 +32,7 @@ import { Emblem } from '../ui/Emblem.tsx';
 import { Term } from '../ui/Term.tsx';
 import { Plate } from '../ui/Plate.tsx';
 import { Svg } from '../ui/Svg.tsx';
-import { CRAFTS, WORKSHOP_FIX } from '../copy.ts';
+import { ASCENT, CRAFTS, WORKSHOP_FIX } from '../copy.ts';
 import { keep, oneOf, recall, useRemembered } from '../prefs.ts';
 import { pictureOf } from '../../data/pictures.ts';
 import { Hundred } from '../ui/Hundred.tsx';
@@ -258,8 +261,10 @@ export function Crafts({ state, onTask: setTaskTo, onCarry, onUse, onPlace, onGo
             <p className="cmastery">
               <Term han="習" plain />{' '}
               {CRAFTS.masteryLine(info.name, Number((masteryOf(state, skill) * 100).toFixed(1)),
-                masteredIn(state, skill), mine.length, Math.round(masteryMost(skill) * 100))}
+                masteredIn(state, skill), masterable(skill), Math.round(masteryMost(skill) * 100))}
             </p>
+            {/* 傳說 The craft's long goal, always: the work at its top and what stands in the way. */}
+            <LegendGoal state={state} skill={skill} />
             {/* 今 What this craft makes that is new in the realm you stand in, read off the recipes. */}
             {(() => {
               const here = newHere(skill, state.realm);
@@ -336,6 +341,8 @@ export function Crafts({ state, onTask: setTaskTo, onCarry, onUse, onPlace, onGo
       {!open && <p className="faint cpreview" style={{ margin: '0 0 8px', fontSize: 12 }}>{CRAFTS.preview(info.name)}</p>}
       {/* 一 What every Breakthrough Pill does, once, over a list that holds any of them. */}
       {list.some(isPill) && <p className="faint cpillrule">{PILL_RULE}</p>}
+      {/* 傳說 And what every legendary work is, once, over its list. */}
+      {list.some((r) => r.makes.kind === 'legend') && <p className="faint cpillrule">{ASCENT.rule} {ASCENT.soulRule}</p>}
       {open && skill === 'forge' && shown === 'Hundredfold' && !needle && onOrder
         ? <Hundred state={state} onOrder={onOrder} onFind={goTo} />
         : (
@@ -581,6 +588,22 @@ function Task({ state, r, onStop, onSet, onGo, onFind }: {
   }
   const why = blocked(state, r);
   const p = progressOf(state, state.at);
+  // 傳說 A legendary work in hand: the forging's own bar, what is left and what fights struck.
+  if (r.makes.kind === 'legend' && state.crafts.legend?.key === r.key) {
+    return (
+      <div className="card ctask">
+        <div className="row">
+          <Out r={r} size={40} />
+          <span style={{ flex: 1, minWidth: 0 }}>
+            <b style={{ display: 'block', fontSize: 14.5 }}>{CRAFTS.making(r.name)}</b>
+            <i className="faint" style={{ fontStyle: 'normal', fontSize: 12 }}>{SKILL_BY_KEY[r.skill].name} · {ASCENT.group}</i>
+          </span>
+          <button className="act small" onClick={onStop}>{CRAFTS.stop}</button>
+        </div>
+        <Anvil state={state} r={r} running />
+      </div>
+    );
+  }
   const wait = why === 'remains' && r.remains ? CRAFTS.waitingRemains(state.killed[r.remains] ?? 0, knownAt(r.remains))
     : why === 'chest' ? CRAFTS.waitingChest
     : why === 'needs' ? CRAFTS.waitingNeeds(needsOf(state, r).filter(([k, n]) => held(state, k) < n)
@@ -618,6 +641,8 @@ const fmtXp = (x: number) => (x >= 100 ? num(Math.round(x)) : x.toFixed(1).repla
 /** The thing a recipe makes, drawn: its item, its tool, or the shape of its gear. */
 function Out({ r, size }: { r: Recipe; size: number }) {
   if (r.makes.kind === 'item') return <Thing k={r.makes.item} size={size} />;
+  // 傳說 A legendary work is drawn as the thing it is, from its own entry in the item table.
+  if (r.makes.kind === 'legend') return <Thing k={r.key} size={size} />;
   if (r.makes.kind === 'tool') {
     const t = SKILL_BY_KEY[r.makes.skill].tool;
     return <span className="cic" style={{ width: size, height: size, color: realmOf(r.realm).colour }}>
@@ -708,12 +733,44 @@ function Row({ state, r, on, lit, onStart, onGo, looks }: {
   looks?: React.ReactNode;
 }) {
   const why = blocked(state, r);
+  const legend = r.makes.kind === 'legend';
+  const anvil = legend && state.crafts.legend?.key === r.key ? state.crafts.legend : null;
   const lock = why === 'level' ? CRAFTS.why.level(r.level) : why === 'realm' ? CRAFTS.why.realm(r.realm)
     : why === 'tool' ? CRAFTS.why.tool
+    // 傳說 A legendary work: its mastered recipes, made already, or the anvil busy with another.
+    : why === 'mastery' ? ASCENT.why.mastery(masteredIn(state, r.skill), LEGEND_MASTERED)
+    : why === 'made' ? ASCENT.why.made : why === 'anvil' ? ASCENT.why.anvil
     // 覽 A craft not open yet: the realm the recipe waits for, if that is further still.
     : why === 'shut' ? (r.realm > state.realm ? CRAFTS.why.realm(r.realm) : CRAFTS.why.shut) : null;
   const q = r.graded && !lock ? qualityFor(state, r) : null;
   const marks = marksOf(state, r);
+  if (legend) {
+    return (
+      <div className="crow clegend" data-on={on} data-lock={lock !== null} data-recipe={r.key} data-lit={lit || undefined}>
+        <Out r={r} size={40} />
+        <span className="cr-body">
+          <b><span className="cjk">{r.han}</span> {r.name}</b>
+          <i className="cr-meta mono">Lv {r.level} · {CRAFTS.why.realm(r.realm)} · {duration(r.seconds)}</i>
+          {anvil ? <Anvil state={state} r={r} running={on} /> : why !== 'made' && (
+            <span className="cr-needs">
+              {r.needs.map(([k, n]) => (
+                <span key={k} data-short={held(state, k) < n}>
+                  {k === 'mat' ? <b className="cjk"><Term han="材" plain /></b> : <Named k={k} onGo={onGo} />}
+                  {num(held(state, k))}<em>/{num(n)}</em>
+                </span>
+              ))}
+            </span>
+          )}
+          {r.does && <i className="cr-does">{r.does}</i>}
+        </span>
+        {lock
+          ? <em className="cr-lock">{lock}</em>
+          // 傳說 Begun with everything at once, so a work short of anything cannot be begun yet.
+          : <button className="act small" data-on={on} disabled={why === 'needs'} onClick={onStart}>
+            {on ? CRAFTS.stop : anvil ? ASCENT.resume : ASCENT.begin}</button>}
+      </div>
+    );
+  }
   return (
     <div className="crow" data-on={on} data-lock={lock !== null} data-recipe={r.key} data-lit={lit || undefined}>
       <Out r={r} size={40} />
@@ -768,6 +825,57 @@ function Row({ state, r, on, lit, onStart, onGo, looks }: {
         ? <em className="cr-lock">{lock}</em>
         : <button className="act small" data-on={on} onClick={onStart}>{on ? CRAFTS.stop : CRAFTS.start}</button>}
     </div>
+  );
+}
+
+/**
+ * 傳說 The work on the anvil: how far through, what is left, what hard wins have struck off
+ * it, and what strikes it. Read off the state's own instant, like every bar in the game.
+ */
+function Anvil({ state, r, running }: { state: State; r: Recipe; running: boolean }) {
+  const w = state.crafts.legend;
+  if (!w) return null;
+  const share = running ? progressOf(state, state.at) : legendShare(w);
+  const most = strikeRoom(w.key);
+  return (
+    <span className="canvil">
+      <i className="cprog"><i style={{ width: `${Math.round(share * 1000) / 10}%` }} /></i>
+      <i className="canvil-line">{ASCENT.forging(duration(r.seconds * (1 - share)))}{' '}
+        {running ? '' : ASCENT.paused}</i>
+      <i className="canvil-line faint">{w.struck > 0 ? ASCENT.struck(duration(w.struck), duration(most)) : ''}
+        {w.struck < most - 1 ? ` ${ASCENT.strikeHint}` : ''}</i>
+    </span>
+  );
+}
+
+/**
+ * 傳說 The craft's next goal, on its panel: the legendary work at its top, and the one thing
+ * that stands in its way first, so no craft is ever a list with nothing at the end of it.
+ */
+function LegendGoal({ state, skill }: { state: State; skill: SkillKey }) {
+  const r = RECIPE_BY_KEY[legendKey(skill)];
+  if (!r) return null;
+  const w = state.crafts.legend;
+  const why = blocked(state, r);
+  let line: string;
+  if (why === 'made') line = ASCENT.made(r.name);
+  else if (w?.key === r.key) line = `${ASCENT.onAnvil(r.name)} ${ASCENT.forging(duration(legendLeft(w)))}`;
+  else {
+    const short: string[] = [];
+    if (levelIn(state, skill) < r.level) short.push(ASCENT.needLevel(levelIn(state, skill), r.level));
+    if (state.realm < r.realm) short.push(ASCENT.needRealm(r.realm));
+    const m = masteredIn(state, skill);
+    if (m < LEGEND_MASTERED) short.push(ASCENT.needMastered(m, LEGEND_MASTERED));
+    const souls = r.needs.find(([k]) => k === SOUL)?.[1] ?? 0;
+    if (held(state, SOUL) < souls) short.push(ASCENT.needSouls(held(state, SOUL), souls));
+    const things = r.needs.filter(([k, n]) => k !== SOUL && held(state, k) < n).length;
+    if (things > 0) short.push(ASCENT.needThings(things));
+    line = `${ASCENT.next(r.name)} ${short.length ? `${short.join(', ')}.` : (w ? ASCENT.anvilOther(RECIPE_BY_KEY[w.key]?.name ?? '') : ASCENT.needReady)}`;
+  }
+  return (
+    <p className="clegendgoal" data-made={why === 'made' || undefined}>
+      <span className="cjk" aria-hidden="true">傳</span> {line}
+    </p>
   );
 }
 

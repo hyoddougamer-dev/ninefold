@@ -4,14 +4,14 @@ import {
   CORE_QI_RUNGS, DRAGON_KIT_SHARE, FOCUS_MAX, LAYERS, LEVELS_PER_HEAVEN, ODDS_CEILING, ODDS_FLOOR, TRIBULATION_GAIN,
 } from '../../sim/balance.ts';
 import { fightDeps } from '../memo.ts';
-import { plateOf } from '../../data/bestiary.ts';
+import { BEASTS, isElite, plateOf } from '../../data/bestiary.ts';
 import { ITEM_BY_KEY, splitKey } from '../../data/crafts.ts';
 import { RARITIES, RARITY_INFO } from '../../data/gear.ts';
 import { SEAL_PAY_DEEP_MINUTES, SEAL_PAY_EASY_SHARE, SEAL_PAY_MINUTES, SEAL_PAY_SHARE, SEAL_PILL_SHARE } from '../../sim/balance.ts';
 import { Plate } from '../ui/Plate.tsx';
 import { pillOf } from '../../data/alchemy.ts';
 import { bottleneck, crossNow, currentWarden, dragonShortfall, effectiveBeastPower, oddsRaw, wallOf } from '../../sim/combat.ts';
-import { BOTTLENECK_LOOSEN, ECHO_ROOF } from '../../sim/balance.ts';
+import { BOTTLENECK_LOOSEN, ECHO_ROOF, GATE_STRIKE_SHARE } from '../../sim/balance.ts';
 import {
   UPGRADES, UPGRADE_INFO, atCeiling, atTribulation, breakThrough, buy, buyAll, buyMax, canBreakThrough,
   canBuy, canCondense, canCross, canFightWarden, capOf, condense, condenseCost,
@@ -40,7 +40,7 @@ import { Cave } from '../ui/Cave.tsx';
 import { Seclusion } from '../ui/Seclusion.tsx';
 import { demonDue, seclude } from '../../sim/seclusion.ts';
 import type { Meeting } from '../../sim/meet.ts';
-import { ARENA, AWAKEN, CULTIVATE, FORERUNNER, GUIDE, HOLD, HUNT, PACE, QOL, RANKS, REBIRTH } from '../copy.ts';
+import { ARENA, ASCENT, AWAKEN, CULTIVATE, FORERUNNER, GUIDE, HOLD, HUNT, PACE, QOL, RANKS, REBIRTH } from '../copy.ts';
 import { harvestAll, harvestAndReplant, plantAll } from '../../sim/cave.ts';
 import { useBuyMax } from '../prefs.ts';
 import { advice } from '../advice.ts';
@@ -173,9 +173,16 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
   const sealParts = {
     qi: (state.sealPaid ?? 0) / 86_400,
     pill: (state.sealFed ?? 0) / 86_400,
+    won: 0,
     time: 0,
   };
-  sealParts.time = atGate ? Math.max(0, Math.min((state.at - state.gateAt) / 86_400, sealWhole - sealParts.qi - sealParts.pill)) : 0;
+  // 擊 Hard wins counted as waited, then time over the rest.
+  sealParts.won = atGate ? Math.max(0, Math.min((state.gateStruck ?? 0) / 86_400, GATE_STRIKE_SHARE * sealDays(state.realm),
+    sealWhole - sealParts.qi - sealParts.pill)) : 0;
+  sealParts.time = atGate ? Math.max(0, Math.min((state.at - state.gateAt) / 86_400, sealWhole - sealParts.qi - sealParts.pill - sealParts.won)) : 0;
+  // 擊 What hard wins may still count at this gate, and the elite whose wins count.
+  const strikeMost = atGate ? GATE_STRIKE_SHARE * Math.max(sealDays(state.realm), wallDays(state.realm)) * 86_400 : 0;
+  const strikeElite = BEASTS.find((b) => isElite(b) && b.realm === state.realm);
   const sealTotal = sealWhole;
   const sealRoom = atGate ? sealPayRoom(state) : 0;
   const feedRoom = atGate ? sealFeedRoom(state) : 0;
@@ -584,7 +591,7 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
                     data-broken={unseal > 0}>
                     {unseal > 0
                       ? <i data-kind="pill" style={{ width: '100%' }} />
-                      : (['time', 'qi', 'pill'] as const).map((k) => (
+                      : (['time', 'won', 'qi', 'pill'] as const).map((k) => (
                         <i key={k} data-kind={k} style={{ width: `${Math.round(sealParts[k] / sealTotal * 1000) / 10}%` }} />
                       ))}
                   </span>
@@ -618,6 +625,16 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
                   </>
                 )}
               </div>
+            )}
+            {/* 擊 Hard wins at this gate: what they have counted, and what counts. Only while
+                there is still a seal or a wall to wait out, and only where the realm has an elite. */}
+            {atGate && strikeElite && strikeMost > 0 && (sealDue > 0 || (loosens > 0 && !(wardenRaw > 0 && wardenShown >= BNECK_NO_MATCH))) && (
+              <p className="gatestrike faint" style={{ margin: '-4px 0 12px', fontSize: 11.5 }}>
+                {(state.gateStruck ?? 0) >= strikeMost - 1
+                  ? ASCENT.gateStrikeFull
+                  : ASCENT.gateStrike(state.gateStruck ?? 0, GATE_STRIKE_SHARE * sealDays(state.realm) * 86_400,
+                    GATE_STRIKE_SHARE * wallDays(state.realm) * 86_400, strikeElite.name)}
+              </p>
             )}
             {standing ? (
               <button className="act" data-tone="cinnabar" data-coach="fight-warden" onClick={onFight}>

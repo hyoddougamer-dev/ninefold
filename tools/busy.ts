@@ -48,6 +48,11 @@ import { itemWorth } from '../src/sim/chest.ts';
 import { WEEK, quarryOf, quarryOwed } from '../src/sim/week.ts';
 import { HEAVENS, MARKS_PER_HEAVEN } from '../src/data/heavens.ts';
 import { playEndgame } from './endgame.ts';
+import { bottleneck, gateRoom, wallOf } from '../src/sim/combat.ts';
+import { sealLeft } from '../src/sim/state.ts';
+import { hardBeast } from '../src/sim/legend.ts';
+import { blocked } from '../src/sim/crafts.ts';
+import { LEGENDS, RECIPE_BY_KEY, legendKey } from '../src/data/crafts.ts';
 
 /** 悟道 One card at each heaven, which is what the nine of them now owe. */
 const CARDS_PER_HEAVEN = 1;
@@ -121,6 +126,23 @@ export const KINDS: readonly Kind[] = [
   { han: '期', name: 'take the week', taps: (s) => {
       const q = quarryOf(s);
       return q && quarryOwed(s) && odds(s, q) > 0.6 ? 1 : 0;
+    } },
+  /**
+   * 擊 The realm's elite while its warden stands and the gate still has a seal or a wall to
+   * wait out: each win counts as time waited there (sim/legend.ts). It is the same beast the
+   * hunt row already counts, so it is one tap, and what it adds is a reason at the gate.
+   */
+  { han: '擊', name: 'strike the gate', taps: (s) => {
+      if (gateRoom(s) <= 0 || (sealLeft(s) <= 0 && bottleneck(s, wardenOf(s.realm)) * wallOf(s.realm) <= 1.01)) return 0;
+      const e = huntable(s.realm, s.layer).find((b) => hardBeast(s, b));
+      return e && odds(s, e) > 0.6 ? 1 : 0;
+    } },
+  /** 傳 A legendary work that can be begun, or the one on the anvil while a hard win is there to strike it. */
+  { han: '傳', name: 'forge a legendary work', taps: (s) => {
+      const begin = LEGENDS.some((l) => blocked(s, RECIPE_BY_KEY[legendKey(l.skill)]) === null && !s.crafts.legend);
+      const e = huntable(s.realm, s.layer).find((b) => hardBeast(s, b));
+      const strike = !!s.crafts.legend && !!e && odds(s, e) > 0.6;
+      return begin || strike ? 1 : 0;
     } },
 ];
 

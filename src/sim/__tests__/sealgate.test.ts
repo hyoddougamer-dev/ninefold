@@ -758,7 +758,11 @@ describe('量 what paying into the bar changes (tools/seal.ts)', () => {
     expect(Math.abs(less.realm9! - real.realm9!)).toBeLessThanOrEqual(1.75);
     expect(Math.abs(more.realm9! - real.realm9!)).toBeLessThanOrEqual(1.75);
     // 升 Never slower than waiting: at this seed a tenth lighter lands on the waiter's own day (48.2).
-    for (const r of [less, more, cheap, dear]) expect(r.realm9!).toBeLessThanOrEqual(waits.realm9!);
+    // 擊 Within a visit or so of it since 2026-10-20, when the waiter's own wins over the risen
+    // elite at a standing gate began to count as time waited (GATE_STRIKE_ELITE): the waiter
+    // came to 48.0 and the tenth lighter stayed on 48.2, the same day as before the merge.
+    // Paying still never walls anybody; the four hours are which visit the warden falls on.
+    for (const r of [less, more, cheap, dear]) expect(r.realm9!).toBeLessThanOrEqual(waits.realm9! + 0.25);
     expect(Math.abs(cheap.realm9! - real.realm9!)).toBeLessThanOrEqual(2);
     expect(Math.abs(dear.realm9! - real.realm9!)).toBeLessThanOrEqual(2);
     // What the seal was asked to fix: the payer stands at the gate less than the waiter.

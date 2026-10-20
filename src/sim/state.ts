@@ -19,10 +19,11 @@ import { EMPTY, type Bed } from '../data/herbs.ts';
 import { NO_TAKE, type Take } from '../data/secret.ts';
 import {
   BOON_SWORDSOUL, MELT_CAP, SEAL_DAYS, SEAL_PAY_DEEP_MINUTES, SEAL_PAY_EASY_SHARE, SEAL_PAY_MINUTES, SEAL_PAY_SHARE, SEAL_PAY_STEP,
-  SEAL_PILL_SHARE
+  SEAL_PILL_SHARE, GATE_STRIKE_SHARE,
 } from './balance.ts';
 
 import { NO_CRAFTS, eatPill, feedShare, unsealCarried, type Crafts } from './crafts.ts';
+import { legendPower } from './legend.ts';
 import { type ChestFilter } from './filters.ts';
 import { echoFactor, type Life } from './echo.ts';
 import { seasonAt } from './season.ts';
@@ -128,6 +129,14 @@ export interface State {
    */
   sealPaid?: number;
   sealFed?: number;
+  /**
+   * 擊 Seconds hard wins (one's own realm's elite, a gate in the vault) have counted as waited
+   * at the gate standing now, for the seal's bar and the wall's loosening alike, up to
+   * GATE_STRIKE_SHARE of the longer (sim/legend.ts). Belongs to the gate, like the bar's
+   * fills: 0 while no warden stands, and 0 again the moment the gate is left. Absent in a save
+   * from before it, which the server reads without its allowance (verify.ts sealSeconds).
+   */
+  gateStruck?: number;
   levels: Record<Upgrade, number>;
   killed: Record<string, number>;
   /** 器 What is on the body. */
@@ -715,7 +724,9 @@ export function power(s: State): number {
     // 劍魂 A sword soul from the road: a keepsake, given once. See data/meetings.ts.
     * (hasBoon(s, 'swordsoul') ? BOON_SWORDSOUL : 1)
     // 冊 The trophy book: each page held, each gilt, and the whole of it. See sim/trophies.ts.
-    * trophyPower(s);
+    * trophyPower(s)
+    // 傳說 The legendary works made, seven at most, each once. See sim/legend.ts.
+    * legendPower(s.crafts.made);
 }
 
 /** The realm is full and only the warden is left? */
@@ -784,8 +795,19 @@ export function sealDays(realm: number): number {
 export function sealLeft(s: State, unseal = 0): number {
   const days = sealDays(s.realm);
   if (days <= 0 || s.wardenFell || !wardenStands(s) || s.gateAt <= 0) return 0;
-  const waited = Math.max(0, (s.at - s.gateAt) / 86_400);
-  return Math.max(0, days - waited - sealFilled(s) - Math.max(0, unseal));
+  return Math.max(0, days - gateWaited(s, days) - sealFilled(s) - Math.max(0, unseal));
+}
+
+/**
+ * 擊 The days a gate counts as waited toward something `whole` days long (its seal, or its
+ * wall's loosening): the days since its warden came out, and what hard wins have counted
+ * beside them (State.gateStruck), up to GATE_STRIKE_SHARE of that whole. 0 while no warden
+ * stands. The seal's bar and the wall both read it, so a win is one thing at the gate, said once.
+ */
+export function gateWaited(s: Pick<State, 'at' | 'gateAt' | 'gateStruck'>, whole: number): number {
+  if (s.gateAt <= 0) return 0;
+  const won = Math.min(Math.max(0, s.gateStruck ?? 0) / 86_400, GATE_STRIKE_SHARE * Math.max(0, whole));
+  return Math.max(0, (s.at - s.gateAt) / 86_400) + won;
 }
 
 /** 封 The days of the bar qi and lesser pills have filled at this gate so far. */
@@ -910,5 +932,5 @@ export function canBreakThrough(s: State): boolean {
 export function breakThrough(s: State): State {
   if (!canBreakThrough(s)) return s;
   // 銀 The qi carries. See canBreakThrough for why it no longer burns.
-  return { ...s, realm: s.realm + 1, layer: 0, wardenFell: false, gateAt: 0, sealPaid: 0, sealFed: 0 };
+  return { ...s, realm: s.realm + 1, layer: 0, wardenFell: false, gateAt: 0, sealPaid: 0, sealFed: 0, ...(s.gateStruck !== undefined ? { gateStruck: 0 } : {}) };
 }

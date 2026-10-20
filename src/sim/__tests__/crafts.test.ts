@@ -5,6 +5,7 @@ import { ESSENCE_NEED } from '../balance.ts';
 import {
   ITEMS, ITEM_BY_KEY, PARTS, RECIPES, RECIPE_BY_KEY, SKILLS, SKILL_KEYS, XP_TABLE, levelOf, partKey,
   FORGED, arrayDoes, splitKey, type SkillKey,
+  SOUL,
 } from '../../data/crafts.ts';
 import { BEASTS, commonsOf, wardenOf } from '../../data/bestiary.ts';
 import { TEMPLATE_BY_KEY } from '../../data/gear.ts';
@@ -66,18 +67,25 @@ describe('業 the tables', () => {
       expect(r.level).toBeLessThanOrEqual(99);
       expect(r.realm).toBeGreaterThanOrEqual(1);
       expect(r.realm).toBeLessThanOrEqual(9);
-      expect(r.xp).toBeGreaterThan(0);
+      // 傳說 A legendary work pays no experience, by design (legend.test.ts holds it to 0):
+      // fights strike its days shorter, and experience nobody worked for no clock could bound.
+      if (r.makes.kind === 'legend') expect(r.xp, r.key).toBe(0);
+      else expect(r.xp).toBeGreaterThan(0);
       expect(r.seconds).toBeGreaterThan(0);
       for (const [k, n] of r.needs) {
         expect(n).toBeGreaterThan(0);
-        // 精血 Essence Blood is the one need nothing makes: a felled elite of its realm leaves it.
+        // 精血 Essence Blood is one of the two needs nothing makes: a felled elite of its realm leaves it.
         const blood = essenceRealm(k);
         if (blood !== null) {
           expect(ITEM_BY_KEY[k]?.kind, `${r.key} needs ${k}`).toBe('blood');
           expect(essenceFrom(eliteOf(blood)!), `${r.key} needs ${k}, which no elite leaves`).toBeGreaterThan(0);
           // 破境丹 A Breakthrough Pill asks for the realm below's, which its old elite is driven for.
           expect(blood, `${r.key} needs the blood of realm ${blood}`).toBe(r.group === 'Breakthrough' ? r.realm - 1 : r.realm);
-        } else if (k !== 'mat') expect(made.has(k), `${r.key} needs ${k}, which nothing makes`).toBe(true);
+          continue;
+        }
+        // 精魄 And the other: a soul is left by the hunt, and only a work asks for it.
+        if (k === SOUL) { expect(r.makes.kind, r.key).toBe('legend'); continue; }
+        if (k !== 'mat') expect(made.has(k), `${r.key} needs ${k}, which nothing makes`).toBe(true);
       }
       if (r.makes.kind === 'gear') expect(TEMPLATE_BY_KEY[r.makes.template], r.key).toBeDefined();
       if (r.remains) expect(BEASTS.some((b) => b.key === r.remains)).toBe(true);
@@ -89,7 +97,8 @@ describe('業 the tables', () => {
     }
     // A need never asks for a realm the recipe itself does not reach.
     for (const r of RECIPES) for (const [k] of r.needs) {
-      if (k === 'mat' || essenceRealm(k) !== null) continue;
+      // 精血 精魄 Blood and souls have no maker: the hunt leaves them (legend.test.ts reads the works' needs).
+      if (k === 'mat' || k === SOUL || essenceRealm(k) !== null) continue;
       const maker = RECIPES.find((x) => x.makes.kind === 'item' && x.makes.item === k)!;
       expect(maker.realm, `${r.key} needs ${k} from realm ${maker.realm}`).toBeLessThanOrEqual(Math.max(r.realm, maker.realm));
     }
@@ -162,7 +171,8 @@ describe('開 the workshop opens with the climb', () => {
  * experience and the marks follow, so levelling takes the hours it did.
  */
 describe('丹符 a pill and a sigil are an hour of work', () => {
-  const kit = RECIPES.filter((r) => r.skill === 'alchemy' || r.skill === 'sigil');
+  // 傳說 Every pill and sigil: the two legendary works of these crafts are neither (legend.test.ts).
+  const kit = RECIPES.filter((r) => (r.skill === 'alchemy' || r.skill === 'sigil') && r.makes.kind !== 'legend');
 
   it('multiplies the time and every need of every pill and sigil, and nothing else', () => {
     expect(kit.length).toBeGreaterThanOrEqual(39);
@@ -196,7 +206,8 @@ describe('丹符 a pill and a sigil are an hour of work', () => {
   it('pays experience in proportion to its time, heavy or light, so the hours to 99 do not move', () => {
     // Every alchemy recipe pays the same experience a second at the same level, heavy or light.
     const per = (r: (typeof RECIPES)[number]) => r.xp / r.seconds / (1 + r.level / 8);
-    const forge = RECIPES.filter((r) => r.skill === 'alchemy');
+    // 傳說 Every recipe that pays at all: the legendary work pays nothing (see the tables above).
+    const forge = RECIPES.filter((r) => r.skill === 'alchemy' && r.makes.kind !== 'legend');
     for (const r of forge) expect(per(r) / per(forge[0]), r.key).toBeCloseTo(1, 2);
   });
 
@@ -298,7 +309,8 @@ describe('習 familiarity', () => {
   });
 
   it('counts a heavy make as the light makes it is, for every heavy craft alike', () => {
-    for (const r of RECIPES) {
+    // 傳說 Every recipe that earns marks: a legendary work is made once and earns none (legend.test.ts).
+    for (const r of RECIPES.filter((x) => x.makes.kind !== 'legend')) {
       const last = r.marks[r.marks.length - 1];
       // The last mark is the light count's worth of work, never less, and never a whole make more.
       expect(last * r.weight, r.key).toBeGreaterThanOrEqual(CRAFT_MARKS[CRAFT_MARKS.length - 1]);
@@ -495,7 +507,8 @@ describe('戰 what is carried into a fight', () => {
  * CRAFT_ARRAY_DEPTH_EVERY copies cut deepen it a step.
  */
 describe('陣 an array is an hour of work, and its copies deepen it', () => {
-  const arrays = RECIPES.filter((r) => r.skill === 'array');
+  // 傳說 The nine arrays: the craft's legendary work is not one of them (legend.test.ts).
+  const arrays = RECIPES.filter((r) => r.skill === 'array' && r.makes.kind !== 'legend');
   const every = { herb: 99, vein: 99, render: 99, forge: 99, alchemy: 99, sigil: 99, array: 99 };
   const cutTo = (key: string, copies: number, over: Partial<Crafts> = {}) => crafter(9, every, {
     pouch: { [`array:${key}`]: 1 }, made: { [`array:${key}`]: copies }, cut: { [`array:${key}`]: copies }, ...over });
@@ -736,6 +749,10 @@ describe('守 a save is input', () => {
       const k = it.graded ? `${it.key}@2` : it.key;
       expect(splitKey(k).key).toBe(it.key);
       const back = validCrafts({ pouch: { [k]: 3 }, xp: maxed }, { realm: 9, killed: {}, startedAt: T0 }, T0 + 1e9);
+      // 傳說 精魄 A soul and a legendary work are named in the item table for the screen, and are
+      // never pouch keys: souls are held beside the pouch and a work is a make counted once.
+      // A pouch that claims one is trimmed, which is stricter than holding it.
+      if (it.kind === 'soul' || it.kind === 'legend') { expect(back.pouch[k], k).toBeUndefined(); continue; }
       expect(back.pouch[k], k).toBe(3);
     }
   });

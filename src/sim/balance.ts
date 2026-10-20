@@ -3024,3 +3024,129 @@ export const BOOK_POWER = 0.05;
  */
 export const GILT_MATERIAL = 1e6;
 export const GILT_STEP = 6;
+
+/**
+ * 傳說 The legendary works: one at the top of each craft, the long goal past its last recipe
+ * (Bruno, 2026-10-18: *"crafts almost unreachable that take enormous amounts of materials, or
+ * very rare drop items ... I do not want players time-gated just because, forced to wait"*).
+ * See data/crafts.ts (LEGENDS) and sim/legend.ts.
+ *
+ * A work asks for a craft mastered (LEGEND_LEVEL in it and LEGEND_MASTERED of its recipes
+ * with every familiarity mark), a heap of the late realms' herbs, ores, ingots and parts, and
+ * 精魄 Elite Souls, which only a hard win leaves (the elite of one's own realm, a gate in the secret realm). Its
+ * materials go onto the anvil when it is begun, and from then it is a forging of
+ * LEGEND_DAYS of the workshop's time, kept to the second whatever else the workshop is set
+ * on and however long the player is away: nothing is ever taken back.
+ *
+ * 擊 A hard win strikes it: every win over one's own realm's elite (LEGEND_STRIKE_ELITE) and
+ * every gate beaten in 秘境 the vault (LEGEND_STRIKE_GATE) takes that much off the forging,
+ * up to LEGEND_FIGHT_SHARE of it. So a player who fights forges a work in as little as a
+ * quarter of the days, and the forging of one already begun still finishes for somebody who
+ * stops fighting. Its souls only a fighter gathers (see below).
+ *
+ * What it gives: LEGEND_POWER on power, multiplied, for each work made, and its own craft
+ * LEGEND_SPEED faster. Seven works, each made once, so both are capped; neither touches the
+ * qi rate.
+ *
+ * Measured with tools/ascent.ts chase on 2026-10-20 (five seeds, 991 1234 5555 7777 31337, read
+ * by name; each habit made a crafter that chases the works, played on to day 200). Each cell
+ * is the mean day the work is made, then on how many seeds it was made by day 112 / by day 160
+ * / by day 200; the last columns count the works each seed had made by 112 and by 160:
+ *
+ *   habit            Herbal         Living Soil    Cook Ding      Furnace        Ganjiang       by 112     by 160
+ *   never fights     never          never          never          never          never          0          0
+ *   barely fights    never          never          never          never          never          0          0
+ *   once a day       152.2 0/5/5    194.0 0/0/1    193.0 0/0/3    never          never          0          1
+ *   casual           121.5 0/5/5     89.1 5/5/5    142.1 0/5/5    never          never          1          3
+ *   active            67.2 5/5/5     76.5 5/5/5     78.7 5/5/5    180.8 0/0/5    110.8 3/5/5    3 to 4     4
+ *   every hour        73.6 5/5/5     84.6 5/5/5     86.8 5/5/5    never          never          3          3
+ *   drives it all     66.7 5/5/5     81.9 5/5/5     74.6 5/5/5    182.5 0/0/4    108.6 4/5/5    3 to 4     4
+ *   buys every node   71.2 5/5/5     78.1 5/5/5     79.2 5/5/5    182.3 0/0/5    112.6 2/5/5    3 to 4     4
+ *   runs auto         71.0 5/5/5     74.4 5/5/5     80.1 5/5/5    178.2 0/0/5    111.8 3/5/5    3 to 4     4
+ *
+ * The River Chart and the Array of the Circling Stars, at levels 88 and 90 in crafts that one
+ * workshop can only level one at a time, are made by nobody in two hundred days: the goal past
+ * the season, as asked ("almost unreachable"). Everybody who hunts by hand with a few visits a
+ * day makes one inside the season, the once-a-day hunter one by day 160, and nobody makes more
+ * than five. 自 Auto is no shortcut: a hundred and twenty kills a visit beat the elite 5280
+ * times to the active hand's 322, and its works come within a few days of the active crafter's,
+ * because the heaps and the levels are the chase and the hunt only shortens the anvil.
+ *
+ * 擊 Fights do the shortening. With LEGEND_FIGHT_SHARE at 0 (nothing struck) the active
+ * crafter's works come 3.6, 8.2, 6.2, 12.8 and 6.3 days later and the casual one's 2.1, 1.0 and
+ * 3.2, and the active one's Ganjiang lands inside the season on no seed instead of three; read off the anvil at the active crafter's last visit before each work was made, hard
+ * wins had struck 46% to 75% of its forging (the share at most is 75%). The cultivator who
+ * never fights makes none: a gate in the secret realm leaves a soul one time in a hundred, and
+ * the ninety-odd gates it beats by the summit leave none, so a work is a fighter's reward, never a
+ * clock's. Before souls came from the secret realm's gates as well, the casual and once-a-day
+ * crafters made no work at all in two hundred days (they beat the ninth realm's elite 0 to
+ * 160 times), which is why a gate leaves them too.
+ *
+ * Pushed a tenth together (the strikes and their share, the days, the heap, the soul odds and
+ * the power; LEGEND_SPEED left as it is), harder: the active crafter 0.5 to 6.1 days later, 3 to
+ * 4 works by 112 and 4 by 160 still; the casual one 1 by 112 and 2 by 160 (Cook Ding's Chart
+ * 142.1 to 182.4, the one work that moves far, still made on every seed by 200); once a day 1
+ * by 160 (the Herbal 145.8). Easier: the active crafter within 2.1 days either way (noise of which
+ * visit a work lands on), the casual one 0.2 to 2.9 days sooner, the same counts. It slows rather than walls.
+ * Where it fails: the hourly crafter's forge stalls at level 11 under tools/crafter.ts (its
+ * one-hour span never finds a forge recipe worth setting), so its Furnace and its Ganjiang,
+ * which ask for ingots, never come; that is the harness's crafter, not the game, and is said
+ * so here rather than tuned around.
+ */
+export const LEGEND_LEVEL: Readonly<Record<string, number>> = {
+  herb: 75, vein: 75, render: 75, alchemy: 82, forge: 85, sigil: 88, array: 90,
+};
+export const LEGEND_MASTERED = 6;
+/** 傳說 What every work's heap of herbs, ores, ingots and parts is multiplied by (data/crafts.ts LEGENDS). Souls are not. */
+export const LEGEND_HEAP = 1;
+export const LEGEND_DAYS: Readonly<Record<string, number>> = {
+  herb: 3, vein: 3, render: 3, alchemy: 4, forge: 4, sigil: 5, array: 6,
+};
+export const LEGEND_FIGHT_SHARE = 0.75;
+export const LEGEND_STRIKE_ELITE = 20 * 60;
+export const LEGEND_STRIKE_GATE = 60 * 60;
+export const LEGEND_POWER = 0.04;
+export const LEGEND_SPEED = 0.15;
+/**
+ * 精魄 One win in this many over the elite of the realm one stands in leaves an Elite Soul,
+ * read off the run and the kill's count (sim/legend.ts soulOn), so a soul is the same soul on
+ * every device and in every harness.
+ */
+export const LEGEND_SOUL_EVERY = 100;
+
+/**
+ * 擊 And the gates (封 the seal, 瓶頸 the bottleneck), which wait only to slow: while one's
+ * realm's warden stands, every win over that realm's elite counts as GATE_STRIKE_ELITE seconds
+ * waited, for the seal's bar and the wall's loosening alike, up to GATE_STRIKE_SHARE of each.
+ * Time still fills both exactly as before, so whoever only waits passes when they always did.
+ * A gate in the secret realm strikes a legendary work and never the realm's gate: everybody
+ * walks the secret realm, the cultivator who never fights included (see hardWin in
+ * sim/legend.ts for the measurement that settled it).
+ *
+ * Measured with tools/ascent.ts on 2026-10-18, and again on 2026-10-20 to the same tenth with
+ * runs auto added (five seeds, read by name; before is 3e92b8e):
+ *
+ *   habit            realm 9 before → after   summit before → after   marks by day 112
+ *   never fights     118.6 → 118.6            131.8 → 131.8           0 → 0
+ *   barely fights    102.0 → 102.0            110.4 → 110.4           0 → 0
+ *   once a day        74.2 → 74.4              86.4 → 87.0            4.0 → 4.0
+ *   casual            66.9 → 66.9              77.7 → 77.7            6.8 → 6.8
+ *   active            49.2 → 48.3              57.3 → 56.9            10.2 → 10.2
+ *   every hour        31.9 → 30.6              36.6 → 36.2            13.8 → 13.6
+ *   drives it all     48.4 → 47.3              56.7 → 55.8            10.6 → 11.0
+ *   walks 神          48.5 → 47.5              56.7 → 56.5            10.8 → 10.2
+ *   buys every node   42.2 → 41.0              48.5 → 48.0            13.2 → 12.8
+ *   crafts it all     46.5 → 46.5              55.7 → 55.7            11.0 → 11.0
+ *   runs auto         33.2 → 31.6              37.9 → 37.2            15.0 → 15.6
+ *
+ * The waiter is where it was, to the day; the crafter too, whose pill already opened every
+ * seal. Whoever beats the realm's elite at its gate gains a day or so. Pushed a tenth either
+ * way the ninth realm moves 0.5 of a day at most. The once-a-day cultivator is 0.2 and 0.6 of
+ * a day later, the one row that moves the wrong way: four hunts a day reach the elite rarely,
+ * and the gates it does strike change which visit the warden falls on. Measured, reported, not
+ * tuned around. The busy share of visits with something past the hunt and the cave on them
+ * (tools/busy.ts, "strike the gate" a new kind): active 80.7% → 84.0%, every hour 47.3% →
+ * 52.2%, casual 96.5% → 96.5%.
+ */
+export const GATE_STRIKE_ELITE = 30 * 60;
+export const GATE_STRIKE_SHARE = 0.5;

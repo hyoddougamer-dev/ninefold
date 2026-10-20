@@ -81,9 +81,17 @@ describe('留 hold the layer: off for everyone until it is turned on', () => {
     // UTC day (State.eliteLost): the harness no longer presses it again in another stance the
     // same day. 4f153d8, the tree before it, gives the old digits (active 48.833 and 3903 fights,
     // drives it all 49.833 and 30575).
+    // 擊 Taken a seventh time on 2026-10-20, when the risen elite and 傳說 the legendary works met
+    // on the working branch: a win over the realm's elite while its warden stands now counts as
+    // time waited at the gate (GATE_STRIKE_ELITE, sim/legend.ts), and from the fifth realm that
+    // elite is the risen one. The hold is untouched; the gates open sooner for whoever wins
+    // there. 62ff044, the tree before the merge, gives the old digits (active 48.167 and 3861
+    // fights at 59279977000, drives it all 37.667, 50.667 and 44616 at 50656277000): the active
+    // cultivator reaches the ninth realm one visit sooner, and drives it all 1.2 days sooner,
+    // fights fourteen thousand fewer kills to day 120 and ends 6% stronger there.
     const was: Record<string, { arrival: number[]; fights: number; power: number }> = {
-      active: { arrival: [0, 0.5, 1, 3.333, 7.667, 13.833, 23.833, 36.333, 48.167], fights: 3861, power: 59279977000 },
-      'drives it all': { arrival: [0, 0.5, 1.167, 3.5, 7.833, 14, 25, 37.667, 50.667], fights: 44616, power: 50656277000 },
+      active: { arrival: [0, 0.5, 1, 3.333, 7.667, 13.833, 23.833, 36.333, 48], fights: 3861, power: 59279977000 },
+      'drives it all': { arrival: [0, 0.5, 1.167, 3.5, 7.833, 14, 25, 37.5, 49.5], fights: 30094, power: 53837515000 },
     };
     for (const [name, want] of Object.entries(was)) {
       const run = play(HABITS.find((h) => h.name === name)!, 120);
