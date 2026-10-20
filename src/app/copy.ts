@@ -1180,7 +1180,7 @@ export const GUIDE = {
     title: 'Put on what fell',
     text: '\u5668 Gear falls off beasts from the second realm. Tap the piece in your chest to wear it.',
     /** 器 Said as it is: older realms' beasts leave gear at once, this realm's own from layer 6 (LINEAGE_LAYER). */
-    waiting: `Beasts leave gear now, about one kill in five. The arrow points at one you beat that leaves it. This realm's own beasts start to leave theirs from layer ${LINEAGE_LAYER + 1}.`,
+    waiting: `Beasts leave gear now, about one kill in five. The arrow points at one you beat that leaves it. This realm's own beasts start to leave theirs from layer ${LINEAGE_LAYER + 1}, and now and then one sooner.`,
   },
   path: {
     title: 'Take your first \u9053 node',
@@ -2572,7 +2572,7 @@ export const BLOOM = {
    * true of the realms behind.
    */
   gear: (han: string, name: string, layer: number) =>
-    `This realm's gear, ${han} ${name}, starts dropping at layer ${layer}. Beasts of the realms behind you drop theirs from the first kill.`,
+    `This realm's gear, ${han} ${name}, starts dropping at layer ${layer}, and now and then a piece falls sooner. Beasts of the realms behind you drop theirs from the first kill.`,
 };
 
 export const LOCKED = {

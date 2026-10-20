@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { LAYERS_PER_REALM } from '../balance.ts';
+import { EARLY_LINEAGE, LAYERS_PER_REALM } from '../balance.ts';
 import { STANCE_LAYER } from '../../data/arts.ts';
 import { LINEAGE_LAYER, droppableIn, realmSet } from '../../data/gear.ts';
 import { commonsOf, wardenOf } from '../../data/bestiary.ts';
@@ -93,5 +93,20 @@ describe('器 the newest lineage starts dropping part way up', () => {
 
   it('names a lineage the realm card can show', () => {
     expect(realmSet(8).han).toBe('龍骸');
+  });
+});
+
+describe('早 now and then, the new lineage before its layer', () => {
+  it('drops it rarely before LINEAGE_LAYER, from a beast of the realm being climbed', () => {
+    const own = commonsOf(8)[0];
+    let early = 0, drops = 0;
+    for (let i = 0; i < 4000; i++) {
+      const item = rollDrop(own, 8, i, {}, 0);
+      if (!item) continue;
+      drops++;
+      if (Number(item.template.match(/\d+$/)?.[0] ?? 0) === 8) early++;
+    }
+    expect(early).toBeGreaterThan(0);
+    expect(early / drops).toBeLessThan(EARLY_LINEAGE * 2);
   });
 });

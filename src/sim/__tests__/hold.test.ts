@@ -90,8 +90,9 @@ describe('留 hold the layer: off for everyone until it is turned on', () => {
     // cultivator reaches the ninth realm one visit sooner, and drives it all 1.2 days sooner,
     // fights fourteen thousand fewer kills to day 120 and ends 6% stronger there.
     const was: Record<string, { arrival: number[]; fights: number; power: number }> = {
-      active: { arrival: [0, 0.5, 1, 3.333, 7.667, 13.833, 23.833, 36.333, 48], fights: 3861, power: 59279977000 },
-      'drives it all': { arrival: [0, 0.5, 1.167, 3.5, 7.833, 14, 25, 37.5, 49.5], fights: 30094, power: 53837515000 },
+      // 早 ch-earlydrop: re-pinned with EARLY_LINEAGE on (the new lineage now and then before its layer).
+      active: { arrival: [0, 0.5, 1, 3.5, 7.667, 13.667, 24.333, 35.667, 49.167], fights: 3909, power: 71572958000 },
+      'drives it all': { arrival: [0, 0.5, 1.167, 3.667, 7.5, 13.833, 24.167, 36.667, 49.5], fights: 35343, power: 46043684000 },
     };
     for (const [name, want] of Object.entries(was)) {
       const run = play(HABITS.find((h) => h.name === name)!, 120);

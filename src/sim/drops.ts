@@ -1,7 +1,7 @@
 import type { Beast } from '../data/bestiary.ts';
 import { isOpen } from './unlocks.ts';
 import {
-  BASE_DROP_CHANCE, LAYERS_PER_REALM, LINEAGE_LAYER, LUCK_EARTH_GRADE, LUCK_GRADE_CAP, LUCK_HEAVEN_GRADE, RARITY_WEIGHT,
+  BASE_DROP_CHANCE, EARLY_LINEAGE, LAYERS_PER_REALM, LINEAGE_LAYER, LUCK_EARTH_GRADE, LUCK_GRADE_CAP, LUCK_HEAVEN_GRADE, RARITY_WEIGHT,
   SECONDARIES, SECONDARY_SHARE, VARIANCE,
   WARDEN_RARITY_TILT, LUCK_ROLL_BEND, LUCK_ROLL_TOP,
 } from './balance.ts';
@@ -155,7 +155,12 @@ export function rollDrop(
   // drops its own realm's gear, which has been falling for as long as you have been past
   // it. Left off, the call means the whole realm, which is what a catalogue wants.
   const at = Math.min(beast.realm, realm);
-  const every = droppableIn(at, at === realm ? layer : LAYERS_PER_REALM);
+  // 早 And now and then, before the gate, the new lineage itself (EARLY_LINEAGE), on dice of
+  // its own so the rest of the roll is untouched.
+  const early = at === realm && layer < LINEAGE_LAYER && dice((seed ^ 0x6a09e667) >>> 0)() < EARLY_LINEAGE;
+  const every = early
+    ? droppableIn(at).filter((g) => g.realm === at)
+    : droppableIn(at, at === realm ? layer : LAYERS_PER_REALM);
   // 物 A kill leaves the shapes this beast carries, in any lineage it could have met.
   const own = fortune.anyShape ? every : every.filter((g) => beast.leaves.includes(g.archetype));
   const pool = own.length > 0 ? own : every;

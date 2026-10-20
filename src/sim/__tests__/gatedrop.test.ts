@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { BEASTS, commonsOf } from '../../data/bestiary.ts';
-import { LINEAGE_LAYER } from '../balance.ts';
+import { EARLY_LINEAGE, LINEAGE_LAYER } from '../balance.ts';
 import { fallsFromLayer, rollDrop } from '../drops.ts';
 
 /**
@@ -21,7 +21,7 @@ describe('層 the lineage gate the hunt shows', () => {
     expect(fallsFromLayer(6, 7, 0)).toBeNull();                    // the cultivator has passed the realm
   });
 
-  it('never leaves a piece of the realm it is still gated in, below the gate', () => {
+  it('leaves a piece of the realm it is still gated in only now and then, below the gate (EARLY_LINEAGE)', () => {
     const beasts = BEASTS.filter((b) => b.realm === 6 && !b.warden);
     expect(beasts.length).toBeGreaterThan(0);
     const b = beasts[0];
@@ -36,7 +36,7 @@ describe('層 the lineage gate the hunt shows', () => {
       if (item.template.match(/\d+$/)?.[0] === '6') gated++;
     }
     expect(drops).toBeGreaterThan(100);
-    expect(gated, 'realm-6 pieces dropped before the gate').toBe(0);
+    expect(gated / drops, 'realm-6 pieces dropped before the gate').toBeLessThan(EARLY_LINEAGE * 2);
   });
 
   it('does leave realm-6 pieces once the cultivator is at the gate', () => {

@@ -1983,6 +1983,15 @@ export const SET_WEIGHT: readonly number[] = [1, 2, 4];
  */
 export const LINEAGE_LAYER = 5;
 
+/**
+ * 早 The share of drops from a beast of the realm being climbed that come from its own new
+ * lineage before LINEAGE_LAYER: rare, so the gate still holds the realm's power back, and
+ * not never, so a realm's first five layers are not five layers of nothing new (testers,
+ * 2026-10-20: "nothing ever drops"). Rolled on its own dice, so every other drop is the
+ * drop it was.
+ */
+export const EARLY_LINEAGE = 0.02;
+
 /** 藏 Places in the chest before anything widens it. */
 export const CHEST_LIMIT = 40;
 
