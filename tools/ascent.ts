@@ -19,6 +19,7 @@ import { HABITS, AUTO_HABIT, play, type Habit, type Run } from './habits.ts';
 import { arrivalOf, playEndgame } from './endgame.ts';
 import { LAYERS } from '../src/sim/balance.ts';
 import { SKILL_KEYS } from '../src/data/crafts.ts';
+import { legendNeed } from '../src/sim/legend.ts';
 
 export const SEEDS = [991, 1234, 5555, 7777, 31337] as const;
 const SEASON_DAYS = 112;
@@ -56,12 +57,21 @@ export function climbOf(name: string, seed: number): Climb {
     elite: run.legend.eliteWins, gates: run.legend.gateWins };
 }
 
-export interface Chase { readonly name: string; readonly seed: number; readonly made: readonly number[]; readonly soul: number }
+export interface Chase {
+  readonly name: string; readonly seed: number; readonly made: readonly number[]; readonly soul: number;
+  /** 擊 For each work, the most of its forging hard wins had struck off when last seen on the anvil, 0..LEGEND_FIGHT_SHARE. */
+  readonly struck: readonly number[];
+}
 
 /** 傳說 The habit as a crafter chasing the works, on to `days`. */
 export function chaseOf(name: string, seed: number, days = CHASE_DAYS): Chase {
-  const run = play({ ...habitNamed(name), seed, crafts: true, legends: true, on: true }, days);
-  return { name, seed, made: run.legend.made, soul: run.legend.firstSoul };
+  const struck: number[] = SKILL_KEYS.map(() => 0);
+  const run = play({ ...habitNamed(name), seed, crafts: true, legends: true, on: true }, days, (_, s) => {
+    const w = s.crafts.legend;
+    const i = w ? SKILL_KEYS.indexOf(w.key.slice('legend:'.length) as never) : -1;
+    if (w && i >= 0) struck[i] = Math.max(struck[i], w.struck / legendNeed(w.key));
+  });
+  return { name, seed, made: run.legend.made, soul: run.legend.firstSoul, struck };
 }
 
 export const mean = (xs: readonly number[]) => {
@@ -87,7 +97,9 @@ if (process.argv[1]?.endsWith('ascent.ts')) {
         const d = rows.map((r) => r.made[i]);
         return `${k} ${f1(mean(d))}(${d.filter(Number.isFinite).length})`;
       });
-      console.error(`${name.padEnd(14)} soul ${f1(mean(rows.map((r) => r.soul)))}  ${cells.join('  ')}`);
+      // The works each seed had made by the season's end and by day 160, so the chase reads as a count too.
+      const by = (day: number) => rows.map((r) => r.made.filter((d) => d <= day).length).join(' ');
+      console.error(`${name.padEnd(14)} soul ${f1(mean(rows.map((r) => r.soul)))}  ${cells.join('  ')}  by 112 [${by(SEASON_DAYS)}]  by 160 [${by(160)}]`);
     }
   }
 }
