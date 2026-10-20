@@ -79,7 +79,11 @@ export const BANNERS = [
   { key: 's0-founding', seal: '開', over: '告 Announcement · Season 0', title: 'The Founding', sub: 'Everyone starts again. The first names are carved for ever.', bg: 'realm/1', fig: 'self/woman-1' },
   { key: 'update-2026-10-19', seal: '開', over: '筆 Dev log · The trailer', title: 'The Founding: Trailer', sub: 'The seal falls once, and the Cliff waits', bg: 'realm/9', fig: 'cut/dragon' },
   { key: 'update-2026-10-23', seal: '崖', over: '筆 Dev log · The server', title: 'Ready to Carve', sub: 'Every gate passed is recorded from the first second', bg: 'realm/7', fig: 'cut/direwolf' },
-  { key: 'update-2026-10-28', seal: '升', over: '筆 Dev log · Update', title: 'The Risen Elite', sub: 'Your own power, and Essence Blood', bg: 'realm/5', fig: 'cut/lizard' },
+  // 升 傳說 珍 Three things in one update: the risen elite stands, a legendary work and a golden
+  // toad from the trophy book at its feet, and the three named in chips under the words.
+  { key: 'update-2026-10-28', seal: '升', over: '筆 Dev log · Update', title: 'Three Things to Chase', sub: 'And none of them asks you to wait', bg: 'realm/5', fig: 'cut/lizard', figCss: 'right: 44px; height: 350px',
+    chips: [['升', 'Risen elites'], ['傳說', 'Legendary works'], ['珍', 'Trophy book']],
+    props: [{ icon: 'spell-book', x: 250, y: 34, size: 106 }, { cut: 'cut/frog', gold: true, x: 70, y: 32, h: 124 }] },
   { key: 's0-reminder', seal: '開', over: '告 Announcement · Tonight', title: 'Season 0 Begins Tonight', sub: 'At 00:00 UTC. Last call to join Ranks as a Forerunner', bg: 'realm/2', fig: 'self/woman-2' },
   { key: 's0-open', seal: '開', over: '告 Announcement · Season 0', title: 'Season 0 Is Open', sub: 'Everyone in the first realm, at the same second', bg: 'realm/1', fig: 'self/man-1' },
   { key: 'g-cliff', seal: '崖', over: '書 Guide · Season 0', title: 'The Cliff of Names', sub: 'The first 81 through each gate, carved for ever', bg: 'realm/3', fig: 'self/man-3' },
@@ -91,7 +95,7 @@ const curl = (url, binary = false) => execFileSync('curl', ['-sSL', '--max-time'
 
 /** Google's CSS, with every font file pulled down and set inline, latin only. */
 export function fonts(extra = '') {
-  const han = [...new Set([...BANNERS.flatMap((b) => [...b.seal, ...b.over]), ...extra].filter((c) => /\p{Script=Han}/u.test(c)))].join('');
+  const han = [...new Set([...BANNERS.flatMap((b) => [...b.seal, ...b.over, ...(b.chips ?? []).flat().join('')]), ...extra].filter((c) => /\p{Script=Han}/u.test(c)))].join('');
   const css = [
     curl('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Cormorant+Garamond:ital,wght@1,600&display=swap'),
     curl(`https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600&text=${encodeURIComponent(han)}`),
@@ -99,6 +103,14 @@ export function fonts(extra = '') {
   return css.replace(/\/\*\s*(cyrillic|vietnamese|latin-ext|greek)[\s\S]*?\}\s*/g, '')
     .replace(/url\((https:[^)]+)\)/g, (_, u) => `url(data:font/woff2;base64,${curl(u, true).toString('base64')})`);
 }
+
+/** 圖 One of the game's own drawn icons (src/art/icons.generated.ts), as its SVG paths. */
+const ICON_SRC = readFileSync('src/art/icons.generated.ts', 'utf8');
+const iconPaths = (name) => {
+  const m = ICON_SRC.match(new RegExp(`^\\s*"${name}": "((?:[^"\\\\]|\\\\.)*)"`, 'm'));
+  if (!m) throw new Error(`旗 no icon ${name}`);
+  return JSON.parse(`"${m[1]}"`);
+};
 
 export const data = (file) => `data:image/webp;base64,${readFileSync(file).toString('base64')}`;
 const G = 'rgba(212, 175, 86, .8)';
@@ -134,15 +146,30 @@ function page(b, css) {
   .sub { font: italic 600 26px/1.25 'Cormorant Garamond', serif; color: #CDB67F; }
   .brand { position: absolute; right: 48px; top: 40px; display: flex; align-items: center; gap: 10px; opacity: .9; }
   .brand img.m { width: 38px; height: auto; } .brand img.n { width: 118px; height: auto; }
+  .chips { display: flex; gap: 8px; margin-top: 22px; width: 600px; }
+  .chip { display: flex; align-items: center; gap: 9px; padding: 7px 11px 7px 8px; white-space: nowrap; border: 1px solid rgba(212,175,86,.5);
+          border-radius: 4px; background: rgba(13,11,8,.62); font: 600 13px/1 Cinzel, serif; letter-spacing: .07em;
+          text-transform: uppercase; color: #E8DCC0; box-shadow: inset 0 0 0 3px rgba(13,11,8,.7), inset 0 0 0 4px rgba(212,175,86,.16); }
+  .chip b { font: 600 18px/1 'Noto Serif SC', serif; letter-spacing: .04em; color: #E2C26A; }
+  .prop { position: absolute; }
+  .medal { display: grid; place-items: center; border-radius: 50%; border: 2px solid #D4AF56; color: #E2C26A;
+           background: radial-gradient(circle at 50% 38%, rgba(60,44,20,.95), rgba(13,11,8,.95) 72%);
+           box-shadow: inset 0 0 0 5px rgba(13,11,8,.9), inset 0 0 0 6px rgba(212,175,86,.45), 0 0 44px rgba(212,175,86,.3), 0 14px 26px rgba(0,0,0,.6); }
+  .medal svg { filter: drop-shadow(0 0 10px rgba(212,175,86,.45)); }
+  .gold { filter: sepia(1) saturate(2.6) hue-rotate(-8deg) brightness(1.04) drop-shadow(0 0 18px rgba(226,194,106,.55)) drop-shadow(0 10px 16px rgba(0,0,0,.7)); }
   </style>
   <div class="b">
     <div class="bg"></div><div class="shade"></div>
-    <img class="fig" src="${data(`public/art/${b.fig}.webp`)}" alt="">
+    <img class="fig" src="${data(`public/art/${b.fig}.webp`)}"${b.figCss ? ` style="${b.figCss}"` : ''} alt="">
+    ${(b.props ?? []).map((p) => (p.icon
+    ? `<div class="prop medal" style="right:${p.x}px;bottom:${p.y}px;width:${p.size}px;height:${p.size}px"><svg viewBox="0 0 512 512" width="${Math.round(p.size * 0.6)}" height="${Math.round(p.size * 0.6)}" fill="currentColor">${iconPaths(p.icon)}</svg></div>`
+    : `<img class="prop${p.gold ? ' gold' : ''}" src="${data(`public/art/${p.cut}.webp`)}" style="right:${p.x}px;bottom:${p.y}px;height:${p.h}px;width:auto" alt="">`)).join('')}
     <div class="frame"></div>
     <div class="seal">${b.seal}</div>
     <div class="text">
       <div class="over">${b.over.replace(/^(\p{Script=Han}+)/u, '<span class="h">$1</span>')}</div>
       <h1>${b.title}</h1><div class="rule"></div><div class="sub">${b.sub}</div>
+      ${b.chips ? `<div class="chips">${b.chips.map(([h, t]) => `<span class="chip"><b>${h}</b>${t}</span>`).join('')}</div>` : ''}
     </div>
     <div class="brand"><img class="m" src="${data('public/brand/mark.webp')}" alt=""><img class="n" src="${data('public/brand/name.webp')}" alt=""></div>
   </div>`;

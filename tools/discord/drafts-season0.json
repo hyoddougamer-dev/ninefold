@@ -565,14 +565,28 @@
       "when": "the push that brings the risen elite, once approved (the message key takes the day it goes up)",
       "push": "the risen elite, Essence Blood, the risen last gate, 傳說 the legendary works and 珍 the trophy book, with the guides they change in server.json in the same push",
       "approve": "This dev log, and the guide changes: g-hunt 霸 Elites, g-crafts 丹 Alchemy and 攜 Carrying, g-cave the secret realm paragraph.",
-      "needs": ["public/discord/banner/update-2026-10-28.webp"],
+      "needs": [
+        "public/discord/banner/update-2026-10-28.webp",
+        "public/discord/update-1028-risen.webp (the risen Rock Lizard's hunt row, bare and carried odds: tools/shot-elite.ts at 400)",
+        "public/discord/update-1028-held.webp (the same row the day it was lost, back tomorrow: tools/shot-elite.ts at 400)",
+        "public/discord/update-1028-legend.webp (a legendary work in its list and on the anvil: tools/shot-ascent.mjs at 400)",
+        "public/discord/update-1028-trophy.webp (a hunt row with its trophy line: tools/shot-trophies.mjs at 400)",
+        "public/discord/update-1028-book.webp (the trophy book, a gilt page and one waiting on the furnace: tools/shot-trophies.mjs at 400)"
+      ],
       "messages": [
         {
           "key": "update-2026-10-28",
           "channel": "devlog",
           "title": "升 Update · Risen elites, legendary works and the trophy book",
           "color": "#D4AF56",
-          "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/update-2026-10-28.webp?v=1",
+          "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/update-2026-10-28.webp?v=2",
+          "image": "https://hyoddougamer-dev.github.io/ninefold/discord/update-1028-risen.webp?v=1",
+          "gallery": [
+            "https://hyoddougamer-dev.github.io/ninefold/discord/update-1028-held.webp?v=1",
+            "https://hyoddougamer-dev.github.io/ninefold/discord/update-1028-legend.webp?v=1",
+            "https://hyoddougamer-dev.github.io/ninefold/discord/update-1028-trophy.webp?v=1",
+            "https://hyoddougamer-dev.github.io/ninefold/discord/update-1028-book.webp?v=1"
+          ],
           "body": [
             "Three new things to chase, and none of them asks you to wait.",
             "",
