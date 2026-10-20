@@ -2904,34 +2904,58 @@ export const RUNG_AT: readonly number[] = [0, 9, 27, 45, 63, 81, 85, 90, 100];
  *
  * 擊 A hard win strikes it: every win over one's own realm's elite (LEGEND_STRIKE_ELITE) and
  * every gate beaten in 秘境 the vault (LEGEND_STRIKE_GATE) takes that much off the forging,
- * up to LEGEND_FIGHT_SHARE of it. So a player who fights finishes a work in a quarter of the
- * days somebody who waits does, and somebody who waits still finishes it.
+ * up to LEGEND_FIGHT_SHARE of it. So a player who fights forges a work in as little as a
+ * quarter of the days, and the forging of one already begun still finishes for somebody who
+ * stops fighting. Its souls only a fighter gathers (see below).
  *
  * What it gives: LEGEND_POWER on power, multiplied, for each work made, and its own craft
  * LEGEND_SPEED faster. Seven works, each made once, so both are capped; neither touches the
  * qi rate.
  *
- * Measured with tools/ascent.ts on 2026-10-18 (five seeds, 991 1234 5555 7777 31337, read by
- * name; each habit made a crafter that chases the works, played on to day 200; the mean day
- * each work is made, and on how many seeds):
+ * Measured with tools/ascent.ts chase on 2026-10-20 (five seeds, 991 1234 5555 7777 31337, read
+ * by name; each habit made a crafter that chases the works, played on to day 200). Each cell
+ * is the mean day the work is made, then on how many seeds it was made by day 112 / by day 160
+ * / by day 200; the last columns count the works each seed had made by 112 and by 160:
  *
- *   habit          Herbal      Living Soil  Cook Ding   Furnace     Ganjiang    River Chart, Circling Stars
- *   once a day     152.2 (5)   194.0 (1)    193.0 (3)   never       never       never
- *   casual         121.5 (5)    89.1 (5)    142.1 (5)   never       never       never
- *   active          67.2 (5)    76.5 (5)     78.7 (5)   110.8 (5)   180.8 (5)   never by day 200
- *   every hour      73.6 (5)    84.6 (5)     86.8 (5)   never       never       never
+ *   habit            Herbal         Living Soil    Cook Ding      Furnace        Ganjiang       by 112     by 160
+ *   never fights     never          never          never          never          never          0          0
+ *   barely fights    never          never          never          never          never          0          0
+ *   once a day       152.2 0/5/5    194.0 0/0/1    193.0 0/0/3    never          never          0          1
+ *   casual           121.5 0/5/5     89.1 5/5/5    142.1 0/5/5    never          never          1          3
+ *   active            67.2 5/5/5     76.5 5/5/5     78.7 5/5/5    180.8 0/0/5    110.8 3/5/5    3 to 4     4
+ *   every hour        73.6 5/5/5     84.6 5/5/5     86.8 5/5/5    never          never          3          3
+ *   drives it all     66.7 5/5/5     81.9 5/5/5     74.6 5/5/5    182.5 0/0/4    108.6 4/5/5    3 to 4     4
+ *   buys every node   71.2 5/5/5     78.1 5/5/5     79.2 5/5/5    182.3 0/0/5    112.6 2/5/5    3 to 4     4
+ *   runs auto         71.0 5/5/5     74.4 5/5/5     80.1 5/5/5    178.2 0/0/5    111.8 3/5/5    3 to 4     4
  *
- * The first works land inside a 112-day season for whoever crafts and fights every day; the
- * last two, at levels 88 and 90 in crafts that one workshop can only level one at a time, are
- * the goal past the season, as asked ("almost unreachable"). Pushed a tenth either way
- * together (the strikes, the share, the days, the heap, the soul odds, the power, the speed),
- * the active crafter's works move 0.3 to 5.9 days slower and 0.3 to 3.5 sooner; nothing walls.
+ * The River Chart and the Array of the Circling Stars, at levels 88 and 90 in crafts that one
+ * workshop can only level one at a time, are made by nobody in two hundred days: the goal past
+ * the season, as asked ("almost unreachable"). Everybody who hunts by hand with a few visits a
+ * day makes one inside the season, the once-a-day hunter one by day 160, and nobody makes more
+ * than five. 自 Auto is no shortcut: a hundred and twenty kills a visit beat the elite 5280
+ * times to the active hand's 322, and its works come within a few days of the active crafter's,
+ * because the heaps and the levels are the chase and the hunt only shortens the anvil.
+ *
+ * 擊 Fights do the shortening. With LEGEND_FIGHT_SHARE at 0 (nothing struck) the active
+ * crafter's works come 3.6, 8.2, 6.2, 12.8 and 6.3 days later and the casual one's 2.1, 1.0 and
+ * 3.2, and the active one's Ganjiang lands inside the season on no seed instead of three; read off the anvil at the active crafter's last visit before each work was made, hard
+ * wins had struck 46% to 75% of its forging (the share at most is 75%). The cultivator who
+ * never fights makes none: a gate in the secret realm leaves a soul one time in a hundred, and
+ * the ninety-odd gates it beats by the summit leave none, so a work is a fighter's reward, never a
+ * clock's. Before souls came from the secret realm's gates as well, the casual and once-a-day
+ * crafters made no work at all in two hundred days (they beat the ninth realm's elite 0 to
+ * 160 times), which is why a gate leaves them too.
+ *
+ * Pushed a tenth together (the strikes and their share, the days, the heap, the soul odds and
+ * the power; LEGEND_SPEED left as it is), harder: the active crafter 0.5 to 6.1 days later, 3 to
+ * 4 works by 112 and 4 by 160 still; the casual one 1 by 112 and 2 by 160 (Cook Ding's Chart
+ * 142.1 to 182.4, the one work that moves far, still made on every seed by 200); once a day 1
+ * by 160 (the Herbal 145.8). Easier: the active crafter within 2.1 days either way (noise of which
+ * visit a work lands on), the casual one 0.2 to 2.9 days sooner, the same counts. It slows rather than walls.
  * Where it fails: the hourly crafter's forge stalls at level 11 under tools/crafter.ts (its
- * one-hour span never finds a forge recipe worth setting), so its Furnace, which asks for
- * ingots, never comes; that is the harness's crafter, not the game, and is said so here rather
- * than tuned around. With souls from the elite alone, the casual and once-a-day crafters made
- * no work at all in two hundred days (they beat the ninth realm's elite 0 to 160 times), which
- * is why a gate in the secret realm leaves souls too.
+ * one-hour span never finds a forge recipe worth setting), so its Furnace and its Ganjiang,
+ * which ask for ingots, never come; that is the harness's crafter, not the game, and is said
+ * so here rather than tuned around.
  */
 export const LEGEND_LEVEL: Readonly<Record<string, number>> = {
   herb: 75, vein: 75, render: 75, alchemy: 82, forge: 85, sigil: 88, array: 90,
@@ -2963,7 +2987,8 @@ export const LEGEND_SOUL_EVERY = 100;
  * walks the secret realm, the cultivator who never fights included (see hardWin in
  * sim/legend.ts for the measurement that settled it).
  *
- * Measured with tools/ascent.ts on 2026-10-18 (five seeds, read by name; before is 3e92b8e):
+ * Measured with tools/ascent.ts on 2026-10-18, and again on 2026-10-20 to the same tenth with
+ * runs auto added (five seeds, read by name; before is 3e92b8e):
  *
  *   habit            realm 9 before → after   summit before → after   marks by day 112
  *   never fights     118.6 → 118.6            131.8 → 131.8           0 → 0
@@ -2976,6 +3001,7 @@ export const LEGEND_SOUL_EVERY = 100;
  *   walks 神          48.5 → 47.5              56.7 → 56.5            10.8 → 10.2
  *   buys every node   42.2 → 41.0              48.5 → 48.0            13.2 → 12.8
  *   crafts it all     46.5 → 46.5              55.7 → 55.7            11.0 → 11.0
+ *   runs auto         33.2 → 31.6              37.9 → 37.2            15.0 → 15.6
  *
  * The waiter is where it was, to the day; the crafter too, whose pill already opened every
  * seal. Whoever beats the realm's elite at its gate gains a day or so. Pushed a tenth either
