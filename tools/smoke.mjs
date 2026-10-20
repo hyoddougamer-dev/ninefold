@@ -135,7 +135,12 @@ async function dismiss(page) {
     // tab swallowed, which is the harness being exactly right.
     const who = await page.$('.whom .pick');
     if (who) { await who.click({ timeout: 4000 }).catch(() => {}); await page.waitForTimeout(220); continue; }
-    const el = await page.$('.prologue button.act, .help button.act, .help .xclose, .notice button, .scrim');
+    // 終 The closed test's last-week card sends its tap to 榜 Ranks, which is the card doing
+    // its job; the sheet's own Close is what a player taps next. Its first .act is Join, which
+    // a walk with no name can never pass, so the sheet is closed by name and kept out below.
+    const ranks = await page.$('.help.ranks > button.act');
+    if (ranks) { await ranks.click({ timeout: 4000 }).catch(() => {}); await page.waitForTimeout(220); continue; }
+    const el = await page.$('.prologue button.act, .help:not(.ranks) button.act, .help .xclose, .notice button, .scrim');
     if (!el) return;
     await el.click({ timeout: 4000 }).catch(() => {});
     await page.waitForTimeout(250);
