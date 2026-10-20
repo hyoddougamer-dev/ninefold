@@ -129,6 +129,11 @@ export function salvageBonus(awakened: readonly string[]): number {
   return 1 + sum(awakened, 'salvage', 'percent');
 }
 
+/** 燎原 How much faster the melting allowance fills, multiplied (see MELT_FILL_TOP). */
+export function meltFillBonus(awakened: readonly string[]): number {
+  return 1 + sum(awakened, 'salvage', 'fill');
+}
+
 /**
  * 煉器 What a refine level costs, multiplied.
  *

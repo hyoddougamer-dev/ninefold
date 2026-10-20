@@ -1,3 +1,5 @@
+import { WILDFIRE_FILL } from '../sim/balance.ts';
+
 /**
  * 悟道 The three cards at a breakthrough, and the one you keep.
  *
@@ -40,8 +42,8 @@ export type Effect =
   | { kind: 'drop'; percent: number }
   /** 階 The rare end of the drop table, weighted up. */
   | { kind: 'luck'; weight: number }
-  /** 拆 More qi out of melting. */
-  | { kind: 'salvage'; percent: number }
+  /** 拆 More qi out of melting; `fill` also fills the melting allowance faster (see MELT_FILL_TOP). */
+  | { kind: 'salvage'; percent: number; fill?: number }
   /** 煉器 Refine levels cost less material. */
   | { kind: 'refine'; percent: number }
   /** 藏 More room in the chest. */
@@ -139,8 +141,8 @@ export const AWAKENINGS: readonly (readonly Card[])[] = [
       effect: { kind: 'chest', slots: 12 },
       says: 'Twelve more places in the chest.' },
     { key: 'wildfire', han: '燎原', name: 'Wildfire', icon: 'dragon-breath',
-      effect: { kind: 'salvage', percent: 0.90 },
-      says: 'Each piece melts for nine tenths more: more qi while the melting allowance lasts, more 材 material once it is spent. The allowance itself does not grow, and melting cards add together.' },
+      effect: { kind: 'salvage', percent: 0.90, fill: WILDFIRE_FILL },
+      says: 'Each piece melts for nine tenths more: more qi while the melting allowance lasts, more 材 material once it is spent. The allowance itself does not grow, but it refills three tenths faster (never faster than the Treasure Smith\'s), and melting cards add together.' },
   ],
   [
     { key: 'taotie', han: '饕餮', name: 'Taotie', icon: 'dragon-head',

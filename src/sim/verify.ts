@@ -30,7 +30,7 @@
  */
 import {
   BLESSED_ROOM, FOCUS_MAX, INCENSE_BONUS, INCENSE_WORTH, LAYERS, MARK_DAYS, MEET_GAP, MELT_CAP,
-  MELT_FILL, PAIR_BOUNTY, PAIR_DRAGON, PAIR_MELT, PAIR_SPRING, PAIR_TOWER_QI, PLATFORM_EDGE,
+  MELT_FILL, MELT_FILL_TOP, PAIR_BOUNTY, PAIR_DRAGON, PAIR_SPRING, PAIR_TOWER_QI, PLATFORM_EDGE,
   DRAGON_KIT_SHARE, KEY_SPRING, LAYERS_PER_REALM, ROUND_CAP, SEAL_PAY_DEEP_MINUTES, SEAL_PAY_EASY_SHARE, SECLUSION, SPRING_FILL, SPRING_HOLD, TOWER_QI_SUMMIT, TRAIL_WOUND,
   TRIBULATION_CHALLENGE,
 } from './balance.ts';
@@ -658,7 +658,7 @@ export function verify(before: State, after: State, seconds: number, first = fal
   // faster fill at most. It used to fit only inside SLACK, and raising MELT_FILL on
   // 2026-10-03 left the Treasure Smith past that margin, so it is counted as itself now,
   // in the same deep-sitting seconds as the rest of the budget.
-  const melted = (MELT_CAP + dt * MELT_FILL * PAIR_MELT) / focus;
+  const melted = (MELT_CAP + dt * MELT_FILL * MELT_FILL_TOP) / focus;
   // 泉 The vault's spring fills with time and nothing else: a day held, plus what dt could
   // fill, each second of it worth at most INCENSE_WORTH (burned rather than drunk), the
   // week's blessed room and 尋仙 the Immortal Seeker's deeper draught. It used to hide inside

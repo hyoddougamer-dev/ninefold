@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { MELT_CAP, MELT_FILL, MELT_MATERIAL, PAIR_MELT } from '../balance.ts';
+import { MELT_CAP, MELT_FILL, MELT_FILL_TOP, MELT_MATERIAL, PAIR_MELT, WILDFIRE_FILL } from '../balance.ts';
 import { ARCHETYPES, TEMPLATE_BY_KEY, type Item, type Worn } from '../../data/gear.ts';
 import { SCHOOL_INFO, type School } from '../../data/schools.ts';
 import { classMelt } from '../schools.ts';
+import { salvageBonus } from '../awaken.ts';
 import { melt, meltMaterial, meltSpill, salvage, salvageValue, meltFactor } from '../salvage.ts';
 import { stash } from '../stash.ts';
 import { newState, rate, type State } from '../state.ts';
@@ -120,5 +121,16 @@ describe('寶匠 the Treasure Smith past the allowance', () => {
   it('still never fills past the cap', () => {
     const s = advance({ ...smith(), melt: MELT_CAP - 1 }, T0 + 86400 * 30);
     expect(s.melt).toBe(MELT_CAP);
+  });
+
+  it('燎原 Wildfire fills it as fast as the Smith, and the two together no faster', () => {
+    // The cards are held by place, so Wildfire is the sixth taken: the active cultivator's five before it.
+    const WILD = ['feast', 'wolf', 'slaughter', 'stonegold', 'hoard', 'wildfire'];
+    expect(salvageBonus(WILD)).toBeGreaterThan(1);
+    const wild = advance({ ...at(2, 0), awakened: WILD }, T0 + 3600);
+    expect(wild.melt).toBeCloseTo(3600 * MELT_FILL * (1 + WILDFIRE_FILL), 6);
+    const both = advance({ ...smith(), awakened: WILD }, T0 + 3600);
+    expect(both.melt).toBeCloseTo(3600 * MELT_FILL * MELT_FILL_TOP, 6);
+    expect(MELT_FILL * MELT_FILL_TOP).toBeLessThan(1);
   });
 });

@@ -1293,6 +1293,20 @@ export const PAIR_BOUNTY = 1.5;        // 金剛 見 first sights, 期 the week'
 export const PAIR_PILLS = 0.85;        // 丹師 what a pill costs
 export const PAIR_DROP = 0.08;         // 獵王 added to a beast's chance of leaving a piece
 export const PAIR_MELT = 1.3;          // 寶匠 qi from melting
+
+/**
+ * 燎原 What Wildfire adds to how fast the melting allowance fills, and the most anything may.
+ *
+ * Testers (2026-10-20): Wildfire's +90% is, in practice, a material card, because the
+ * allowance binds long before the pieces run out and every piece past it melts into 材.
+ * So the card fills the allowance faster as well, by the Treasure Smith's own three tenths,
+ * and the fill is held at MELT_FILL_TOP of MELT_FILL whatever is worn and taken together:
+ * the Smith with Wildfire fills as fast as the Smith alone. The allowance is counted in
+ * seconds of the standing rate, so melting can never pay more than MELT_FILL times
+ * MELT_FILL_TOP of what gathering pays, and verify.ts already allows exactly that.
+ */
+export const WILDFIRE_FILL = 0.30;
+export const MELT_FILL_TOP = PAIR_MELT;
 export const PAIR_CHEST = 100;         // 甲匠 places in the chest
 /** 法 The five pairs the sixth school makes. */
 export const PAIR_DRAGON = 0.98;       // 劍聖 the tribulation's Dragon counts this much of itself

@@ -1,4 +1,5 @@
-import { INCENSE_BONUS, LAYERS, LAYERS_PER_REALM, MELT_CAP, MELT_FILL, ladderAt } from './balance.ts';
+import { INCENSE_BONUS, LAYERS, LAYERS_PER_REALM, MELT_CAP, MELT_FILL, MELT_FILL_TOP, ladderAt } from './balance.ts';
+import { meltFillBonus } from './awaken.ts';
 import { gathering, layersOpened, rate, type State } from './state.ts';
 import { layerCostFactor } from './dao.ts';
 import { classMelt } from './schools.ts';
@@ -131,7 +132,9 @@ export function advance(s: State, now: number, auto = false, focus = 1): State {
   // 拆 The melting allowance fills with the time that passed, open or shut; 寶匠 the
   // Treasure Smith fills it faster, so the class still pays once a day's allowance is spent.
   // 套 Read off the melting loadout when one is given, as melting itself is (salvage.ts).
-  const melt = Math.min(MELT_CAP, (s.melt ?? MELT_CAP) + (now - s.at) * MELT_FILL * classMelt(taskBody(s, 'melt')));
+  // 燎原 Wildfire fills it faster too, and the two together never past MELT_FILL_TOP.
+  const fill = Math.min(MELT_FILL_TOP, classMelt(taskBody(s, 'melt')) * meltFillBonus(s.awakened ?? []));
+  const melt = Math.min(MELT_CAP, (s.melt ?? MELT_CAP) + (now - s.at) * MELT_FILL * fill);
   // A gate reached some other way (a lump, a purchase) is dated now, at the latest.
   if (layer === LAYERS_PER_REALM - 1 && realm < 9 && !gateAt) gateAt = now;
   if (layer < LAYERS_PER_REALM - 1 || realm >= 9) gateAt = 0;
