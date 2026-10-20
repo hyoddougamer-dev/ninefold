@@ -186,6 +186,11 @@ export const RANKS = {
    */
   weekReborn: 'Your new life counts here once it crosses more Dragons than any life before it.',
   /**
+   * 期 This Week, to a signed-in cultivator who is not on it. The week lists only a climb that
+   * gained since Monday, so a player who sat idle all week seemed to have vanished.
+   */
+  weekAbsent: 'You are not on This Week: no layer climbed or Thunder mark won since Monday. 天榜 the Heaven List keeps your whole climb.',
+  /**
    * 修士 What a placeholder name answers when it is tapped. A profile that never chose a name
    * wears 修士 and eight letters of its account, and ten of them on a board read as ten copies
    * of one cultivator (the Discord, 2026-10-15).
@@ -2276,7 +2281,9 @@ export const CLASS = {
     qi: (w: number, f: number, roof: number) => `The four upgrades cost ${pct(w)} less, or ${pct(f)} at the full. At the full, the ceiling on qi from gear also stands ${roof} higher: on the first layer, ×${QI_ROOF_FIRST} becomes ×${Math.round((QI_ROOF_FIRST + roof) * 100) / 100}.`,
     fortune: (w: number, f: number, amp: number, full: number) => `Your 運 rarer gear and 拾 drop chance lines count ×${amp}, or ×${full} at the full. A bond fills in ${w} wins, or ${f} at the full.`,
     body: (amp: number, full: number) => `Your 破 beasts weaker lines count ×${amp}, or ×${full} at the full.`,
-    artificer: (w: number, f: number, amp: number, full: number) => `Refining costs ${pct(w)} less, or ${pct(f)} at the full. Your 煉 fusion quality and 藏 chest slots lines count ×${amp}, or ×${full} at the full.`,
+    // 器 No weapon shape leads with an Artificer line (data/gear.ts ARCHETYPES), on purpose, so
+    // its full five are the other five places; a tester went looking for the missing weapon.
+    artificer: (w: number, f: number, amp: number, full: number) => `Refining costs ${pct(w)} less, or ${pct(f)} at the full. Your 煉 fusion quality and 藏 chest slots lines count ×${amp}, or ×${full} at the full. No weapon is an Artificer piece, by design: its full five are the robe, crown, boots, talisman and ring.`,
     arts: (w: number, f: number) => `The arts in your sequence strike ${pct(w)} harder, or ${pct(f)} at the full.`,
   },
   /** 今 What a school gives at the step it is at now, which is what the ribbon says. */

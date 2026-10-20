@@ -128,6 +128,7 @@ export function Ranks({ who, synced, syncedAt, syncError, reborn = false, onEnte
           <p className="rwhat">{RANKS.boards[current].what}</p>
           {/* 期 A reborn life's climb is under the best one already on the board, so the week waits for it. */}
           {current === 'week' && reborn && <p className="rnote small">{RANKS.weekReborn}</p>}
+          {absentFromWeek(current, rows, me, reborn) && <p className="rnote small rweekabsent">{RANKS.weekAbsent}</p>}
           {failed ? <p className="rnote">{RANKS.offline}</p>
             : rows === null ? <p className="rnote">{RANKS.loading}</p>
               : rows.length === 0 ? <p className="rnote">{current === 'samsara' && !season ? RANKS.emptySamsaraBefore : RANKS.emptyOf[current] ?? RANKS.empty}</p>
@@ -182,6 +183,18 @@ export function Ranks({ who, synced, syncedAt, syncError, reborn = false, onEnte
       </button>
     </div>
   );
+}
+
+/**
+ * 期 Whether to say why the player is missing from This Week. The server lists the signed-in
+ * player beside the top hundred whenever they qualify (board() in the season migration), so a
+ * loaded week without them means no gain since Monday. Not said while the rows are loading or
+ * the board is empty, to a reborn life (weekReborn says it), or to an account held off every board.
+ */
+export function absentFromWeek(board: Board, rows: readonly Row[] | null, me: Mine | null, reborn: boolean): boolean {
+  if (board !== 'week' || reborn || !rows || rows.length === 0 || !me) return false;
+  if (me.suspect || me.banned) return false;
+  return !rows.some((r) => r.me);
 }
 
 function ago(seconds: number): string {

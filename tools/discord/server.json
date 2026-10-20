@@ -2496,7 +2496,7 @@
         ["氣 Qi Cultivator · 氣修", "Leads with 氣 Qi rate. The four upgrades cost 8% less, or 15% at the full. At the full, the ceiling on qi from gear also stands 0.1 higher: on the first layer, ×1.38 becomes ×1.48."],
         ["運 Fortune Seeker · 運修", "Leads with 運 Rarer gear, 拾 Drop chance. Your 運 rarer gear and 拾 drop chance lines count ×1.5, or ×2 at the full. A bond fills in 9 wins, or 8 at the full."],
         ["體 Body Cultivator · 體修", "Leads with 破 Beasts weaker. Your 破 beasts weaker lines count ×1.5, or ×2 at the full. They reach the hunt, the tower, the Platform and every realm's warden, never your heart demon or the Dragon."],
-        ["器 Artificer · 器修", "Leads with 煉 Fusion quality, 藏 Chest slots. Refining costs 12% less, or 22% at the full. Your 煉 fusion quality and 藏 chest slots lines count ×1.5, or ×2 at the full."],
+        ["器 Artificer · 器修", "Leads with 煉 Fusion quality, 藏 Chest slots. Refining costs 12% less, or 22% at the full. Your 煉 fusion quality and 藏 chest slots lines count ×1.5, or ×2 at the full. No weapon is an Artificer piece, by design: its full five are the robe, crown, boots, talisman and ring."],
         ["法 Arts Cultivator · 法修", "Leads with 法 Art. The arts in your sequence strike 15% harder, or 30% at the full."]
       ],
       "gallery": [

@@ -2107,6 +2107,15 @@ export const DEEP_MARKS: readonly number[] = [1000, 5000];
  * collector's bonus that is felt. The pace does not move. At 2% the record's ceiling
  * passes what record.test allows (2.8 against 2.5; the most it allows is about 1.44%),
  * so 1% is where it stays. All fifty-four earned would be +54%.
+ *
+ * Does one pay? Measured 2026-10-20 (tools/deepmark.ts, five seeds, days 15 to 90): 1,000 kills
+ * of the rat instead of the best beast give up 1,000 kills' worth of the gap between them, and
+ * the +1% gives it back in 88 to 139 thousand kills of the best beast. On Auto (720 a day) that
+ * is 150 to 190 days; by hand (36 a day, 28 days of hunting for the rats alone) 2,350 to 3,300
+ * days, so never. A 圍 drive is the exception: an old beast drives for DRIVE_OLD of the price,
+ * so up to the seventh realm a driven rat pays as much 材 for its qi as the best beast and the
+ * mark is free, and from the eighth it is back in 11 to 16 thousand kills, days of driving.
+ * Floors and melting take the +1% too and were left out, so these are upper bounds.
  */
 export const DEEP_EVERYWHERE = 0.01;
 export const DEEP_MATERIAL = 0.10;
