@@ -563,26 +563,30 @@
     {
       "key": "s0-risen",
       "when": "the push that brings the risen elite, once approved (the message key takes the day it goes up)",
-      "push": "the risen elite, Essence Blood and the risen last gate, with the three guides they change (g-hunt, g-crafts, g-cave) in server.json in the same push",
-      "approve": "This dev log, and the three guide changes: g-hunt 霸 Elites, g-crafts 丹 Alchemy and 攜 Carrying, g-cave the secret realm paragraph.",
+      "push": "the risen elite, Essence Blood, the risen last gate, 傳說 the legendary works and 珍 the trophy book, with the guides they change in server.json in the same push",
+      "approve": "This dev log, and the guide changes: g-hunt 霸 Elites, g-crafts 丹 Alchemy and 攜 Carrying, g-cave the secret realm paragraph.",
       "needs": ["public/discord/banner/update-2026-10-28.webp"],
       "messages": [
         {
           "key": "update-2026-10-28",
           "channel": "devlog",
-          "title": "升 Update · The risen elite and Essence Blood",
+          "title": "升 Update · Risen elites, legendary works and the trophy book",
           "color": "#D4AF56",
           "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/update-2026-10-28.webp?v=1",
           "body": [
-            "From the fifth realm, the last beast of your realm rises to meet you.",
+            "Three new things to chase, and none of them asks you to wait.",
             "",
-            "**升 The risen elite.** In the realm you stand in, the elite is measured against your own power, like a challenger on 擂台 the Platform. Growing stronger never makes it easy; your stance, your arts and what you carry raise your odds, and its row shows them bare and with what you carry. A loss holds it until tomorrow and costs nothing. While it stands risen it is never driven or put on Auto.",
+            "**升 The risen elite.** From the fifth realm, the elite of the realm you stand in is measured against your own power, like a challenger on 擂台 the Platform. Growing stronger never makes it easy: your stance, your arts and what you carry raise your odds, and its row shows them bare and with what you carry. A loss holds it until tomorrow and costs nothing. While it stands risen it is never driven or put on Auto. Leave the realm and it goes back to its old wall.",
             "",
-            "**精血 Essence Blood.** Every elite felled from the fifth realm leaves 2 of its realm's blood, and a risen one leaves its part for the workshop as well. Each elixir and sigil of realms 5 to 9 asks for 1 of its realm's blood, and a Breakthrough Pill for 1 of the realm below's, which its old elite, once known, can be driven for. A recipe short of it points you to the hunt.",
+            "**精血 Essence Blood.** Every elite felled from the fifth realm leaves 2 of its realm's blood. Each elixir and sigil of realms 5 to 9 asks for 1 of its realm's blood, and a Breakthrough Pill for 1 of the realm below's, which its old elite, once known, can be driven for.",
             "",
             "**關 The last gate.** From the fifth realm the last guardian of 秘境 the secret realm rises with your own power, so the deepest room is earned.",
             "",
-            "Leave a realm and its elite goes back to its old wall: hunt it until you know it, and drive it like any beast. The guides for 狩 the Hunt, 業 the Workshop and 秘境 the Vault say the same."
+            "**傳說 Legendary works.** Each craft in 業 the Workshop now has one work at its very top, made once: tens of thousands of herbs, ores and parts, and 精魄 Elite Souls (one win in 100 over your realm's elite or a secret realm gate leaves one). It forges for days, and every hard win strikes time off it: 20 minutes for the elite, an hour for a gate, up to three quarters of the forging. Each one made gives 4% power for good and makes its craft 15% faster. Some of them very few cultivators will ever finish.",
+            "",
+            "**珍 The trophy book.** Every common beast can leave one very rare trophy. Its row in 狩 the Hunt shows the honest chance, and a bar of kills promises it before the bar runs out. Hold all three of a realm's trophies and its page in the book is whole: a title and 3% power for good, and 5% more for the whole book. Spares go to 化 the furnace to become the one you are missing, or to 鎏 gild a page.",
+            "",
+            "The guides for 狩 the Hunt, 業 the Workshop and 秘境 the Vault say the same."
           ],
           "footer": "· 師 Shibaki"
         }
