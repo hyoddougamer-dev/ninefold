@@ -11,7 +11,7 @@ import { ITEM_BY_KEY, partKey } from '../../data/crafts.ts';
 import { power, type State } from '../../sim/state.ts';
 import { lootTaken } from '../../sim/trials.ts';
 import {
-  DEEP_INFO, MARK_INFO, deepOf, marksOf, nextDeep, nextMark, stage, recordMaterial, recordPower, recordTally,
+  DEEP_INFO, MARKS, MARK_INFO, deepOf, marksOf, nextDeep, nextMark, stage, recordMaterial, recordPower, recordTally,
 } from '../../sim/record.ts';
 import { num } from '../../sim/format.ts';
 import { Plate } from '../ui/Plate.tsx';
@@ -21,6 +21,7 @@ import { Door } from '../ui/Secret.tsx';
 import { isOpen } from '../../sim/unlocks.ts';
 import { HUNT, PILE, QOL, RISEN, UNIT } from '../copy.ts';
 import { Bestiary } from './Bestiary.tsx';
+import { TrophyLine } from '../ui/Trophy.tsx';
 import { DriveTag } from '../ui/Drive.tsx';
 import { canDrive } from '../../sim/hunt.ts';
 import { QuarryBand, WeekTag } from '../ui/Week.tsx';
@@ -50,7 +51,7 @@ import { WARDEN_EVEN } from '../guide.ts';
 type HuntOrder = 'mark' | 'strong' | 'material';
 const ORDER_KEY = 'ninefold.huntorder';
 
-export function Hunt({ state, onFight, onDrive, onPile, onAuto, onSecret, onKey }: {
+export function Hunt({ state, onFight, onDrive, onPile, onAuto, onSecret, onKey, onRender, onGild }: {
   state: State;
   onFight: (key: string) => void;
   /** 圍 Open the drive sheet for a beast you have 熟 Known. */
@@ -63,6 +64,9 @@ export function Hunt({ state, onFight, onDrive, onPile, onAuto, onSecret, onKey 
   onSecret: () => void;
   /** 鑰 Open the shut door with a Realm Key. */
   onKey: () => void;
+  /** 化 鎏 The trophy book's two actions, in the bestiary. */
+  onRender?: (key: string) => void;
+  onGild?: (realm: number) => void;
 }) {
   const [record, setRecord] = useState(false);
   const seen = BEASTS.filter((b) => (state.killed[b.key] ?? 0) > 0).length;
@@ -451,6 +455,8 @@ export function Hunt({ state, onFight, onDrive, onPile, onAuto, onSecret, onKey 
                   </span>
                 );
               })()}
+              {/* 珍 The trophy: the honest chance on the next kill, once the beast is Known and can be driven. */}
+              {(state.killed[b.key] ?? 0) >= MARKS[1] && <TrophyLine state={state} beast={b} />}
             </button>
           );
         })}
@@ -506,7 +512,7 @@ export function Hunt({ state, onFight, onDrive, onPile, onAuto, onSecret, onKey 
         <span>Bestiary</span>
         <span className="mono faint">{seen} / {BEASTS.length}</span>
       </button>
-      {record && <Bestiary state={state} />}
+      {record && <Bestiary state={state} onRender={onRender} onGild={onGild} />}
     </>
   );
 }

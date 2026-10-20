@@ -30,7 +30,8 @@ import {
 } from '../src/sim/state.ts';
 import { odds } from '../src/sim/combat.ts';
 import { DRIVE_SIZES, canDrive } from '../src/sim/hunt.ts';
-import { huntable, wardenOf } from '../src/data/bestiary.ts';
+import { BEASTS, huntable, wardenOf } from '../src/data/bestiary.ts';
+import { canGild, canRender, held } from '../src/sim/trophies.ts';
 import { isOpen, SYSTEMS, opensAt } from '../src/sim/unlocks.ts';
 import { canBrew, canRefine, refinePrice, standingFloor } from '../src/sim/trials.ts';
 import { floorBeast, floorPower } from '../src/sim/tower.ts';
@@ -113,6 +114,10 @@ export const KINDS: readonly Kind[] = [
    * a hunt: the beast is already counted under 狩, and what the week adds is the reason
    * to go and pick that one.
    */
+  // 冊 The trophy book's two actions, when either has something to take: a spare to render
+  // into a missing trophy, or a page ready and paid for at the forge.
+  { han: '冊', name: 'work the trophy book', taps: (s) => BEASTS.filter((b) => !b.warden && held(s, b.key) === 0 && canRender(s, b.key)).length
+      + [1, 2, 3, 4, 5, 6, 7, 8, 9].filter((r) => canGild(s, r)).length },
   { han: '期', name: 'take the week', taps: (s) => {
       const q = quarryOf(s);
       return q && quarryOwed(s) && odds(s, q) > 0.6 ? 1 : 0;

@@ -49,6 +49,7 @@ import { swing } from '../src/sim/inspect.ts';
 import { ARCHETYPES, RARITY_INFO, SLOTS, callingOf, schoolOf, templateOf, type Item, type Slot } from '../src/data/gear.ts';
 import { PAIRS, schoolOfAxis, type Pair, type School } from '../src/data/schools.ts';
 import { SCHOOL_WAKES } from '../src/sim/balance.ts';
+import { collect } from './collector.ts';
 import type { Beast } from '../src/data/bestiary.ts';
 import { ELITE_RISEN_FROM } from '../src/sim/balance.ts';
 import { eliteFight, eliteKit, eliteOf, loseElite, risenNow } from '../src/sim/elite.ts';
@@ -186,6 +187,8 @@ export interface Habit {
    * long goals does: the climb stops at the ninth realm, the forge does not.
    */
   readonly on?: boolean;
+  /** 珍 Past the summit, put the qi into the trophy book (tools/collector.ts). */
+  readonly collects?: boolean;
   /**
    * 留 Whether they hold the layer, and spend on the three qi upgrades first: a layer is opened by
    * hand only once nothing the realm still sells for qi is left to buy, which is the order
@@ -910,6 +913,15 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher, start?: State, ga
       led.spent += d.qiSpent;
       s = quarried(s, d.state);
       fights += n;
+    }
+
+    // 珍 The collector, past the summit: every coin of qi into the trophy book (tools/collector.ts).
+    // Only a habit made with `collects` does it, so no table that walks HABITS moves.
+    if (h.collects && layersOpened(s) >= LAYERS - 1) {
+      const c = collect(s, s.qi, ++seed);
+      led.spent += c.qi;
+      s = c.state;
+      fights += c.kills;
     }
 
     /**

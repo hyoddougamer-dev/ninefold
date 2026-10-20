@@ -2725,6 +2725,46 @@ export const BESTIARY = {
   leavesSchools: (schools: readonly string[]) => `Leaves ${schools.join(', ')} pieces`,
 };
 
+/**
+ * 珍 The trophies and 冊 the book they fill (sim/trophies.ts). Plain about the odds: one in
+ * what is left of the bar, and the end of the bar is a promise.
+ */
+export const TROPHY = {
+  /** The hunt row, while this bar's trophy is still somewhere ahead. */
+  odds: (name: string, oneIn: string, left: string) => `${name}: 1 in ${oneIn} a kill, certain within ${left}`,
+  /** The hunt row, once this bar's trophy has fallen. */
+  fallen: (name: string, left: string) => `${name} found in this bar. The next bar starts in ${left} kills`,
+  held: (n: number) => `${n} held`,
+  /** For the tooltip on 珍. */
+  what: 'A trophy: one very rare thing each common beast can leave. It lies somewhere in a bar of kills, '
+    + 'so every kill is a chance and the bar running out is a promise. Deep marks fill the bar faster. '
+    + 'Each later bar of the same beast is twice as long.',
+  /** The float when one falls. */
+  found: (name: string) => `珍 ${name}!`,
+  /** The drive's verdict. */
+  drove: (n: number, name: string) => (n === 1 ? `${name}, found in this drive` : `${n} of ${name}, found in this drive`),
+  droveSays: 'It is in the trophy book, at the foot of the hunt.',
+  /** The drive sheet, before: what the bar says now. */
+  driveBar: (name: string, left: string) => `珍 ${name} is certain within ${left} more kills of this beast.`,
+  /** 冊 A realm's page, in the bestiary. */
+  page: (have: number, of: number) => `冊 ${have}/${of} trophies`,
+  pageWhole: (title: string) => `冊 Page whole: ${title}`,
+  pageGilt: (title: string) => `鎏 Page gilt: ${title}`,
+  pageKept: 'kept from a life before',
+  pays: (page: string, gilt: string) => `A whole page gives ${page} power for good, and gilt, ${gilt} more.`,
+  book: (pages: number, power: string, ceiling: string) => `冊 Trophy book: ${pages}/9 pages · power ×${power} of ×${ceiling}`,
+  bookTitle: (title: string) => `Title: ${title}`,
+  /** 化 The furnace. */
+  render: (n: number, name: string) => `化 Render ${n} spares into ${name}`,
+  renderSays: (n: number) => `${n} spare trophies of this realm's other beasts become the one you are missing.`,
+  /** 鎏 The forge. */
+  gild: (cost: string) => `鎏 Gild the page · ${cost} 材`,
+  gildNeeds: (cost: string) => `To gild: a spare of each of the three, and ${cost} 材.`,
+  /** The card in the bestiary. */
+  cardMissing: 'not found yet',
+  cardHeld: (n: number) => (n === 1 ? 'held' : `${n} held`),
+};
+
 export const RETURN = {
   away: (span: string) => `You were away ${span}.`,
   qi: 'qi gathered',

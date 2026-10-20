@@ -13,7 +13,8 @@ import { icon } from '../../art/icon.ts';
 import { Svg } from './Svg.tsx';
 import { rate, type State } from '../../sim/state.ts';
 import { ladderDone } from '../../sim/time.ts';
-import { DRIVE, HUNT, PILE, QOL } from '../copy.ts';
+import { DRIVE, HUNT, PILE, QOL, TROPHY } from '../copy.ts';
+import { TROPHY_BY_BEAST, barOf } from '../../sim/trophies.ts';
 import { DrivePile } from './DrivePile.tsx';
 import { RealmTag } from './RealmTag.tsx';
 import { settleDefault, type Choice, type Plan } from '../../sim/pile.ts';
@@ -94,6 +95,17 @@ export function Drive({ state, beast, seed, onTake, onSettle, onGame, onClose }:
           </p>
         ))}
 
+        {/* 珍 A trophy the drive's kills found: the rarest thing a drive can say. */}
+        {done.trophies > 0 && TROPHY_BY_BEAST[beast.key] && (
+          <p className="mark trophyfound">
+            <b className="cjk">{TROPHY_BY_BEAST[beast.key].han}</b>
+            <span>
+              <em>{TROPHY.drove(done.trophies, TROPHY_BY_BEAST[beast.key].name)}</em>
+              <i>{TROPHY.droveSays}</i>
+            </span>
+          </p>
+        )}
+
         {/* 圍 Everything that fell, with the choice of what to keep. The best piece is marked to start
             with: it is what the game would have kept. */}
         {waiting && (
@@ -142,6 +154,10 @@ export function Drive({ state, beast, seed, onTake, onSettle, onGame, onClose }:
       <p className="faint blurb">{beast.realm < state.realm ? DRIVE.priceOld : DRIVE.price}</p>
       {/* 雷池 At the summit the qi in hand is the pool that calls the next Dragon. */}
       {ladderDone(state) && <p className="faint blurb">{DRIVE.summit}</p>}
+      {/* 珍 Where this beast's trophy bar stands: the drive is kills, so it fills the bar as taps would. */}
+      {TROPHY_BY_BEAST[beast.key] && !barOf(state, beast.key).fallen && (
+        <p className="faint blurb">{TROPHY.driveBar(TROPHY_BY_BEAST[beast.key].name, num(barOf(state, beast.key).killsLeft))}</p>
+      )}
 
       <div className="sizes">
         {DRIVE_SIZES.map((n) => {

@@ -54,7 +54,8 @@
     "sounds": "node tools/sounds.mjs",
     "freeclimb": "tsx tools/freeclimb.ts",
     "hundredfold": "tsx tools/hundredfold.ts",
-    "elite": "tsx tools/elite.ts"
+    "elite": "tsx tools/elite.ts",
+    "trophies": "tsx tools/trophies.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.2",

@@ -4813,3 +4813,38 @@ nav.tabs .tabkey { display: none; }
   border-radius: 99px; font-size: 12px; color: var(--rc); letter-spacing: .02em; vertical-align: top;
   border: 1px solid color-mix(in srgb, var(--rc) 50%, transparent); background: color-mix(in srgb, var(--rc) 8%, transparent); }
 .c-hero .c-rungseal { width: 20px; height: 20px; font-size: 12px; border-radius: 99px; }
+
+/* 珍 The trophy line under a hunt row, the same shape as 緣 the bond above it. Scoped to
+   .btrophy, which only the hunt row draws (the fuse rows share .beast). */
+.beast .btrophy { flex: 1 0 100%; display: flex; align-items: center; gap: 7px; padding-left: 57px; }
+.beast .btrophy > b { font-weight: 400; font-size: 14px; color: var(--cinnabar); flex: none; }
+.beast .btrophy .bar { flex: 0 0 56px; height: 5px; border-radius: 5px; background: var(--line); overflow: hidden; }
+.beast .btrophy .bar i { display: block; height: 100%; border-radius: 5px;
+                         background: linear-gradient(90deg, #7a3326, var(--cinnabar)); }
+.beast .btrophy > i { font-style: normal; font-size: 11px; color: var(--faint); min-width: 0; }
+.beast .btrophy > i em { font-style: normal; color: var(--gold); }
+.beast .btrophy[data-fallen] .bar i { background: var(--faint); opacity: .5; }
+@media (max-width: 380px) {
+  .beast:has(.bleaves) > .btrophy { grid-column: 1 / -1; padding-left: 0; }
+}
+
+/* 冊 The trophy book in the bestiary: one line for the book, one per page, a mark on each card. */
+.tbook { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; margin: 12px 0 4px;
+         padding: 9px 11px; border: 1px solid var(--gild); border-radius: 11px; background: var(--lacquer); }
+.tbook b { font-weight: 500; font-size: 13px; color: var(--gold); }
+.tbook i { font-style: normal; font-size: 12px; color: var(--faint); }
+.tpage { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: -2px 0 8px; }
+.tpage .tphead { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; min-width: 0; }
+.tpage .tphead b { font-weight: 400; font-size: 12.5px; color: var(--faint); }
+.tpage[data-level="2"] .tphead b { text-shadow: 0 0 8px rgba(212, 175, 86, .45); }
+.tpage .tphead i { font-style: normal; font-size: 11px; }
+.tpage .tpact { font-size: 12px; padding: 5px 10px; }
+.tpage .tpnote { font-style: normal; font-size: 11px; flex: 1 1 100%; }
+.card3 .tcard { display: flex; flex-direction: column; align-items: center; margin-top: 3px; min-width: 0; }
+.card3 .tcard b { font-size: 12px; color: var(--faint); opacity: .5; }
+.card3 .tcard i { text-align: center; }
+.card3 .tcard[data-held] b { color: var(--cinnabar); opacity: 1; }
+.card3 .tcard[data-held] i { color: var(--gold); }
+
+/* 珍 The drive's verdict, when a trophy fell. */
+.drivesheet .trophyfound b { color: var(--cinnabar); }

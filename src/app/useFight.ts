@@ -1,3 +1,4 @@
+import { TROPHY_BY_BEAST, found as trophiesFound } from '../sim/trophies.ts';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react';
 import { now } from './clock.ts';
 import { stash } from '../sim/stash.ts';
@@ -19,6 +20,8 @@ import { BEAT_MS, beatsIn, type Battle } from './ui/Arena.tsx';
 import { MARKS } from '../sim/balance.ts';
 import { haptics } from './haptics.ts';
 import { sfx } from './sound.ts';
+import { burst, float } from './juice.ts';
+import { TROPHY } from './copy.ts';
 import { isOpen } from '../sim/unlocks.ts';
 import { eliteHeld, eliteSeed, loseElite, risenElite } from '../sim/risen.ts';
 
@@ -208,6 +211,11 @@ export function useFight(
         // (空囊 and a full chest's melt included) all come from the sim, so the harnesses
         // that measure this game see exactly what the player gets.
         const put = stash(noteFate(takeKill(s, beast), beast, drop), drop);
+        // 珍 A trophy is read off the kills, so the kill that crosses its point is the one that found it.
+        if (trophiesFound(put.state, beast.key) > trophiesFound(s, beast.key) && TROPHY_BY_BEAST[beast.key]) {
+          const name = TROPHY_BY_BEAST[beast.key].name;
+          once(id, () => { float(TROPHY.found(name), 'gold'); burst('gold', null, 18, 90); sfx.mark(); haptics.win(); });
+        }
         let first = put.state;
         // 著 Wear it, from the verdict: the piece as it went in (空囊 applied), and only if
         // the chest kept it. The same swap the item sheet's button makes.

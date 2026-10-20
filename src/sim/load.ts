@@ -3,6 +3,7 @@
  * State: validate() caps every field, rebuilds what is derived, and takes what it cannot trust
  * to its default. The model itself, in state.ts, holds no loader.
  */
+import { validTrophies } from './trophies.ts';
 import {
   type GearSet, type State, type Task, type Upgrade, TASKS, UPGRADES, capOf, cleanSetName, gathering,
   layersOpened, newState, sealDays, tribulationPool
@@ -542,6 +543,8 @@ export function validate(raw: unknown, now: number): State {
     // 承 The codex those lives kept: nine ranks, none past Heaven, and none at all for a
     // first life, since only a life that ended can have left one.
     codexKept: validKept(o.codexKept, lives.length),
+    // 珍 What was done with the trophies, held to the kills under it. Absent stays absent.
+    ...(o.trophy !== undefined ? { trophy: validTrophies(o.trophy, { killed, startedAt, lives }) } : {}),
   };
 
   /**

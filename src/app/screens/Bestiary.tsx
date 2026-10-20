@@ -8,6 +8,7 @@ import { isOpen } from '../../sim/unlocks.ts';
 import { treeFull } from '../../sim/points.ts';
 import { POINTS_PER_BESTIARY } from '../../sim/dao.ts';
 import { BESTIARY } from '../copy.ts';
+import { TrophyBook, TrophyCard, TrophyPage } from '../ui/Trophy.tsx';
 import { ARCHETYPES, SLOT_INFO, schoolOfShape } from '../../data/gear.ts';
 import { SCHOOL_INFO } from '../../data/schools.ts';
 import { Term } from '../ui/Term.tsx';
@@ -24,12 +25,20 @@ import { schoolSays } from '../classes.ts';
  * of what you have killed belongs next to the killing, and five tabs is already as many
  * as a thumb can find.
  */
-export function Bestiary({ state }: { state: State }) {
+export function Bestiary({ state, onRender, onGild }: {
+  state: State;
+  /** 化 Render spares into the trophy a page is missing. */
+  onRender?: (key: string) => void;
+  /** 鎏 Gild a whole page. */
+  onGild?: (realm: number) => void;
+}) {
   const filled = (realm: number) => knownIn(state.killed, realm);
   // 滿 A finished page pays a 道 point, which a full tree only keeps.
   const full = treeFull(state, false);
   return (
     <>
+      {/* 冊 The trophy book leads the bestiary: it is the same thirty-six cards, read for what they keep. */}
+      <TrophyBook state={state} />
       {REALMS.map((r) => {
         const ofRealm = BEASTS.filter((b) => b.realm === r.n);
         const reached = state.realm >= r.n;
@@ -49,6 +58,7 @@ export function Bestiary({ state }: { state: State }) {
                 </span>
               )}
             </h2>
+            {reached && <TrophyPage state={state} realm={r.n} onRender={onRender} onGild={onGild} />}
             <div className="grid3">
               {ofRealm.map((b) => {
                 const kills = state.killed[b.key] ?? 0;
@@ -69,6 +79,7 @@ export function Bestiary({ state }: { state: State }) {
                         <em key={m.han} className="cjk" data-on={i < deepOf(kills)} data-deep>{m.han}</em>
                       ))}
                     </span>
+                    {found && <TrophyCard state={state} beast={b} />}
                     {/* 職 The schools of what it leaves, once it has been met. rekaris, on the
                         Discord: "I am looking for fortune pieces, but I don't know which
                         monsters drop them." */}
